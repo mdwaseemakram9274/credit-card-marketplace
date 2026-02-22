@@ -1,5 +1,6 @@
 import { MarketplaceBank } from './types';
 import { ui } from './theme';
+import { landingContent } from './content';
 
 type PartnersSectionProps = {
   banks: MarketplaceBank[];
@@ -7,12 +8,13 @@ type PartnersSectionProps = {
 
 export function PartnersSection({ banks }: PartnersSectionProps) {
   const partners = banks.slice(0, 12);
+  const { partners: partnersContent } = landingContent;
 
   return (
     <section id="partners" className={`${ui.section} pt-0`}>
       <div className={ui.container}>
-        <h2 className={ui.heading}>Trusted Bank Partners</h2>
-        <p className={ui.subheading}>Issuer relationships built for compliance, clarity, and long-term trust.</p>
+        <h2 className={ui.heading}>{partnersContent.title}</h2>
+        <p className={ui.subheading}>{partnersContent.subtitle}</p>
 
         <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
           {partners.length
@@ -25,7 +27,7 @@ export function PartnersSection({ banks }: PartnersSectionProps) {
                   {bank.name}
                 </a>
               ))
-            : ['HDFC', 'SBI', 'Axis', 'ICICI', 'Kotak', 'IDFC'].map((name) => (
+            : partnersContent.fallbackNames.map((name) => (
                 <article
                   key={name}
                   className="flex h-16 items-center justify-center rounded-lg border border-neutral-200 bg-white text-sm font-medium text-neutral-500"

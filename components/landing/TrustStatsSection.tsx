@@ -1,4 +1,5 @@
 import { ui } from './theme';
+import { landingContent } from './content';
 
 type TrustStatsSectionProps = {
   totalCards: number;
@@ -8,12 +9,13 @@ type TrustStatsSectionProps = {
 export function TrustStatsSection({ totalCards, totalBanks }: TrustStatsSectionProps) {
   const compact = (value: number) =>
     new Intl.NumberFormat('en-IN', { notation: 'compact', maximumFractionDigits: 1 }).format(value);
+  const { stats } = landingContent;
 
   const metrics = [
-    { label: 'Live Card Offers', value: `${compact(totalCards || 0)}+` },
-    { label: 'Partner Banks', value: `${compact(totalBanks || 0)}+` },
-    { label: 'Users Guided', value: '250K+' },
-    { label: 'Offer Accuracy', value: '99.2%' },
+    { label: stats.labels.cards, value: `${compact(totalCards || 0)}+` },
+    { label: stats.labels.banks, value: `${compact(totalBanks || 0)}+` },
+    { label: stats.labels.users, value: stats.values.users },
+    { label: stats.labels.accuracy, value: stats.values.accuracy },
   ];
 
   return (
