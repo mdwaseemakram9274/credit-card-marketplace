@@ -407,25 +407,30 @@
 
                     <div class="col-12 col-md-4">
                       <label for="network" class="form-label">Powered By / Network</label>
-                      <select id="network" class="form-select" multiple size="3">
+                      <select id="network" class="form-select">
+                        <option value="">Select Network</option>
                         <option value="Visa">Visa</option>
                         <option value="Mastercard">Mastercard</option>
                         <option value="RuPay">RuPay</option>
                       </select>
-                      <small class="text-muted">Use Cmd/Ctrl to select multiple networks.</small>
                     </div>
 
                     <div class="col-12 col-md-4">
-                      <label for="cardType" class="form-label">Card Type</label>
-                      <select id="cardType" class="form-select" multiple size="6">
-                        <option value="Cashback">Cashback</option>
-                        <option value="Rewards">Rewards</option>
-                        <option value="Travel">Travel</option>
-                        <option value="Premium">Premium</option>
-                        <option value="Fuel">Fuel</option>
-                        <option value="Shopping">Shopping</option>
-                      </select>
-                      <small class="text-muted">Use Cmd/Ctrl to select multiple card types.</small>
+                      <label class="form-label">Card Type</label>
+                      <div id="cardTypeCheckboxGroup" class="border rounded p-2 bg-light-subtle"></div>
+                      <div class="form-check mt-2">
+                        <input class="form-check-input" type="checkbox" id="cardTypeOtherToggle" />
+                        <label class="form-check-label" for="cardTypeOtherToggle">Other</label>
+                      </div>
+                      <div id="cardTypeOtherWrap" class="mt-2 d-none">
+                        <input
+                          id="cardTypeOtherInput"
+                          type="text"
+                          class="form-control"
+                          placeholder="Enter custom card type(s), comma separated"
+                        />
+                      </div>
+                      <small class="text-muted">Select one or more types. Use Other for custom values.</small>
                     </div>
 
                     <div class="col-12">
@@ -697,10 +702,16 @@
     const viewLinks = document.querySelectorAll('[data-view]');
     const filterBank = document.getElementById('filterBank');
     const filterJoiningFee = document.getElementById('filterJoiningFee');
+    const cardTypeCheckboxGroup = document.getElementById('cardTypeCheckboxGroup');
+    const cardTypeOtherToggle = document.getElementById('cardTypeOtherToggle');
+    const cardTypeOtherWrap = document.getElementById('cardTypeOtherWrap');
+    const cardTypeOtherInput = document.getElementById('cardTypeOtherInput');
 
     const deleteModalEl = document.getElementById('deleteModal');
     const deleteModal = new bootstrap.Modal(deleteModalEl);
     const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    const DEFAULT_CARD_TYPES = ['Cashback', 'Rewards', 'Travel', 'Premium', 'Fuel', 'Shopping'];
+    let cardTypeOptions = [...DEFAULT_CARD_TYPES];
 
     // Initialize app on page load
     init();
@@ -723,6 +734,7 @@
       filterBank.addEventListener('change', renderTable);
       filterJoiningFee.addEventListener('change', renderTable);
       document.addEventListener('paste', handlePasteImageFromClipboard);
+      cardTypeOtherToggle.addEventListener('change', handleCardTypeOtherToggle);
 
       viewLinks.forEach((link) => {
         link.addEventListener('click', (event) => {
@@ -768,10 +780,12 @@
         }
 
         cardsCache = Array.isArray(payload.cards) ? payload.cards : [];
+        rebuildCardTypeOptions();
         updateFilterOptions();
         renderTable();
       } catch (error) {
         cardsCache = [];
+        rebuildCardTypeOptions();
         updateFilterOptions();
         renderTable();
         showAlert(error instanceof Error ? error.message : 'Failed to load cards from Supabase.', 'danger');
@@ -846,6 +860,101 @@
         const isActive = link.getAttribute('data-view') === view;
         link.classList.toggle('active', isActive);
       });
+    }
+
+    function parseCardTypeValues(rawValue) {
+      return String(rawValue || '')
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean);
+    }
+
+    function rebuildCardTypeOptions() {
+      const fromCards = getCards().flatMap((card) => parseCardTypeValues(card.cardType));
+      const merged = [...DEFAULT_CARD_TYPES];
+
+      fromCards.forEach((type) => {
+        if (!merged.includes(type)) {
+          merged.push(type);
+        }
+      });
+
+      cardTypeOptions = merged;
+      renderCardTypeCheckboxes(getSelectedCardTypesArray());
+    }
+
+    function renderCardTypeCheckboxes(selectedValues) {
+      const selectedSet = new Set(selectedValues || []);
+
+      cardTypeCheckboxGroup.innerHTML = cardTypeOptions
+        .map((type, index) => {
+          const optionId = `cardType_${toChoiceId(type)}_${index}`;
+          return `
+            <div class="form-check">
+              <input class="form-check-input card-type-check" type="checkbox" value="${escapeAttribute(type)}" id="${optionId}" ${
+            selectedSet.has(type) ? 'checked' : ''
+          }>
+              <label class="form-check-label" for="${optionId}">${escapeHtml(type)}</label>
+            </div>
+          `;
+        })
+        .join('');
+    }
+
+    function toChoiceId(value) {
+      return String(value || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '');
+    }
+
+    function handleCardTypeOtherToggle() {
+      const isOtherChecked = cardTypeOtherToggle.checked;
+      cardTypeOtherWrap.classList.toggle('d-none', !isOtherChecked);
+      if (!isOtherChecked) {
+        cardTypeOtherInput.value = '';
+      }
+    }
+
+    function getSelectedCardTypesArray() {
+      const selected = Array.from(document.querySelectorAll('.card-type-check:checked')).map((el) =>
+        String(el.value || '').trim()
+      );
+
+      if (cardTypeOtherToggle.checked) {
+        const customValues = String(cardTypeOtherInput.value || '')
+          .split(',')
+          .map((value) => value.trim())
+          .filter(Boolean);
+
+        customValues.forEach((type) => {
+          if (!selected.includes(type)) {
+            selected.push(type);
+          }
+          if (!cardTypeOptions.includes(type)) {
+            cardTypeOptions.push(type);
+          }
+        });
+      }
+
+      return selected.filter(Boolean);
+    }
+
+    function setCardTypeSelection(rawValue) {
+      const selectedValues = parseCardTypeValues(rawValue);
+
+      selectedValues.forEach((type) => {
+        if (!cardTypeOptions.includes(type)) {
+          cardTypeOptions.push(type);
+        }
+      });
+
+      const customSelected = selectedValues.filter((type) => !DEFAULT_CARD_TYPES.includes(type));
+      cardTypeOtherToggle.checked = customSelected.length > 0;
+      handleCardTypeOtherToggle();
+      cardTypeOtherInput.value = customSelected.join(', ');
+
+      renderCardTypeCheckboxes(selectedValues);
     }
 
     function updateFilterOptions() {
@@ -986,7 +1095,7 @@
         id: editingCardIdInput.value || '',
         bank: getResolvedBankName(),
         cardName: valueOf('cardName'),
-        network: getMultiSelectValue('network'),
+        network: valueOf('network'),
         description: valueOf('description'),
         joiningFee: valueOf('joiningFee'),
         annualFee: valueOf('annualFee'),
@@ -1006,7 +1115,7 @@
         pros: valueOf('pros'),
         cons: valueOf('cons'),
         bestFor: valueOf('bestFor'),
-        cardType: getMultiSelectValue('cardType'),
+        cardType: getSelectedCardTypesArray().join(', '),
         merchantExclusions: valueOf('merchantExclusions'),
       };
     }
@@ -1050,7 +1159,7 @@
 
       setBankFieldValue(card.bank);
       setValue('cardName', card.cardName);
-      setMultiSelectValue('network', card.network);
+      setValue('network', String(card.network || '').split(',')[0]?.trim());
       currentImageData = card.cardImageUrl || '';
       if (imageFileInput) {
         imageFileInput.value = '';
@@ -1074,7 +1183,7 @@
       setValue('pros', card.pros);
       setValue('cons', card.cons);
       setValue('bestFor', card.bestFor);
-      setMultiSelectValue('cardType', card.cardType);
+      setCardTypeSelection(card.cardType);
       setValue('merchantExclusions', card.merchantExclusions);
 
       updateImagePreview(currentImageData);
@@ -1117,6 +1226,9 @@
       if (imageFileInput) {
         imageFileInput.value = '';
       }
+      cardTypeOtherToggle.checked = false;
+      handleCardTypeOtherToggle();
+      renderCardTypeCheckboxes([]);
       updateImagePreview('');
       clearValidationState();
     }
@@ -1247,29 +1359,6 @@
       const el = document.getElementById(id);
       if (!el) return;
       el.value = val || '';
-    }
-
-    function getMultiSelectValue(id) {
-      const el = document.getElementById(id);
-      if (!el || !el.selectedOptions) return '';
-      return Array.from(el.selectedOptions)
-        .map((option) => String(option.value || '').trim())
-        .filter(Boolean)
-        .join(', ');
-    }
-
-    function setMultiSelectValue(id, rawValue) {
-      const el = document.getElementById(id);
-      if (!el || !el.options) return;
-
-      const selectedValues = String(rawValue || '')
-        .split(',')
-        .map((value) => value.trim())
-        .filter(Boolean);
-
-      Array.from(el.options).forEach((option) => {
-        option.selected = selectedValues.includes(option.value);
-      });
     }
 
     // Basic HTML escaping helpers for safe rendering
