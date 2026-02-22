@@ -3,6 +3,7 @@ import { getSupabaseServerClient, hasSupabaseConfig } from '../../../lib/supabas
 
 type AdminCardPayload = {
   id?: string;
+  isEnabled?: boolean;
   bank?: string;
   cardName?: string;
   rating?: string;
@@ -67,6 +68,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         return {
           id: row.id,
+          isEnabled: meta.isEnabled !== false,
           bank: meta.bank || bankName,
           cardName: meta.cardName || row.title || '',
           rating: meta.rating || '',
@@ -100,7 +102,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (req.method === 'POST' || req.method === 'PUT') {
-      const payload = sanitizePayload(req.body || {});
+      let payload = sanitizePayload(req.body || {});
+
+      if (req.method === 'PUT' && payload.id && (!payload.bank || !payload.cardName)) {
+        const { data: existingRow, error: existingError } = await supabase
+          .from('cards')
+          .select('id, key_benefits, banks!inner(name)')
+          .eq('id', payload.id)
+          .single();
+
+        if (existingError || !existingRow) {
+          throw new Error(existingError?.message || 'Unable to find existing card for update.');
+        }
+
+        const existingMeta = extractAdminMeta(existingRow.key_benefits);
+        const existingBankName = Array.isArray(existingRow.banks)
+          ? existingRow.banks[0]?.name || ''
+          : (existingRow.banks as any)?.name || '';
+
+        payload = {
+          ...existingMeta,
+          ...payload,
+          id: payload.id,
+          bank: payload.bank || existingMeta.bank || existingBankName,
+          cardName: payload.cardName || existingMeta.cardName || '',
+        };
+      }
+
       if (!payload.bank || !payload.cardName) {
         return res.status(400).json({ ok: false, error: 'Bank and card name are required.' });
       }
@@ -195,6 +223,7 @@ function extractAdminMeta(raw: unknown): AdminCardPayload {
 function sanitizePayload(input: any): AdminCardPayload {
   const payload: AdminCardPayload = {
     id: sanitizeString(input.id),
+    isEnabled: sanitizeBoolean(input.isEnabled, true),
     bank: sanitizeString(input.bank),
     cardName: sanitizeString(input.cardName),
     rating: sanitizeString(input.rating),
@@ -228,6 +257,13 @@ function sanitizePayload(input: any): AdminCardPayload {
 
 function sanitizeString(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
+}
+
+function sanitizeBoolean(value: unknown, fallback: boolean): boolean {
+  if (typeof value === 'boolean') {
+    return value;
+  }
+  return fallback;
 }
 
 function toSlug(value: string): string {

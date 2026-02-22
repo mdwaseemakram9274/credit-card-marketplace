@@ -53,7 +53,7 @@ async function readFromSupabase(): Promise<MarketplaceResponse> {
 
   const { data: cards, error: cardsError } = await supabase
     .from('cards')
-    .select('bank_id, slug, title, description, image_url, annual_fee, source_url')
+    .select('bank_id, slug, title, description, image_url, annual_fee, source_url, key_benefits')
     .order('title', { ascending: true });
 
   if (cardsError) {
@@ -62,6 +62,10 @@ async function readFromSupabase(): Promise<MarketplaceResponse> {
 
   const cardMap = new Map<string, MarketplaceResponse['banks'][number]['cards']>();
   for (const card of cards || []) {
+    if (!isCardEnabled(card.key_benefits)) {
+      continue;
+    }
+
     const list = cardMap.get(card.bank_id) || [];
     list.push({
       slug: card.slug,
@@ -105,14 +109,16 @@ function readFromLocalFile(): MarketplaceResponse {
         slug,
         name: bankRow.name || slug,
         description: bankRow.description || '',
-        cards: (bankRow.cards || []).map((card: any) => ({
+        cards: (bankRow.cards || [])
+          .filter((card: any) => card?.isEnabled !== false)
+          .map((card: any) => ({
           slug: (card.filename || '').replace(/\.html$/i, '') || card.slug || '',
           name: card.title || card.name || '',
           description: card.description || '',
           imageUrl: card.imageUrl || undefined,
           annualFee: card.annualFee || undefined,
           sourceUrl: card.sourceUrl || undefined,
-        })),
+          })),
       };
     });
 
@@ -128,6 +134,24 @@ function readFromLocalFile(): MarketplaceResponse {
 
   return {
     source: 'local',
-    banks: data.banks,
+    banks: data.banks
+      .map((bank: any) => ({
+        ...bank,
+        cards: (bank.cards || []).filter((card: any) => card?.isEnabled !== false),
+      }))
+      .filter((bank: any) => (bank.cards || []).length > 0),
   };
+}
+
+function isCardEnabled(raw: unknown): boolean {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    return true;
+  }
+
+  const maybeMeta = raw as { __adminData?: { isEnabled?: unknown } };
+  if (!maybeMeta.__adminData || typeof maybeMeta.__adminData !== 'object') {
+    return true;
+  }
+
+  return maybeMeta.__adminData.isEnabled !== false;
 }

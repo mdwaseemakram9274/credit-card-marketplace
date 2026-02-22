@@ -627,6 +627,7 @@
                 <th>Joining Fee</th>
                 <th>Annual Fee</th>
                 <th>Card Type</th>
+                <th>Status</th>
                 <th class="text-end">Actions</th>
               </tr>
             </thead>
@@ -996,7 +997,7 @@
       if (!filteredCards.length) {
         tableBody.innerHTML = `
           <tr>
-            <td colspan="7" class="text-center text-muted py-4">No cards found for selected filters.</td>
+            <td colspan="8" class="text-center text-muted py-4">No cards found for selected filters.</td>
           </tr>
         `;
         return;
@@ -1016,10 +1017,22 @@
               <td>${escapeHtml(card.joiningFee || '-')}</td>
               <td>${escapeHtml(card.annualFee || '-')}</td>
               <td>${escapeHtml(card.cardType || '-')}</td>
+              <td>
+                <span class="badge ${card.isEnabled === false ? 'text-bg-secondary' : 'text-bg-success'}">${
+            card.isEnabled === false ? 'Disabled' : 'Enabled'
+          }</span>
+              </td>
               <td class="text-end">
                 <div class="d-inline-flex align-items-center gap-2 flex-nowrap">
                   <button class="btn btn-sm action-btn text-primary" onclick="editCard('${card.id}')">
                     <i class="fa-solid fa-pen"></i>
+                  </button>
+                  <button class="btn btn-sm action-btn ${
+                    card.isEnabled === false ? 'text-success' : 'text-warning'
+                  }" onclick="toggleCardEnabled('${card.id}', ${card.isEnabled === false ? 'true' : 'false'})" title="${
+                    card.isEnabled === false ? 'Enable card' : 'Disable card'
+                  }">
+                    <i class="fa-solid ${card.isEnabled === false ? 'fa-toggle-on' : 'fa-toggle-off'}"></i>
                   </button>
                   <button class="btn btn-sm action-btn text-danger" onclick="openDeleteModal('${card.id}')">
                     <i class="fa-solid fa-trash"></i>
@@ -1040,6 +1053,7 @@
 
       const payload = collectFormData();
       payload.cardImageUrl = await resolveCardImageValue();
+      payload.isEnabled = resolveEnabledState(payload.id);
 
       // Reset old invalid states
       clearValidationState();
@@ -1093,6 +1107,7 @@
     function collectFormData() {
       return {
         id: editingCardIdInput.value || '',
+        isEnabled: true,
         bank: getResolvedBankName(),
         cardName: valueOf('cardName'),
         network: valueOf('network'),
@@ -1118,6 +1133,19 @@
         cardType: getSelectedCardTypesArray().join(', '),
         merchantExclusions: valueOf('merchantExclusions'),
       };
+    }
+
+    function resolveEnabledState(id) {
+      if (!id) {
+        return true;
+      }
+
+      const existing = getCards().find((card) => card.id === id);
+      if (!existing) {
+        return true;
+      }
+
+      return existing.isEnabled !== false;
     }
 
     function validatePositiveValues(fields) {
@@ -1210,6 +1238,22 @@
         showAlert('Card deleted successfully.', 'success');
       } catch (error) {
         showAlert(error instanceof Error ? error.message : 'Failed to delete card.', 'danger');
+      }
+    }
+
+    async function toggleCardEnabled(id, nextEnabled) {
+      const existing = getCards().find((card) => card.id === id);
+      if (!existing) {
+        showAlert('Unable to find card for status update.', 'warning');
+        return;
+      }
+
+      try {
+        await saveCardToServer({ ...existing, id, isEnabled: Boolean(nextEnabled) });
+        await refreshCardsFromServer();
+        showAlert(nextEnabled ? 'Card enabled successfully.' : 'Card disabled successfully.', 'success');
+      } catch (error) {
+        showAlert(error instanceof Error ? error.message : 'Failed to update card status.', 'danger');
       }
     }
 
@@ -1378,6 +1422,7 @@
     // Expose edit/delete handlers to inline table action buttons
     window.editCard = editCard;
     window.openDeleteModal = openDeleteModal;
+    window.toggleCardEnabled = toggleCardEnabled;
   </script>
 </body>
 </html>
