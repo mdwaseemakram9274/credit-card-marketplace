@@ -1,10 +1,11 @@
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import Head from 'next/head';
 
 type Result = {
   ok: boolean;
   error?: string;
   persisted?: boolean;
+  writeTarget?: 'cloud' | 'local';
   warnings?: string[];
   bankSlug?: string;
   cardSlug?: string;
@@ -15,6 +16,18 @@ type Result = {
   bankPageUrl?: string;
   cardQueryUrl?: string;
   generatedCardUrl?: string;
+};
+
+type AdminStatus = {
+  mode: 'cloud' | 'local';
+  configured: boolean;
+  connected: boolean;
+  message: string;
+};
+
+type ValidationState = {
+  errors: string[];
+  warnings: string[];
 };
 
 function toSlug(value: string): string {
@@ -35,11 +48,56 @@ export default function AdminScrapePage() {
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [useScrapedImage, setUseScrapedImage] = useState(true);
   const [coBrandedMode, setCoBrandedMode] = useState(false);
+  const [benefitTags, setBenefitTags] = useState('');
+  const [primaryCardType, setPrimaryCardType] = useState('');
+  const [joiningFee, setJoiningFee] = useState('');
+  const [annualFeeInput, setAnnualFeeInput] = useState('');
+  const [foreignMarkup, setForeignMarkup] = useState('');
+  const [minAge, setMinAge] = useState('');
+  const [minIncome, setMinIncome] = useState('');
+  const [applicationUrl, setApplicationUrl] = useState('');
+  const [baseRewardRule, setBaseRewardRule] = useState('');
+  const [redemptionOptions, setRedemptionOptions] = useState('');
+  const [keyTerms, setKeyTerms] = useState('');
+  const [publishStatus, setPublishStatus] = useState<'draft' | 'review' | 'published'>('draft');
+  const [sourceType, setSourceType] = useState<'url' | 'image' | 'manual' | 'llm'>('url');
+  const [lastVerifiedDate, setLastVerifiedDate] = useState('');
+
+  const [welcomeBonus, setWelcomeBonus] = useState('');
+  const [travelBenefits, setTravelBenefits] = useState('');
+  const [fuelBenefits, setFuelBenefits] = useState('');
+  const [shoppingBenefits, setShoppingBenefits] = useState('');
+  const [renewalWaiver, setRenewalWaiver] = useState('');
+  const [rewardCaps, setRewardCaps] = useState('');
+  const [redemptionValue, setRedemptionValue] = useState('');
+  const [creditLimitRange, setCreditLimitRange] = useState('');
+
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
+  const [status, setStatus] = useState<AdminStatus | null>(null);
+  const [validation, setValidation] = useState<ValidationState>({ errors: [], warnings: [] });
 
   const bankSlug = useMemo(() => toSlug(bankName || cardName), [bankName, cardName]);
   const cardSlug = useMemo(() => toSlug(cardName), [cardName]);
+
+  useEffect(() => {
+    const loadStatus = async () => {
+      try {
+        const response = await fetch('/api/admin/status');
+        const payload = (await response.json()) as AdminStatus;
+        setStatus(payload);
+      } catch {
+        setStatus({
+          mode: 'local',
+          configured: false,
+          connected: false,
+          message: 'Unable to check cloud connection. Assuming local fallback.',
+        });
+      }
+    };
+
+    loadStatus();
+  }, []);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -50,6 +108,40 @@ export default function AdminScrapePage() {
 
     if (!resolvedBank || !resolvedCard || !sourceUrl.trim()) {
       setResult({ ok: false, error: 'Bank name, card name, and source URL are required.' });
+      return;
+    }
+
+    const validationResult = validateCategoryMapping({
+      benefitTags,
+      primaryCardType,
+      joiningFee,
+      annualFeeInput,
+      foreignMarkup,
+      minAge,
+      minIncome,
+      applicationUrl,
+      baseRewardRule,
+      redemptionOptions,
+      keyTerms,
+      publishStatus,
+      sourceType,
+      lastVerifiedDate,
+      hasImage: Boolean(uploadedImage) || useScrapedImage,
+      optionalFields: {
+        welcomeBonus,
+        travelBenefits,
+        fuelBenefits,
+        shoppingBenefits,
+        renewalWaiver,
+        rewardCaps,
+        redemptionValue,
+        creditLimitRange,
+      },
+    });
+
+    setValidation(validationResult);
+    if (validationResult.errors.length > 0) {
+      setResult({ ok: false, error: 'Please fill all required mapped fields before saving.' });
       return;
     }
 
@@ -66,11 +158,52 @@ export default function AdminScrapePage() {
           cardName: resolvedCard,
           sourceUrl: sourceUrl.trim(),
           description: description.trim(),
+          annualFeeOverride: annualFeeInput.trim(),
           uploadedImageData,
           uploadedImageName: uploadedImage?.name,
           useScrapedImage,
           bankSlug: toSlug(resolvedBank),
           cardSlug: toSlug(resolvedCard),
+          taxonomy: {
+            featuresAndBenefits: {
+              benefitTags,
+              welcomeBonus,
+              travelBenefits,
+              fuelBenefits,
+              shoppingBenefits,
+            },
+            cardTypeAndPositioning: {
+              primaryCardType,
+            },
+            feesAndCharges: {
+              joiningFee,
+              annualFee: annualFeeInput,
+              foreignMarkup,
+              renewalWaiver,
+            },
+            eligibilityAndApplication: {
+              minAge,
+              minIncome,
+              applicationUrl,
+            },
+            rewardsEarningRules: {
+              baseRewardRule,
+              rewardCaps,
+            },
+            redemptionAndValue: {
+              redemptionOptions,
+              redemptionValue,
+            },
+            limitsAndTerms: {
+              keyTerms,
+              creditLimitRange,
+            },
+            metadataAndGovernance: {
+              publishStatus,
+              sourceType,
+              lastVerifiedDate,
+            },
+          },
         }),
       });
 
@@ -102,6 +235,12 @@ export default function AdminScrapePage() {
           <p className="text-muted mb-0">
             Add bank name, card name, and source URL. Missing bank/card entries are created automatically.
           </p>
+          {status && (
+            <div className={`mt-2 badge ${status.mode === 'cloud' ? 'text-bg-success' : 'text-bg-warning'}`}>
+              {status.mode === 'cloud' ? 'Cloud Connected' : 'Local Fallback'}
+            </div>
+          )}
+          {status && <div className="small text-muted mt-1">{status.message}</div>}
         </div>
 
         <form className="card border-0 shadow-sm" onSubmit={handleSubmit}>
@@ -177,6 +316,144 @@ export default function AdminScrapePage() {
             />
           </div>
 
+          <hr className="my-4" />
+          <h2 className="h6">Mapped Fields (Required)</h2>
+
+          <div className="mb-3">
+            <label className="form-label" htmlFor="benefitTags">Features & Benefits Tags</label>
+            <input
+              id="benefitTags"
+              className="form-control"
+              value={benefitTags}
+              onChange={(e) => setBenefitTags(e.target.value)}
+              placeholder="e.g. Rewards, Cashback, Travel"
+            />
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label" htmlFor="primaryCardType">Primary Card Type</label>
+            <select
+              id="primaryCardType"
+              className="form-select"
+              value={primaryCardType}
+              onChange={(e) => setPrimaryCardType(e.target.value)}
+            >
+              <option value="">Select card type</option>
+              <option value="lifestyle">Lifestyle</option>
+              <option value="travel">Travel</option>
+              <option value="fuel">Fuel</option>
+              <option value="cashback">Cashback</option>
+              <option value="shopping">Shopping</option>
+              <option value="premium">Premium</option>
+              <option value="co-branded">Co-branded</option>
+              <option value="secured">Secured</option>
+              <option value="business">Business</option>
+            </select>
+          </div>
+
+          <div className="row g-3 mb-3">
+            <div className="col-md-4">
+              <label className="form-label" htmlFor="joiningFee">Joining Fee</label>
+              <input id="joiningFee" className="form-control" value={joiningFee} onChange={(e) => setJoiningFee(e.target.value)} placeholder="e.g. ₹999" />
+            </div>
+            <div className="col-md-4">
+              <label className="form-label" htmlFor="annualFeeInput">Annual Fee</label>
+              <input id="annualFeeInput" className="form-control" value={annualFeeInput} onChange={(e) => setAnnualFeeInput(e.target.value)} placeholder="e.g. ₹999" />
+            </div>
+            <div className="col-md-4">
+              <label className="form-label" htmlFor="foreignMarkup">Foreign Markup</label>
+              <input id="foreignMarkup" className="form-control" value={foreignMarkup} onChange={(e) => setForeignMarkup(e.target.value)} placeholder="e.g. 3.5%" />
+            </div>
+          </div>
+
+          <div className="row g-3 mb-3">
+            <div className="col-md-4">
+              <label className="form-label" htmlFor="minAge">Minimum Age</label>
+              <input id="minAge" className="form-control" value={minAge} onChange={(e) => setMinAge(e.target.value)} placeholder="e.g. 21" />
+            </div>
+            <div className="col-md-4">
+              <label className="form-label" htmlFor="minIncome">Minimum Income</label>
+              <input id="minIncome" className="form-control" value={minIncome} onChange={(e) => setMinIncome(e.target.value)} placeholder="e.g. ₹6L" />
+            </div>
+            <div className="col-md-4">
+              <label className="form-label" htmlFor="applicationUrl">Application URL</label>
+              <input id="applicationUrl" type="url" className="form-control" value={applicationUrl} onChange={(e) => setApplicationUrl(e.target.value)} placeholder="https://..." />
+            </div>
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label" htmlFor="baseRewardRule">Base Reward Rule</label>
+            <input id="baseRewardRule" className="form-control" value={baseRewardRule} onChange={(e) => setBaseRewardRule(e.target.value)} placeholder="e.g. 1 RP per ₹150" />
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label" htmlFor="redemptionOptions">Redemption Options</label>
+            <input id="redemptionOptions" className="form-control" value={redemptionOptions} onChange={(e) => setRedemptionOptions(e.target.value)} placeholder="e.g. vouchers, statement credit" />
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label" htmlFor="keyTerms">Key Terms & Conditions</label>
+            <textarea id="keyTerms" className="form-control" rows={2} value={keyTerms} onChange={(e) => setKeyTerms(e.target.value)} placeholder="Important terms" />
+          </div>
+
+          <div className="row g-3 mb-3">
+            <div className="col-md-4">
+              <label className="form-label" htmlFor="publishStatus">Publish Status</label>
+              <select id="publishStatus" className="form-select" value={publishStatus} onChange={(e) => setPublishStatus(e.target.value as 'draft' | 'review' | 'published')}>
+                <option value="draft">Draft</option>
+                <option value="review">Review</option>
+                <option value="published">Published</option>
+              </select>
+            </div>
+            <div className="col-md-4">
+              <label className="form-label" htmlFor="sourceType">Source Type</label>
+              <select id="sourceType" className="form-select" value={sourceType} onChange={(e) => setSourceType(e.target.value as 'url' | 'image' | 'manual' | 'llm')}>
+                <option value="url">URL</option>
+                <option value="image">Image</option>
+                <option value="manual">Manual</option>
+                <option value="llm">LLM</option>
+              </select>
+            </div>
+            <div className="col-md-4">
+              <label className="form-label" htmlFor="lastVerifiedDate">Last Verified Date</label>
+              <input id="lastVerifiedDate" type="date" className="form-control" value={lastVerifiedDate} onChange={(e) => setLastVerifiedDate(e.target.value)} />
+            </div>
+          </div>
+
+          <h3 className="h6 mt-4">Optional Enrichment</h3>
+          <div className="row g-3 mb-3">
+            <div className="col-md-6"><input className="form-control" value={welcomeBonus} onChange={(e) => setWelcomeBonus(e.target.value)} placeholder="Welcome bonus" /></div>
+            <div className="col-md-6"><input className="form-control" value={travelBenefits} onChange={(e) => setTravelBenefits(e.target.value)} placeholder="Travel benefits" /></div>
+            <div className="col-md-6"><input className="form-control" value={fuelBenefits} onChange={(e) => setFuelBenefits(e.target.value)} placeholder="Fuel benefits" /></div>
+            <div className="col-md-6"><input className="form-control" value={shoppingBenefits} onChange={(e) => setShoppingBenefits(e.target.value)} placeholder="Shopping benefits" /></div>
+            <div className="col-md-6"><input className="form-control" value={renewalWaiver} onChange={(e) => setRenewalWaiver(e.target.value)} placeholder="Renewal waiver" /></div>
+            <div className="col-md-6"><input className="form-control" value={rewardCaps} onChange={(e) => setRewardCaps(e.target.value)} placeholder="Reward caps" /></div>
+            <div className="col-md-6"><input className="form-control" value={redemptionValue} onChange={(e) => setRedemptionValue(e.target.value)} placeholder="Redemption value" /></div>
+            <div className="col-md-6"><input className="form-control" value={creditLimitRange} onChange={(e) => setCreditLimitRange(e.target.value)} placeholder="Credit limit range" /></div>
+          </div>
+
+          {validation.errors.length > 0 && (
+            <div className="alert alert-danger small">
+              <div className="fw-semibold mb-1">Required fields missing:</div>
+              <ul className="mb-0">
+                {validation.errors.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {validation.warnings.length > 0 && (
+            <div className="alert alert-warning small">
+              <div className="fw-semibold mb-1">Optional suggestions:</div>
+              <ul className="mb-0">
+                {validation.warnings.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <div className="form-check mb-3">
             <input
               id="useScrapedImage"
@@ -224,6 +501,7 @@ export default function AdminScrapePage() {
             {result.ok ? (
               <>
                 <div className="fw-semibold mb-2">Card saved successfully.</div>
+                <div className="small mb-2">Write target: {result.writeTarget === 'cloud' ? 'Cloud (Supabase)' : 'Local fallback'}</div>
                 {result.persisted === false && (
                   <div className="small mb-2">
                     Running in read-only environment (like Vercel runtime). Scrape succeeded, but files were not persisted.
@@ -286,6 +564,63 @@ export default function AdminScrapePage() {
       </div>
     </>
   );
+}
+
+function validateCategoryMapping(params: {
+  benefitTags: string;
+  primaryCardType: string;
+  joiningFee: string;
+  annualFeeInput: string;
+  foreignMarkup: string;
+  minAge: string;
+  minIncome: string;
+  applicationUrl: string;
+  baseRewardRule: string;
+  redemptionOptions: string;
+  keyTerms: string;
+  publishStatus: string;
+  sourceType: string;
+  lastVerifiedDate: string;
+  hasImage: boolean;
+  optionalFields: Record<string, string>;
+}): ValidationState {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
+  if (!params.benefitTags.trim()) errors.push('Features & Benefits tags');
+  if (!params.primaryCardType.trim()) errors.push('Primary card type');
+  if (!params.joiningFee.trim()) errors.push('Joining fee');
+  if (!params.annualFeeInput.trim()) errors.push('Annual fee');
+  if (!params.foreignMarkup.trim()) errors.push('Foreign markup');
+  if (!params.minAge.trim()) errors.push('Minimum age');
+  if (!params.minIncome.trim()) errors.push('Minimum income or not-disclosed');
+  if (!params.applicationUrl.trim()) errors.push('Application URL');
+  if (!params.baseRewardRule.trim()) errors.push('Base reward rule');
+  if (!params.redemptionOptions.trim()) errors.push('Redemption options');
+  if (!params.keyTerms.trim()) errors.push('Key terms & conditions');
+  if (!params.publishStatus.trim()) errors.push('Publish status');
+  if (!params.sourceType.trim()) errors.push('Source type');
+  if (!params.lastVerifiedDate.trim()) errors.push('Last verified date');
+  if (!params.hasImage) errors.push('Card image (upload or scraped)');
+
+  const optionalLabels: Record<string, string> = {
+    welcomeBonus: 'Welcome bonus',
+    travelBenefits: 'Travel benefits',
+    fuelBenefits: 'Fuel benefits',
+    shoppingBenefits: 'Shopping benefits',
+    renewalWaiver: 'Renewal waiver criteria',
+    rewardCaps: 'Reward caps/exclusions',
+    redemptionValue: 'Redemption value details',
+    creditLimitRange: 'Credit limit range',
+  };
+
+  Object.entries(optionalLabels).forEach(([key, label]) => {
+    if (!(params.optionalFields[key] || '').trim()) {
+      warnings.push(label);
+    }
+  });
+
+  return { errors, warnings };
 }
 
 function fileToDataUrl(file: File): Promise<string> {

@@ -19,6 +19,7 @@ type Body = {
   bankSlug?: string;
   cardSlug?: string;
   description?: string;
+  annualFeeOverride?: string;
   imageUrl?: string;
   uploadedImageData?: string;
   uploadedImageName?: string;
@@ -61,7 +62,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const extracted = extractCardDetails(html);
     const imageCandidates = extractImageCandidates(html, validatedUrl);
 
-    const annualFee = extracted.annualFee;
+    const annualFee = (body.annualFeeOverride || extracted.annualFee || '').trim() || undefined;
     const keyBenefits = extracted.keyBenefits;
     const description = (body.description || extracted.description || '').trim();
     const overrideImageUrl = (body.imageUrl || '').trim();
@@ -132,6 +133,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(200).json({
       ok: true,
       persisted: writeResult.persisted,
+      writeTarget: writeResult.target || 'local',
       warnings: writeResult.warnings,
       bankSlug,
       cardSlug,
