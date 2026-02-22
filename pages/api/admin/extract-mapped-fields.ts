@@ -103,38 +103,39 @@ function extractFromText(text: string, sourceUrl: string): ExtractedFields {
     return sourceUrl ? { applicationUrl: sourceUrl } : {};
   }
 
-  const lower = text.toLowerCase();
+  const normalized = normalizeOcrArtifacts(text);
+  const lower = normalized.toLowerCase();
 
   const tags = collectTags(lower);
 
   const annualFee =
-    matchRegex(text, /annual fee\s*[:\-]?\s*(₹\s?[\d,]+(?:\.\d+)?|lifetime free|nil|waived)/i) || '';
+    matchRegex(normalized, /(?:annual|renewal)\s*(?:fee|charges?)\s*[:\-]?\s*((?:₹|rs\.?|inr)?\s?[\d,]+(?:\.\d+)?|lifetime free|nil|waived)/i) || '';
   const joiningFee =
-    matchRegex(text, /joining fee\s*[:\-]?\s*(₹\s?[\d,]+(?:\.\d+)?|lifetime free|nil|waived)/i) || '';
+    matchRegex(normalized, /(?:joining|join)\s*(?:fee|charges?)\s*[:\-]?\s*((?:₹|rs\.?|inr)?\s?[\d,]+(?:\.\d+)?|lifetime free|nil|waived)/i) || '';
   const foreignMarkup =
-    matchRegex(text, /(foreign (?:currency )?markup(?: fee)?\s*[:\-]?\s*[\d.]+\s*%)/i) ||
-    matchRegex(text, /(\d+(?:\.\d+)?\s*%\s*foreign markup)/i) ||
+    matchRegex(normalized, /((?:foreign|fx)\s*(?:currency\s*)?(?:markup|mark up)(?:\s*fee)?\s*[:\-]?\s*[\d.]+\s*%)/i) ||
+    matchRegex(normalized, /(\d+(?:\.\d+)?\s*%\s*(?:foreign|fx)\s*(?:markup|mark up))/i) ||
     '';
 
   const minAge =
-    matchRegex(text, /(?:minimum age|min age|age)\s*[:\-]?\s*(\d{2})/i) ||
-    matchRegex(text, /(\d{2})\s*(?:years?)\s*(?:and above|minimum)/i) ||
+    matchRegex(normalized, /(?:minimum\s*age|min\s*age|age)\s*[:\-]?\s*(\d{2})/i) ||
+    matchRegex(normalized, /(\d{2})\s*(?:years?)\s*(?:and above|minimum|plus)/i) ||
     '';
 
   const minIncome =
-    matchRegex(text, /(?:minimum income|min income|income)\s*[:\-]?\s*(₹\s?[\d,.]+\s*(?:lakh|lakhs|per annum|p\.a\.)?)/i) ||
+    matchRegex(normalized, /(?:minimum\s*income|min\s*income|income)\s*[:\-]?\s*((?:₹|rs\.?|inr)?\s?[\d,.]+\s*(?:lakh|lakhs|per annum|p\.a\.|pa)?)/i) ||
     '';
 
   const baseRewardRule =
-    matchRegex(text, /(\d+\s*(?:reward points?|rp)\s*(?:for|per)\s*₹?\s*\d+)/i) ||
-    matchRegex(text, /(earn\s+[^.]{0,120}reward[^.]{0,120})/i) ||
+    matchRegex(normalized, /(\d+\s*(?:reward\s*points?|rp)\s*(?:for|per)\s*(?:₹|rs\.?|inr)?\s*\d+)/i) ||
+    matchRegex(normalized, /(earn\s+[^.]{0,140}reward[^.]{0,140})/i) ||
     '';
 
   const redemptionOptions = collectRedemptionOptions(lower);
 
   const keyTerms =
-    matchRegex(text, /(terms and conditions[^.]{0,180}\.)/i) ||
-    matchRegex(text, /(fees and charges[^.]{0,180}\.)/i) ||
+    matchRegex(normalized, /(terms and conditions[^.]{0,220}\.)/i) ||
+    matchRegex(normalized, /(fees and charges[^.]{0,220}\.)/i) ||
     '';
 
   return {
@@ -232,13 +233,65 @@ async function extractTextFromImage(dataUrl: string): Promise<string> {
   }
 
   const { createWorker } = await import('tesseract.js');
+  const variants = await buildOcrVariants(parsed.buffer);
   const worker = await createWorker('eng');
   try {
-    const result = await worker.recognize(parsed.buffer);
-    return normalizeWhitespace(result.data.text || '');
+    const passes: string[] = [];
+
+    await worker.setParameters({
+      preserve_interword_spaces: '1',
+      tessedit_pageseg_mode: 6 as any,
+    });
+
+    for (const variant of variants) {
+      const result = await worker.recognize(variant);
+      const normalizedText = normalizeWhitespace(result.data.text || '');
+      if (normalizedText) {
+        passes.push(normalizedText);
+      }
+    }
+
+    await worker.setParameters({
+      preserve_interword_spaces: '1',
+      tessedit_pageseg_mode: 11 as any,
+    });
+
+    for (const variant of variants) {
+      const result = await worker.recognize(variant);
+      const normalizedText = normalizeWhitespace(result.data.text || '');
+      if (normalizedText) {
+        passes.push(normalizedText);
+      }
+    }
+
+    const merged = Array.from(new Set(passes)).join(' ');
+    return normalizeWhitespace(merged);
   } finally {
     await worker.terminate();
   }
+}
+
+async function buildOcrVariants(input: Buffer): Promise<Buffer[]> {
+  const sharp = (await import('sharp')).default;
+
+  const base = await sharp(input)
+    .rotate()
+    .resize({ width: 2200, withoutEnlargement: true })
+    .toBuffer();
+
+  const grayscale = await sharp(base)
+    .grayscale()
+    .normalize()
+    .sharpen({ sigma: 1.1 })
+    .toBuffer();
+
+  const thresholded = await sharp(base)
+    .grayscale()
+    .normalize()
+    .threshold(170)
+    .toBuffer();
+
+  return [base, grayscale, thresholded];
 }
 
 function parseDataUrl(dataUrl: string): { buffer: Buffer } | null {
@@ -284,6 +337,15 @@ function stripTags(input: string): string {
 
 function normalizeWhitespace(value: string): string {
   return value.replace(/\s+/g, ' ').trim();
+}
+
+function normalizeOcrArtifacts(value: string): string {
+  return value
+    .replace(/[|]/g, 'I')
+    .replace(/\bO(?=\d)|(?<=\d)O\b/g, '0')
+    .replace(/\bS(?=\d)|(?<=\d)S\b/g, '5')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function matchRegex(input: string, regex: RegExp): string {
