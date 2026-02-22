@@ -101,6 +101,8 @@ export default function AdminScrapePage() {
   const [status, setStatus] = useState<AdminStatus | null>(null);
   const [validation, setValidation] = useState<ValidationState>({ errors: [], warnings: [] });
   const [autoFillMessage, setAutoFillMessage] = useState('');
+  const [showMappedEditor, setShowMappedEditor] = useState(false);
+  const [extractMissingRequired, setExtractMissingRequired] = useState<string[]>([]);
 
   const bankSlug = useMemo(() => toSlug(bankName || cardName), [bankName, cardName]);
   const cardSlug = useMemo(() => toSlug(cardName), [cardName]);
@@ -127,6 +129,11 @@ export default function AdminScrapePage() {
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setResult(null);
+
+    if (!showMappedEditor) {
+      setResult({ ok: false, error: 'Run extract first. Then review/edit mapped fields before saving.' });
+      return;
+    }
 
     const resolvedBank = (coBrandedMode ? cardName : bankName).trim();
     const resolvedCard = cardName.trim();
@@ -245,11 +252,14 @@ export default function AdminScrapePage() {
     setAutoFillMessage('');
     setResult(null);
     setValidation({ errors: [], warnings: [] });
+    setExtractMissingRequired([]);
 
     if (!sourceUrl.trim() && !uploadedImage) {
       setAutoFillMessage('Provide source URL or upload image for extraction.');
       return;
     }
+
+    setShowMappedEditor(true);
 
     setExtracting(true);
     try {
@@ -266,7 +276,7 @@ export default function AdminScrapePage() {
 
       const payload = (await response.json()) as AutoFillResponse;
       if (!payload.ok || !payload.mappedFields) {
-        setAutoFillMessage(payload.error || 'Unable to auto-fill fields.');
+        setAutoFillMessage((payload.error || 'Unable to auto-fill fields.') + ' You can fill mapped fields manually below.');
         return;
       }
 
@@ -283,11 +293,12 @@ export default function AdminScrapePage() {
       setKeyTerms(payload.mappedFields.keyTerms || keyTerms);
 
       const used = payload.usedSources || { url: false, image: false };
+      setExtractMissingRequired(payload.missingRequired || []);
       setAutoFillMessage(
         `Mapped fields auto-filled. Source used: ${used.url ? 'URL' : ''}${used.url && used.image ? ' + ' : ''}${used.image ? 'Image OCR' : ''}${!used.url && !used.image ? 'None' : ''}.`
       );
     } catch {
-      setAutoFillMessage('Auto-fill failed due to network/server issue.');
+      setAutoFillMessage('Auto-fill failed due to network/server issue. You can fill mapped fields manually below.');
     } finally {
       setExtracting(false);
     }
@@ -304,129 +315,203 @@ export default function AdminScrapePage() {
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
           crossOrigin="anonymous"
         />
+        <style jsx global>{`
+          body {
+            background: linear-gradient(180deg, #f3f7ff 0%, #eef7f2 100%);
+          }
+          .admin-shell {
+            max-width: 980px;
+          }
+          .admin-title {
+            font-weight: 800;
+            letter-spacing: -0.02em;
+          }
+          .admin-card {
+            border: 1px solid #e8eef8;
+            border-radius: 18px;
+            box-shadow: 0 14px 40px rgba(17, 24, 39, 0.08);
+            background: #fff;
+          }
+          .section-title {
+            font-weight: 700;
+            font-size: 1rem;
+          }
+          .step-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid #dbe7ff;
+            background: #eef4ff;
+            color: #1e40af;
+            border-radius: 999px;
+            padding: 0.25rem 0.7rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+          }
+          .muted-note {
+            color: #6b7280;
+            font-size: 0.92rem;
+          }
+          .panel-soft {
+            border: 1px dashed #d6dee9;
+            border-radius: 12px;
+            padding: 0.9rem;
+            background: #fafcff;
+          }
+        `}</style>
       </Head>
 
-      <div className="container py-5" style={{ maxWidth: 760 }}>
-        <div className="mb-4">
-          <h1 className="h3 mb-2">Add & Scrape Card</h1>
-          <p className="text-muted mb-0">
-            Add bank name, card name, and source URL. Missing bank/card entries are created automatically.
-          </p>
-          {status && (
-            <div className={`mt-2 badge ${status.mode === 'cloud' ? 'text-bg-success' : 'text-bg-warning'}`}>
-              {status.mode === 'cloud' ? 'Cloud Connected' : 'Local Fallback'}
-            </div>
-          )}
-          {status && <div className="small text-muted mt-1">{status.message}</div>}
+      <div className="container py-5 admin-shell">
+        <div className="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+          <div>
+            <h1 className="admin-title h2 mb-2">Card Data Studio</h1>
+            <p className="muted-note mb-0">Step 1: provide URL/image and extract. Step 2: review mapped fields and save.</p>
+          </div>
+          <div className="text-end">
+            {status && (
+              <div className={`badge ${status.mode === 'cloud' ? 'text-bg-success' : 'text-bg-warning'}`}>
+                {status.mode === 'cloud' ? 'Cloud Connected' : 'Local Fallback'}
+              </div>
+            )}
+            {status && <div className="small text-muted mt-1" style={{ maxWidth: 340 }}>{status.message}</div>}
+          </div>
         </div>
 
-        <form className="card border-0 shadow-sm" onSubmit={handleSubmit}>
-          <div className="card-body p-4">
-          <div className="form-check mb-3">
-            <input
-              id="coBrandedMode"
-              className="form-check-input"
-              type="checkbox"
-              checked={coBrandedMode}
-              onChange={(e) => setCoBrandedMode(e.target.checked)}
-            />
-            <label className="form-check-label" htmlFor="coBrandedMode">
-              Co-branded/single-card brand (use card name as bank name)
-            </label>
+        <form onSubmit={handleSubmit}>
+          <div className="admin-card p-4 p-md-5 mb-4">
+            <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+              <div className="step-chip">Step 1 · Source Input</div>
+              <div className="small text-muted">Bank slug: <strong>{bankSlug || '-'}</strong> · Card slug: <strong>{cardSlug || '-'}</strong></div>
+            </div>
+
+            <div className="form-check mb-3">
+              <input
+                id="coBrandedMode"
+                className="form-check-input"
+                type="checkbox"
+                checked={coBrandedMode}
+                onChange={(e) => setCoBrandedMode(e.target.checked)}
+              />
+              <label className="form-check-label" htmlFor="coBrandedMode">
+                Co-branded/single-card brand (use card name as bank name)
+              </label>
+            </div>
+
+            <div className="row g-3">
+              <div className="col-md-6">
+                <label className="form-label" htmlFor="bankName">Bank Name</label>
+                <input
+                  id="bankName"
+                  className="form-control"
+                  value={coBrandedMode ? cardName : bankName}
+                  onChange={(e) => setBankName(e.target.value)}
+                  disabled={coBrandedMode}
+                  placeholder="e.g. HDFC Bank"
+                  required={!coBrandedMode}
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label" htmlFor="cardName">Card Name</label>
+                <input
+                  id="cardName"
+                  className="form-control"
+                  value={cardName}
+                  onChange={(e) => setCardName(e.target.value)}
+                  placeholder="e.g. Millennia Credit Card"
+                  required
+                />
+              </div>
+              <div className="col-12">
+                <label className="form-label" htmlFor="sourceUrl">Source URL</label>
+                <input
+                  id="sourceUrl"
+                  type="url"
+                  className="form-control"
+                  value={sourceUrl}
+                  onChange={(e) => setSourceUrl(e.target.value)}
+                  placeholder="https://www.example.com/card-details"
+                  required
+                />
+              </div>
+              <div className="col-12">
+                <label className="form-label" htmlFor="uploadedImage">Upload Image (optional fallback)</label>
+                <input
+                  id="uploadedImage"
+                  type="file"
+                  accept="image/*"
+                  className="form-control"
+                  onChange={(e) => setUploadedImage(e.target.files?.[0] || null)}
+                />
+              </div>
+              <div className="col-12">
+                <label className="form-label" htmlFor="description">Description (optional override)</label>
+                <textarea
+                  id="description"
+                  className="form-control"
+                  rows={3}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Optional custom description"
+                />
+              </div>
+            </div>
+
+            <div className="d-flex flex-wrap gap-2 mt-4">
+              <button type="button" className="btn btn-primary" disabled={extracting} onClick={handleAutoFillMappedFields}>
+                {extracting ? 'Extracting...' : 'Extract & Continue (URL → Image)'}
+              </button>
+              <div className="form-check align-self-center ms-1">
+                <input
+                  id="useScrapedImage"
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={useScrapedImage}
+                  onChange={(e) => setUseScrapedImage(e.target.checked)}
+                />
+                <label className="form-check-label" htmlFor="useScrapedImage">Auto-pick image from scraped page</label>
+              </div>
+            </div>
+
+            {autoFillMessage && <div className="panel-soft small mt-3">{autoFillMessage}</div>}
           </div>
 
-          <div className="mb-3">
-            <label className="form-label" htmlFor="bankName">
-              Bank Name
-            </label>
-            <input
-              id="bankName"
-              className="form-control"
-              value={coBrandedMode ? cardName : bankName}
-              onChange={(e) => setBankName(e.target.value)}
-              disabled={coBrandedMode}
-              placeholder="e.g. HDFC Bank"
-              required={!coBrandedMode}
-            />
-          </div>
+          {showMappedEditor && (
+            <div className="admin-card p-4 p-md-5 mb-4">
+              <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <div className="step-chip">Step 2 · Review Mapped Fields</div>
+                <div className="small text-muted">Tweaks here are applied before save</div>
+              </div>
 
-          <div className="mb-3">
-            <label className="form-label" htmlFor="cardName">
-              Card Name
-            </label>
-            <input
-              id="cardName"
-              className="form-control"
-              value={cardName}
-              onChange={(e) => setCardName(e.target.value)}
-              placeholder="e.g. Millennia Credit Card"
-              required
-            />
-          </div>
+              {extractMissingRequired.length > 0 && (
+                <div className="alert alert-warning small">
+                  Could not auto-extract some required fields: {extractMissingRequired.join(', ')}. Fill them manually below.
+                </div>
+              )}
 
-          <div className="mb-3">
-            <label className="form-label" htmlFor="sourceUrl">
-              Source URL
-            </label>
-            <input
-              id="sourceUrl"
-              type="url"
-              className="form-control"
-              value={sourceUrl}
-              onChange={(e) => setSourceUrl(e.target.value)}
-              placeholder="https://www.example.com/card-details"
-              required
-            />
-          </div>
+              <h2 className="section-title mb-3">Mapped Fields (Required)</h2>
 
-          <div className="mb-3">
-            <label className="form-label" htmlFor="description">
-              Description (optional override)
-            </label>
-            <textarea
-              id="description"
-              className="form-control"
-              rows={3}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Optional custom description"
-            />
-          </div>
+              <div className="mb-3">
+                <label className="form-label" htmlFor="benefitTags">Features & Benefits Tags</label>
+                <input id="benefitTags" className="form-control" value={benefitTags} onChange={(e) => setBenefitTags(e.target.value)} placeholder="e.g. Rewards, Cashback, Travel" />
+              </div>
 
-          <hr className="my-4" />
-          <h2 className="h6">Mapped Fields (Required)</h2>
-
-          <div className="mb-3">
-            <label className="form-label" htmlFor="benefitTags">Features & Benefits Tags</label>
-            <input
-              id="benefitTags"
-              className="form-control"
-              value={benefitTags}
-              onChange={(e) => setBenefitTags(e.target.value)}
-              placeholder="e.g. Rewards, Cashback, Travel"
-            />
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label" htmlFor="primaryCardType">Primary Card Type</label>
-            <select
-              id="primaryCardType"
-              className="form-select"
-              value={primaryCardType}
-              onChange={(e) => setPrimaryCardType(e.target.value)}
-            >
-              <option value="">Select card type</option>
-              <option value="lifestyle">Lifestyle</option>
-              <option value="travel">Travel</option>
-              <option value="fuel">Fuel</option>
-              <option value="cashback">Cashback</option>
-              <option value="shopping">Shopping</option>
-              <option value="premium">Premium</option>
-              <option value="co-branded">Co-branded</option>
-              <option value="secured">Secured</option>
-              <option value="business">Business</option>
-            </select>
-          </div>
+              <div className="mb-3">
+                <label className="form-label" htmlFor="primaryCardType">Primary Card Type</label>
+                <select id="primaryCardType" className="form-select" value={primaryCardType} onChange={(e) => setPrimaryCardType(e.target.value)}>
+                  <option value="">Select card type</option>
+                  <option value="lifestyle">Lifestyle</option>
+                  <option value="travel">Travel</option>
+                  <option value="fuel">Fuel</option>
+                  <option value="cashback">Cashback</option>
+                  <option value="shopping">Shopping</option>
+                  <option value="premium">Premium</option>
+                  <option value="co-branded">Co-branded</option>
+                  <option value="secured">Secured</option>
+                  <option value="business">Business</option>
+                </select>
+              </div>
 
           <div className="row g-3 mb-3">
             <div className="col-md-4">
@@ -497,8 +582,8 @@ export default function AdminScrapePage() {
             </div>
           </div>
 
-          <h3 className="h6 mt-4">Optional Enrichment</h3>
-          <div className="row g-3 mb-3">
+              <h3 className="h6 mt-4">Optional Enrichment</h3>
+              <div className="row g-3 mb-3">
             <div className="col-md-6"><input className="form-control" value={welcomeBonus} onChange={(e) => setWelcomeBonus(e.target.value)} placeholder="Welcome bonus" /></div>
             <div className="col-md-6"><input className="form-control" value={travelBenefits} onChange={(e) => setTravelBenefits(e.target.value)} placeholder="Travel benefits" /></div>
             <div className="col-md-6"><input className="form-control" value={fuelBenefits} onChange={(e) => setFuelBenefits(e.target.value)} placeholder="Fuel benefits" /></div>
@@ -507,77 +592,41 @@ export default function AdminScrapePage() {
             <div className="col-md-6"><input className="form-control" value={rewardCaps} onChange={(e) => setRewardCaps(e.target.value)} placeholder="Reward caps" /></div>
             <div className="col-md-6"><input className="form-control" value={redemptionValue} onChange={(e) => setRedemptionValue(e.target.value)} placeholder="Redemption value" /></div>
             <div className="col-md-6"><input className="form-control" value={creditLimitRange} onChange={(e) => setCreditLimitRange(e.target.value)} placeholder="Credit limit range" /></div>
-          </div>
+              </div>
 
-          {validation.errors.length > 0 && (
-            <div className="alert alert-danger small">
-              <div className="fw-semibold mb-1">Required fields missing:</div>
-              <ul className="mb-0">
-                {validation.errors.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
+              {validation.errors.length > 0 && (
+                <div className="alert alert-danger small">
+                  <div className="fw-semibold mb-1">Required fields missing:</div>
+                  <ul className="mb-0">
+                    {validation.errors.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {validation.warnings.length > 0 && (
+                <div className="alert alert-warning small">
+                  <div className="fw-semibold mb-1">Optional suggestions:</div>
+                  <ul className="mb-0">
+                    {validation.warnings.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <button type="submit" className="btn btn-success" disabled={loading}>
+                {loading ? 'Saving...' : 'Save Card'}
+              </button>
             </div>
           )}
 
-          {validation.warnings.length > 0 && (
-            <div className="alert alert-warning small">
-              <div className="fw-semibold mb-1">Optional suggestions:</div>
-              <ul className="mb-0">
-                {validation.warnings.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
+          {!showMappedEditor && (
+            <div className="admin-card p-4 mb-4">
+              <div className="muted-note">Mapped fields stay hidden until you click <strong>Extract & Continue</strong>.</div>
             </div>
           )}
-
-          <div className="form-check mb-3">
-            <input
-              id="useScrapedImage"
-              className="form-check-input"
-              type="checkbox"
-              checked={useScrapedImage}
-              onChange={(e) => setUseScrapedImage(e.target.checked)}
-            />
-            <label className="form-check-label" htmlFor="useScrapedImage">
-              Auto-pick image from scraped page
-            </label>
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label" htmlFor="uploadedImage">
-              Upload Image (optional)
-            </label>
-            <input
-              id="uploadedImage"
-              type="file"
-              accept="image/*"
-              className="form-control"
-              onChange={(e) => setUploadedImage(e.target.files?.[0] || null)}
-            />
-            <div className="form-text">If provided, uploaded image will be used for this card.</div>
-          </div>
-
-          <div className="mb-3">
-            <button type="button" className="btn btn-outline-primary" disabled={extracting} onClick={handleAutoFillMappedFields}>
-              {extracting ? 'Auto Filling...' : 'Auto Fill Mapped Fields (URL → Image)'}
-            </button>
-            {autoFillMessage && <div className="small mt-2 text-muted">{autoFillMessage}</div>}
-          </div>
-
-          <div className="row g-2 mb-4 text-muted small">
-            <div className="col-md-6">
-              <strong>Bank Slug:</strong> {bankSlug || '-'}
-            </div>
-            <div className="col-md-6">
-              <strong>Card Slug:</strong> {cardSlug || '-'}
-            </div>
-          </div>
-
-            <button type="submit" className="btn btn-primary" disabled={loading}>
-              {loading ? 'Scraping...' : 'Scrape and Save'}
-            </button>
-          </div>
         </form>
 
         {result && (
