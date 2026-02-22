@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Bank credit card listing" />
+  <title>Bank Credit Cards | CreditCardMarket</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+  <style>
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#f8fbff;color:#1f2937}
+    .navbar-custom{background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+    .brand-logo{font-weight:800;color:#0d6efd!important}
+    .hero{background:linear-gradient(180deg,#0d6efd,#0a58ca);color:#fff;padding:4.5rem 0 3rem}
+    .card-link{border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,.06);transition:.2s}
+    .card-link:hover{transform:translateY(-4px);box-shadow:0 14px 26px rgba(2,6,23,.1)}
+    .footer-note{border-top:1px solid #e5e7eb;color:#6b7280;font-size:.95rem;padding:1rem 0 1.5rem;margin-top:2rem}
+  </style>
+</head>
+<body>
+<header>
+  <nav class="navbar navbar-expand-lg navbar-light navbar-custom fixed-top">
+    <div class="container">
+      <a class="navbar-brand brand-logo" href="index.html">CreditCardMarket</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"><span class="navbar-toggler-icon"></span></button>
+      <div class="collapse navbar-collapse" id="mainNav">
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
+          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="index.html#banks">Banks</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Categories</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Offers</a></li>
+          <li class="nav-item ms-lg-2 mt-2 mt-lg-0"><a class="btn btn-outline-primary" href="#">Login</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+</header>
+<main>
+  <div style="height:72px"></div>
+  <section class="hero text-center"><div class="container"><h1 id="bankTitle" class="display-5 fw-bold">Credit Cards</h1><p id="bankDesc" class="mb-0">Browse cards.</p></div></section>
+  <section class="py-5"><div class="container"><div id="cardsGrid" class="row g-4"></div></div></section>
+</main>
+<footer><div class="container text-center"><p class="footer-note mb-0">© 2026 CreditCardMarket. All rights reserved.</p></div></footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script src="data/marketplace-data.js"></script>
+<script>
+  const params = new URLSearchParams(window.location.search)
+  const bankSlug = params.get('bank') || 'hdfc'
+  const bank = (window.marketplaceData?.banks || []).find((entry) => entry.slug === bankSlug)
+
+  const titleEl = document.getElementById('bankTitle')
+  const descEl = document.getElementById('bankDesc')
+  const gridEl = document.getElementById('cardsGrid')
+
+  if (!bank) {
+    titleEl.textContent = 'Bank Not Found'
+    descEl.textContent = 'Please go back to Home and select a valid bank.'
+  } else {
+    document.title = `${bank.name} – Compare & Apply`
+    titleEl.textContent = bank.name
+    descEl.textContent = bank.description
+    gridEl.innerHTML = bank.cards.map((card) => `
+      <div class="col-12 col-md-6 col-lg-4">
+        <article class="card card-link h-100">
+          <img src="https://via.placeholder.com/600x220/0d6efd/ffffff?text=${encodeURIComponent(card.name)}" class="card-img-top" alt="${card.name}">
+          <div class="card-body d-flex flex-column">
+            <h2 class="h5 fw-bold">${card.name}</h2>
+            <p class="text-muted small flex-grow-1">${card.description}</p>
+            <a href="card.html?bank=${bank.slug}&card=${card.slug}" class="btn btn-primary mt-auto">View Details</a>
+          </div>
+        </article>
+      </div>
+    `).join('')
+  }
+</script>
+</body>
+</html>
