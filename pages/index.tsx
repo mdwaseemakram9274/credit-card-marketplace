@@ -101,6 +101,48 @@ export default function HomePage() {
           font-weight: 600;
         }
 
+        .icon-tile {
+          background: #fff;
+          border: 1px solid #e9ecef;
+          border-radius: 12px;
+          padding: 1.25rem 1rem;
+          text-align: center;
+          transition: all 0.2s ease;
+          height: 100%;
+        }
+
+        .icon-tile:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .icon-tile i {
+          color: var(--primary);
+          font-size: 1.5rem;
+          margin-bottom: 0.65rem;
+        }
+
+        .why-card {
+          background: #fff;
+          border-radius: 12px;
+          border: 1px solid #e9ecef;
+          padding: 1.5rem;
+          height: 100%;
+        }
+
+        .why-icon {
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background: var(--primary-light);
+          color: var(--primary-dark);
+          font-size: 1.1rem;
+          margin-bottom: 0.9rem;
+        }
+
         @media (max-width: 991px) {
           .hero {
             padding: 7rem 1rem 9rem;
@@ -304,6 +346,113 @@ export default function HomePage() {
                     </a>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-5">
+        <div className="container">
+          <h2 className="text-center fw-bold mb-4">Browse By Categories</h2>
+          <p className="text-center text-muted mb-5">
+            Pick the card type that matches your lifestyle and spending habits.
+          </p>
+
+          <div className="row g-3 g-md-4">
+            <div className="col-6 col-md-4 col-lg-2">
+              <div className="icon-tile">
+                <i className="fa-solid fa-gift"></i>
+                <div className="fw-semibold">Rewards</div>
+              </div>
+            </div>
+            <div className="col-6 col-md-4 col-lg-2">
+              <div className="icon-tile">
+                <i className="fa-solid fa-money-bill-wave"></i>
+                <div className="fw-semibold">Cashback</div>
+              </div>
+            </div>
+            <div className="col-6 col-md-4 col-lg-2">
+              <div className="icon-tile">
+                <i className="fa-solid fa-plane-departure"></i>
+                <div className="fw-semibold">Travel</div>
+              </div>
+            </div>
+            <div className="col-6 col-md-4 col-lg-2">
+              <div className="icon-tile">
+                <i className="fa-solid fa-gas-pump"></i>
+                <div className="fw-semibold">Fuel</div>
+              </div>
+            </div>
+            <div className="col-6 col-md-4 col-lg-2">
+              <div className="icon-tile">
+                <i className="fa-solid fa-cart-shopping"></i>
+                <div className="fw-semibold">Shopping</div>
+              </div>
+            </div>
+            <div className="col-6 col-md-4 col-lg-2">
+              <div className="icon-tile">
+                <i className="fa-solid fa-building-columns"></i>
+                <div className="fw-semibold">Premium</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-5 bg-white">
+        <div className="container">
+          <h2 className="text-center fw-bold mb-4">Why Choose Us</h2>
+          <p className="text-center text-muted mb-5">
+            Everything you need to find the right credit card, faster.
+          </p>
+
+          <div className="row g-4">
+            <div className="col-md-6 col-lg-3">
+              <div className="why-card text-center">
+                <div className="why-icon">
+                  <i className="fa-solid fa-filter-circle-dollar"></i>
+                </div>
+                <h5 className="fw-bold">Smart Comparison</h5>
+                <p className="text-muted small mb-0">
+                  Compare fees, rewards, cashback and eligibility in one place.
+                </p>
+              </div>
+            </div>
+
+            <div className="col-md-6 col-lg-3">
+              <div className="why-card text-center">
+                <div className="why-icon">
+                  <i className="fa-solid fa-bolt"></i>
+                </div>
+                <h5 className="fw-bold">Fast Application</h5>
+                <p className="text-muted small mb-0">
+                  Simple forms and quick redirects to trusted bank partners.
+                </p>
+              </div>
+            </div>
+
+            <div className="col-md-6 col-lg-3">
+              <div className="why-card text-center">
+                <div className="why-icon">
+                  <i className="fa-solid fa-user-shield"></i>
+                </div>
+                <h5 className="fw-bold">Secure & Private</h5>
+                <p className="text-muted small mb-0">
+                  Your personal details stay protected with secure workflows.
+                </p>
+              </div>
+            </div>
+
+            <div className="col-md-6 col-lg-3">
+              <div className="why-card text-center">
+                <div className="why-icon">
+                  <i className="fa-solid fa-headset"></i>
+                </div>
+                <h5 className="fw-bold">Expert Support</h5>
+                <p className="text-muted small mb-0">
+                  Guidance from card experts to choose the best fit for you.
+                </p>
               </div>
             </div>
           </div>
