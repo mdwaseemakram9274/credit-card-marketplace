@@ -24,7 +24,14 @@
       <div class="collapse navbar-collapse" id="mainNav">
         <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
           <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="index.html#banks">Banks</a></li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Banks</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="/bank.html?bank=hdfc">HDFC</a></li>
+              <li><a class="dropdown-item" href="/bank.html?bank=sbi">SBI</a></li>
+              <li><a class="dropdown-item" href="/bank.html?bank=bankn">Bank n</a></li>
+            </ul>
+          </li>
           <li class="nav-item"><a class="nav-link" href="#">Categories</a></li>
           <li class="nav-item"><a class="nav-link" href="#">Offers</a></li>
           <li class="nav-item ms-lg-2 mt-2 mt-lg-0"><a class="btn btn-outline-primary" href="#">Login</a></li>

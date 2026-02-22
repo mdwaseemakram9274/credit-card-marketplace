@@ -211,10 +211,33 @@ export default function HomePage() {
                     How It Works
                   </a>
                 </li>
-                <li className="nav-item">
-                  <a className="nav-link" href="#banks">
+                <li className="nav-item dropdown">
+                  <a
+                    className="nav-link dropdown-toggle"
+                    href="#"
+                    role="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
                     Banks
                   </a>
+                  <ul className="dropdown-menu">
+                    <li>
+                      <a className="dropdown-item" href="/bank.html?bank=hdfc">
+                        HDFC
+                      </a>
+                    </li>
+                    <li>
+                      <a className="dropdown-item" href="/bank.html?bank=sbi">
+                        SBI
+                      </a>
+                    </li>
+                    <li>
+                      <a className="dropdown-item" href="/bank.html?bank=bankn">
+                        Bank n
+                      </a>
+                    </li>
+                  </ul>
                 </li>
                 <li className="nav-item">
                   <a className="nav-link" href="#">
