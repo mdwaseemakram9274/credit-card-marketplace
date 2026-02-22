@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "npm run tw:build && next dev",
     "build": "npm run tw:build && next build",
-    "tw:build": "tailwindcss -i ./styles/tailwind.input.css -o ./styles/tailwind.css --content \"./pages/**/*.{js,ts,jsx,tsx}\" \"./components/**/*.{js,ts,jsx,tsx}\" --minify",
+    "tw:build": "tailwindcss -c ./tailwind.config.js -i ./styles/tailwind.input.css -o ./styles/tailwind.css --minify",
     "start": "next start"
   },
   "repository": {
