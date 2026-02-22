@@ -435,6 +435,7 @@
                       <div class="img-preview-wrap" id="imagePreviewWrap">
                         <img src="https://via.placeholder.com/120x70?text=Preview" alt="Preview" class="thumb-preview" id="imagePreview" />
                         <span>Image preview</span>
+                        <button type="button" id="removeImageBtn" class="btn btn-sm btn-outline-secondary">Remove Image</button>
                       </div>
                     </div>
 
@@ -687,6 +688,7 @@
     const cardsTableSection = document.getElementById('cardsTableSection');
     const imageFileInput = document.getElementById('cardImageFile');
     const imagePreview = document.getElementById('imagePreview');
+    const removeImageBtn = document.getElementById('removeImageBtn');
     const resetFormBtn = document.getElementById('resetFormBtn');
     const editingCardIdInput = document.getElementById('editingCardId');
     const bankSelect = document.getElementById('bank');
@@ -716,6 +718,7 @@
       form.addEventListener('submit', handleFormSubmit);
       resetFormBtn.addEventListener('click', resetForm);
       imageFileInput.addEventListener('change', handleImageFilePreview);
+      removeImageBtn.addEventListener('click', clearImageSelection);
       bankSelect.addEventListener('change', handleBankSelectionChange);
       filterBank.addEventListener('change', renderTable);
       filterJoiningFee.addEventListener('change', renderTable);
@@ -1173,6 +1176,15 @@
 
     function updateImagePreview(source) {
       imagePreview.src = source || 'https://via.placeholder.com/120x70?text=Preview';
+    }
+
+    function clearImageSelection() {
+      currentImageData = '';
+      if (imageFileInput) {
+        imageFileInput.value = '';
+      }
+      updateImagePreview('');
+      showAlert('Image removed.', 'info');
     }
 
     async function resolveCardImageValue() {
