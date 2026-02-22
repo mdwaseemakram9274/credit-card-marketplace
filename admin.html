@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Credit Card Admin Panel</title>
+
+  <!-- Bootstrap 5.3 CDN -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+    crossorigin="anonymous"
+  />
+
+  <!-- Font Awesome 6 CDN -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
+
+  <style>
+    :root {
+      --primary: #0d6efd;
+      --sidebar-dark: #212529;
+      --success: #198754;
+      --danger: #dc3545;
+      --main-bg: #f8f9fa;
+      --card-shadow: 0 10px 30px rgba(2, 6, 23, 0.08);
+      --card-shadow-hover: 0 14px 35px rgba(2, 6, 23, 0.12);
+      --radius-xl: 16px;
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      background: var(--main-bg);
+      font-family: Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #1f2937;
+    }
+
+    /* --------------------
+       APP LAYOUT
+       -------------------- */
+    .app-shell {
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* Desktop fixed sidebar */
+    .sidebar {
+      width: 260px;
+      min-width: 260px;
+      background: linear-gradient(180deg, #0d6efd 0%, #0b5ed7 40%, #212529 100%);
+      color: #fff;
+      position: fixed;
+      inset: 0 auto 0 0;
+      z-index: 1030;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      box-shadow: 5px 0 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .sidebar-brand {
+      font-weight: 800;
+      font-size: 1.2rem;
+      letter-spacing: -0.01em;
+      padding: 0.75rem 0.8rem;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      margin-bottom: 1rem;
+    }
+
+    .sidebar .nav-link {
+      color: rgba(255, 255, 255, 0.92);
+      border-radius: 10px;
+      margin-bottom: 0.25rem;
+      padding: 0.65rem 0.8rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .sidebar .nav-link:hover,
+    .sidebar .nav-link.active {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.16);
+      transform: translateX(2px);
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 0.8rem;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      font-size: 0.9rem;
+    }
+
+    /* Main area offset for desktop sidebar */
+    .main-content {
+      margin-left: 260px;
+      width: calc(100% - 260px);
+      min-height: 100vh;
+      padding: 1.2rem 1.4rem 2rem;
+    }
+
+    /* Top header */
+    .topbar {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: var(--radius-xl);
+      padding: 0.9rem 1rem;
+      box-shadow: var(--card-shadow);
+      position: sticky;
+      top: 12px;
+      z-index: 1020;
+    }
+
+    .search-wrap {
+      position: relative;
+    }
+
+    .search-wrap .fa-magnifying-glass {
+      position: absolute;
+      top: 50%;
+      left: 0.8rem;
+      transform: translateY(-50%);
+      color: #9ca3af;
+    }
+
+    .search-wrap input {
+      padding-left: 2.2rem;
+      border-radius: 12px;
+      border: 1px solid #d1d5db;
+    }
+
+    .icon-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      border: 1px solid #d1d5db;
+      background: #fff;
+      color: #374151;
+      transition: all 0.2s ease;
+    }
+
+    .icon-btn:hover {
+      background: #f3f4f6;
+      transform: translateY(-1px);
+    }
+
+    /* Cards/containers */
+    .panel-card {
+      border: 1px solid #e5e7eb;
+      border-radius: var(--radius-xl);
+      background: #fff;
+      box-shadow: var(--card-shadow);
+      transition: all 0.2s ease;
+    }
+
+    .panel-card:hover {
+      box-shadow: var(--card-shadow-hover);
+    }
+
+    .stat-card {
+      padding: 1rem;
+      border-radius: 14px;
+      border: 1px solid #e5e7eb;
+      background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+      box-shadow: 0 7px 20px rgba(2, 6, 23, 0.05);
+      height: 100%;
+    }
+
+    .stat-title {
+      color: #6b7280;
+      font-size: 0.9rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .stat-value {
+      font-size: 1.65rem;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .section-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 0;
+    }
+
+    .required-mark {
+      color: var(--danger);
+      font-weight: 600;
+    }
+
+    .thumb-preview {
+      width: 58px;
+      height: 36px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      background: #f3f4f6;
+    }
+
+    .img-preview-wrap {
+      margin-top: 0.5rem;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      color: #6b7280;
+      font-size: 0.9rem;
+    }
+
+    .table thead th {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      color: #4b5563;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .table td,
+    .table th {
+      vertical-align: middle;
+    }
+
+    .action-btn {
+      border-radius: 10px;
+      padding: 0.38rem 0.6rem;
+    }
+
+    /* Mobile behavior */
+    @media (max-width: 991.98px) {
+      .sidebar {
+        display: none;
+      }
+
+      .main-content {
+        margin-left: 0;
+        width: 100%;
+        padding: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- =========================
+       DESKTOP SIDEBAR
+       ========================= -->
+  <aside class="sidebar d-none d-lg-flex" aria-label="Admin sidebar">
+    <div class="sidebar-brand d-flex align-items-center gap-2">
+      <i class="fa-solid fa-credit-card"></i>
+      <span>Card Admin</span>
+    </div>
+
+    <nav class="nav flex-column mb-3">
+      <a class="nav-link active" href="#"><i class="fa-solid fa-table-columns me-2"></i>Dashboard</a>
+      <a class="nav-link" href="#cardFormSection"><i class="fa-solid fa-plus me-2"></i>Add / Edit Card</a>
+      <a class="nav-link" href="#cardsTableSection"><i class="fa-solid fa-list-check me-2"></i>Cards Overview</a>
+      <a class="nav-link" href="#"><i class="fa-solid fa-database me-2"></i>Data Sync</a>
+      <a class="nav-link" href="#"><i class="fa-solid fa-gear me-2"></i>Settings</a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="fw-semibold">Admin Workspace</div>
+      <small class="opacity-75">Credit Card CRM Panel</small>
+    </div>
+  </aside>
+
+  <!-- =========================
+       MOBILE OFFCANVAS SIDEBAR
+       ========================= -->
+  <div
+    class="offcanvas offcanvas-start text-bg-dark"
+    tabindex="-1"
+    id="mobileSidebar"
+    aria-labelledby="mobileSidebarLabel"
+  >
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="mobileSidebarLabel">
+        <i class="fa-solid fa-credit-card me-2"></i>Card Admin
+      </h5>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+      <nav class="nav flex-column">
+        <a class="nav-link text-white active" href="#">Dashboard</a>
+        <a class="nav-link text-white" href="#cardFormSection" data-bs-dismiss="offcanvas">Add / Edit Card</a>
+        <a class="nav-link text-white" href="#cardsTableSection" data-bs-dismiss="offcanvas">Cards Overview</a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- =========================
+       MAIN CONTENT AREA
+       ========================= -->
+  <div class="app-shell">
+    <main class="main-content">
+      <!-- Top header bar -->
+      <header class="topbar mb-4">
+        <div class="row align-items-center g-2">
+          <div class="col-12 col-lg-6 d-flex align-items-center gap-2">
+            <!-- Hamburger visible only on mobile/tablet -->
+            <button
+              class="btn btn-outline-secondary d-lg-none"
+              type="button"
+              data-bs-toggle="offcanvas"
+              data-bs-target="#mobileSidebar"
+              aria-controls="mobileSidebar"
+            >
+              <i class="fa-solid fa-bars"></i>
+            </button>
+
+            <div class="search-wrap flex-grow-1">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" class="form-control" placeholder="Search cards, banks, fees..." />
+            </div>
+          </div>
+
+          <div class="col-12 col-lg-6 d-flex justify-content-lg-end align-items-center gap-2">
+            <button class="icon-btn" type="button" aria-label="Notifications">
+              <i class="fa-regular fa-bell"></i>
+            </button>
+
+            <div class="dropdown">
+              <button
+                class="btn btn-primary dropdown-toggle"
+                type="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <i class="fa-regular fa-user me-1"></i> Admin (waseem)
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="#">Profile</a></li>
+                <li><a class="dropdown-item" href="#">Account Settings</a></li>
+                <li><hr class="dropdown-divider" /></li>
+                <li><a class="dropdown-item" href="#">Logout</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Alert container for success/error messages -->
+      <section class="mb-3" id="alertContainer" aria-live="polite" aria-atomic="true"></section>
+
+      <!-- Stats cards section -->
+      <section class="mb-4">
+        <div class="row g-3">
+          <div class="col-12 col-md-4">
+            <article class="stat-card">
+              <div class="d-flex align-items-center justify-content-between">
+                <div>
+                  <p class="stat-title">Total Cards</p>
+                  <p class="stat-value mb-0" id="statTotalCards">0</p>
+                </div>
+                <i class="fa-solid fa-layer-group fa-2x text-primary"></i>
+              </div>
+            </article>
+          </div>
+          <div class="col-12 col-md-4">
+            <article class="stat-card">
+              <div class="d-flex align-items-center justify-content-between">
+                <div>
+                  <p class="stat-title">Total Banks</p>
+                  <p class="stat-value mb-0" id="statTotalBanks">0</p>
+                </div>
+                <i class="fa-solid fa-building-columns fa-2x text-success"></i>
+              </div>
+            </article>
+          </div>
+          <div class="col-12 col-md-4">
+            <article class="stat-card">
+              <div class="d-flex align-items-center justify-content-between">
+                <div>
+                  <p class="stat-title">Pending Leads</p>
+                  <p class="stat-value mb-0" id="statPendingLeads">0</p>
+                </div>
+                <i class="fa-solid fa-user-clock fa-2x text-danger"></i>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================
+           ADD / EDIT FORM
+           ========================= -->
+      <section id="cardFormSection" class="panel-card p-3 p-md-4 mb-4">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+          <h2 class="section-title">
+            <i class="fa-solid fa-pen-to-square text-primary me-2"></i>Add / Edit Card
+          </h2>
+          <small class="text-muted">Fields inspired by Paisabazaar + Finology card detail layouts</small>
+        </div>
+
+        <form id="cardForm" novalidate>
+          <!-- Hidden field to track editing mode -->
+          <input type="hidden" id="editingCardId" />
+
+          <div class="accordion" id="cardFormAccordion">
+            <!-- Basic Information -->
+            <div class="accordion-item">
+              <h3 class="accordion-header" id="basicInfoHeading">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#basicInfoCollapse" aria-expanded="true" aria-controls="basicInfoCollapse">
+                  Basic Information
+                </button>
+              </h3>
+              <div id="basicInfoCollapse" class="accordion-collapse collapse show" aria-labelledby="basicInfoHeading" data-bs-parent="#cardFormAccordion">
+                <div class="accordion-body">
+                  <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                      <label for="bank" class="form-label">Bank <span class="required-mark">*</span></label>
+                      <select id="bank" class="form-select" required>
+                        <option value="">Select Bank</option>
+                        <option>HDFC</option>
+                        <option>SBI</option>
+                        <option>Axis</option>
+                        <option>ICICI</option>
+                        <option>Kotak</option>
+                        <option>IDFC</option>
+                        <option>RBL</option>
+                        <option>Yes Bank</option>
+                        <option>Others</option>
+                      </select>
+                      <div class="invalid-feedback">Please select a bank</div>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                      <label for="cardName" class="form-label">Card Name <span class="required-mark">*</span></label>
+                      <input id="cardName" type="text" class="form-control" required placeholder="e.g. SBI Cashback Credit Card" />
+                      <div class="invalid-feedback">Card name is required</div>
+                    </div>
+
+                    <div class="col-12 col-md-4">
+                      <label for="rating" class="form-label">Rating (1 to 5)</label>
+                      <input id="rating" type="number" step="0.1" min="0" max="5" class="form-control" placeholder="e.g. 4.8" />
+                    </div>
+
+                    <div class="col-12 col-md-4">
+                      <label for="network" class="form-label">Powered By / Network</label>
+                      <select id="network" class="form-select">
+                        <option value="">Select Network</option>
+                        <option>Visa</option>
+                        <option>Mastercard</option>
+                        <option>RuPay</option>
+                      </select>
+                    </div>
+
+                    <div class="col-12 col-md-4">
+                      <label for="cardType" class="form-label">Card Type</label>
+                      <select id="cardType" class="form-select">
+                        <option value="">Select Type</option>
+                        <option>Cashback</option>
+                        <option>Rewards</option>
+                        <option>Travel</option>
+                        <option>Premium</option>
+                        <option>Fuel</option>
+                        <option>Shopping</option>
+                      </select>
+                    </div>
+
+                    <div class="col-12">
+                      <label for="cardImageUrl" class="form-label">Card Image URL</label>
+                      <input id="cardImageUrl" type="url" class="form-control" placeholder="https://..." />
+                      <div class="img-preview-wrap" id="imagePreviewWrap">
+                        <img src="https://via.placeholder.com/120x70?text=Preview" alt="Preview" class="thumb-preview" id="imagePreview" />
+                        <span>Image preview</span>
+                      </div>
+                    </div>
+
+                    <div class="col-12">
+                      <label for="description" class="form-label">Description / Short Highlight</label>
+                      <textarea id="description" class="form-control textarea-limit" rows="3" maxlength="2000" placeholder="Short summary of card value"></textarea>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                      <label for="bestFor" class="form-label">Best For</label>
+                      <input id="bestFor" type="text" class="form-control" placeholder="e.g. Online shopping, everyday spends" />
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                      <label for="reviewSummary" class="form-label">Review / User Rating Summary</label>
+                      <textarea id="reviewSummary" class="form-control textarea-limit" rows="2" maxlength="2000" placeholder="Quick summary of card reviews"></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Fees & Charges -->
+            <div class="accordion-item">
+              <h3 class="accordion-header" id="feesHeading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#feesCollapse" aria-expanded="false" aria-controls="feesCollapse">
+                  Fees & Charges
+                </button>
+              </h3>
+              <div id="feesCollapse" class="accordion-collapse collapse" aria-labelledby="feesHeading" data-bs-parent="#cardFormAccordion">
+                <div class="accordion-body">
+                  <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                      <label for="joiningFee" class="form-label">Joining Fee</label>
+                      <input id="joiningFee" type="text" class="form-control" placeholder="₹999 + taxes" />
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label for="annualFee" class="form-label">Annual Fee</label>
+                      <input id="annualFee" type="text" class="form-control" placeholder="₹999 + taxes (waived on ₹2L spend)" />
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label for="financeCharges" class="form-label">Finance Charges / Interest Rate</label>
+                      <input id="financeCharges" type="text" class="form-control" placeholder="3.5% p.m. (42% p.a.)" />
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label for="cashWithdrawalFee" class="form-label">Cash Withdrawal Fee</label>
+                      <input id="cashWithdrawalFee" type="text" class="form-control" placeholder="2.5% (min ₹500)" />
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label for="redemptionFee" class="form-label">Rewards Redemption Fee</label>
+                      <input id="redemptionFee" type="text" class="form-control" placeholder="₹99 per redemption" />
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label for="forexMarkup" class="form-label">Forex Markup</label>
+                      <input id="forexMarkup" type="text" class="form-control" placeholder="3.5%" />
+                    </div>
+                    <div class="col-12">
+                      <label for="latePaymentCharges" class="form-label">Late Payment Charges</label>
+                      <textarea id="latePaymentCharges" class="form-control textarea-limit" rows="3" maxlength="2000" placeholder="Up to ₹100: Nil, ₹101–500: ₹100..."></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Rewards / Cashback / Benefits -->
+            <div class="accordion-item">
+              <h3 class="accordion-header" id="benefitsHeading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#benefitsCollapse" aria-expanded="false" aria-controls="benefitsCollapse">
+                  Rewards, Cashback & Benefits
+                </button>
+              </h3>
+              <div id="benefitsCollapse" class="accordion-collapse collapse" aria-labelledby="benefitsHeading" data-bs-parent="#cardFormAccordion">
+                <div class="accordion-body">
+                  <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                      <label for="cashbackRate" class="form-label">Cashback Rate</label>
+                      <input id="cashbackRate" type="text" class="form-control" placeholder="5% online, 1% offline" />
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label for="cashbackCap" class="form-label">Cashback Cap</label>
+                      <input id="cashbackCap" type="text" class="form-control" placeholder="₹5,000 per statement cycle" />
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label for="rewardsRate" class="form-label">Rewards Rate</label>
+                      <input id="rewardsRate" type="text" class="form-control" placeholder="4 RP per ₹150" />
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label for="loungeAccess" class="form-label">Lounge Access</label>
+                      <input id="loungeAccess" type="text" class="form-control" placeholder="8 domestic + 6 international" />
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label for="golfBenefits" class="form-label">Golf Benefits</label>
+                      <input id="golfBenefits" type="text" class="form-control" placeholder="4 rounds per month" />
+                    </div>
+                    <div class="col-12">
+                      <label for="keyBenefits" class="form-label">Key Benefits</label>
+                      <textarea id="keyBenefits" class="form-control textarea-limit" rows="3" maxlength="2000" placeholder="Use bullet-like lines"></textarea>
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label for="welcomeBonus" class="form-label">Welcome Bonus / Joining Benefits</label>
+                      <textarea id="welcomeBonus" class="form-control textarea-limit" rows="3" maxlength="2000"></textarea>
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label for="milestoneBenefits" class="form-label">Milestone Benefits</label>
+                      <textarea id="milestoneBenefits" class="form-control textarea-limit" rows="3" maxlength="2000"></textarea>
+                    </div>
+                    <div class="col-12">
+                      <label for="merchantExclusions" class="form-label">Merchant Exclusions</label>
+                      <textarea id="merchantExclusions" class="form-control textarea-limit" rows="3" maxlength="2000" placeholder="Categories where cashback/rewards may not apply"></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Opinion Blocks -->
+            <div class="accordion-item">
+              <h3 class="accordion-header" id="opinionsHeading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#opinionsCollapse" aria-expanded="false" aria-controls="opinionsCollapse">
+                  Pros & Cons
+                </button>
+              </h3>
+              <div id="opinionsCollapse" class="accordion-collapse collapse" aria-labelledby="opinionsHeading" data-bs-parent="#cardFormAccordion">
+                <div class="accordion-body">
+                  <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                      <label for="pros" class="form-label">Pros</label>
+                      <textarea id="pros" class="form-control textarea-limit" rows="4" maxlength="2000"></textarea>
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label for="cons" class="form-label">Cons</label>
+                      <textarea id="cons" class="form-control textarea-limit" rows="4" maxlength="2000"></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form actions -->
+          <div class="d-flex flex-wrap gap-2 mt-4">
+            <button type="submit" class="btn btn-primary btn-lg px-4">
+              <i class="fa-solid fa-floppy-disk me-2"></i>Save Card
+            </button>
+            <button type="button" id="resetFormBtn" class="btn btn-outline-secondary btn-lg px-4">
+              <i class="fa-solid fa-rotate-left me-2"></i>Reset
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- =========================
+           CARDS TABLE SECTION
+           ========================= -->
+      <section id="cardsTableSection" class="panel-card p-3 p-md-4">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+          <h2 class="section-title mb-0">
+            <i class="fa-solid fa-table-list text-primary me-2"></i>Cards Overview
+          </h2>
+          <small class="text-muted">Stored in localStorage key: <code>creditCards</code></small>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-striped table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Bank</th>
+                <th>Card Name</th>
+                <th>Joining Fee</th>
+                <th>Annual Fee</th>
+                <th>Cashback / Rewards Rate</th>
+                <th>Rating</th>
+                <th>Image</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="cardsTableBody">
+              <!-- Rows injected via JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- =========================
+       DELETE CONFIRMATION MODAL
+       ========================= -->
+  <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to delete this card?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" id="confirmDeleteBtn" class="btn btn-danger">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"
+  ></script>
+
+  <script>
+    // ============================================================
+    // Credit Card Admin Panel Script
+    // Handles:
+    // - localStorage CRUD (add/edit/delete cards)
+    // - table rendering
+    // - form validation
+    // - stats updates
+    // - alerts and delete modal
+    // ============================================================
+
+    const STORAGE_KEY = 'creditCards';
+
+    // In-memory state for delete modal target
+    let deleteTargetId = null;
+
+    // Refs
+    const form = document.getElementById('cardForm');
+    const tableBody = document.getElementById('cardsTableBody');
+    const alertContainer = document.getElementById('alertContainer');
+    const imageInput = document.getElementById('cardImageUrl');
+    const imagePreview = document.getElementById('imagePreview');
+    const resetFormBtn = document.getElementById('resetFormBtn');
+    const editingCardIdInput = document.getElementById('editingCardId');
+
+    const deleteModalEl = document.getElementById('deleteModal');
+    const deleteModal = new bootstrap.Modal(deleteModalEl);
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+
+    // Stat refs
+    const statTotalCards = document.getElementById('statTotalCards');
+    const statTotalBanks = document.getElementById('statTotalBanks');
+    const statPendingLeads = document.getElementById('statPendingLeads');
+
+    // Initialize app on page load
+    init();
+
+    function init() {
+      seedDataIfEmpty();
+      renderTable();
+      updateStats();
+      wireEvents();
+    }
+
+    // ------------------------------------------------------------
+    // Event Wiring
+    // ------------------------------------------------------------
+    function wireEvents() {
+      form.addEventListener('submit', handleFormSubmit);
+      resetFormBtn.addEventListener('click', resetForm);
+      imageInput.addEventListener('input', handleImagePreview);
+
+      confirmDeleteBtn.addEventListener('click', () => {
+        if (!deleteTargetId) return;
+        deleteCard(deleteTargetId);
+        deleteTargetId = null;
+        deleteModal.hide();
+      });
+
+      // Enforce textarea max length behavior with user alert
+      document.querySelectorAll('.textarea-limit').forEach((el) => {
+        el.addEventListener('input', (event) => {
+          const textarea = event.target;
+          if (textarea.value.length > 2000) {
+            textarea.value = textarea.value.slice(0, 2000);
+            showAlert('Maximum 2000 characters allowed in text areas.', 'warning');
+          }
+        });
+      });
+    }
+
+    // ------------------------------------------------------------
+    // localStorage helpers
+    // ------------------------------------------------------------
+    function getCards() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveCards(cards) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
+    }
+
+    // ------------------------------------------------------------
+    // Seed initial sample data (5 cards)
+    // ------------------------------------------------------------
+    function seedDataIfEmpty() {
+      const cards = getCards();
+      if (cards.length > 0) return;
+
+      const seedCards = [
+        {
+          id: uid(),
+          bank: 'SBI',
+          cardName: 'SBI Cashback Credit Card',
+          rating: '4.8',
+          network: 'Visa',
+          cardImageUrl: 'https://via.placeholder.com/120x70/0d6efd/ffffff?text=SBI+Cashback',
+          description: 'Flat cashback-oriented card for online-first spenders.',
+          joiningFee: '₹999 + taxes',
+          annualFee: '₹999 + taxes',
+          financeCharges: '3.5% p.m. (42% p.a.)',
+          cashWithdrawalFee: '2.5% (min ₹500)',
+          redemptionFee: 'Nil',
+          latePaymentCharges: 'As per statement outstanding slabs.',
+          cashbackRate: '5% online, 1% offline',
+          cashbackCap: '₹5,000 per statement cycle',
+          rewardsRate: '',
+          keyBenefits: 'High online cashback\nSimple value tracking',
+          welcomeBonus: 'Intro cashback campaign as per issuer terms',
+          milestoneBenefits: '',
+          loungeAccess: 'NA',
+          forexMarkup: '3.5%',
+          golfBenefits: 'NA',
+          pros: 'Strong online cashback rate\nGood fit for e-commerce users',
+          cons: 'Cap on cashback\nLimited premium travel perks',
+          reviewSummary: 'Popular among value-focused users.',
+          bestFor: 'Online shopping, bill payments',
+          cardType: 'Cashback',
+          merchantExclusions: 'Wallet loads, rent, fuel, selected MCC exclusions'
+        },
+        {
+          id: uid(),
+          bank: 'HDFC',
+          cardName: 'HDFC Diners Club Black Credit Card',
+          rating: '4.7',
+          network: 'Mastercard',
+          cardImageUrl: 'https://via.placeholder.com/120x70/111827/ffffff?text=HDFC+DCB',
+          description: 'Premium rewards + travel-focused super card.',
+          joiningFee: '₹10,000 + taxes',
+          annualFee: '₹10,000 + taxes',
+          financeCharges: '3.6% p.m.',
+          cashWithdrawalFee: '2.5% (min ₹500)',
+          redemptionFee: 'Varies by redemption type',
+          latePaymentCharges: 'Issuer slab based',
+          cashbackRate: '',
+          cashbackCap: '',
+          rewardsRate: '10 RP per ₹150 on SmartBuy categories',
+          keyBenefits: 'Lounge access\nGolf privileges\nPremium reward multipliers',
+          welcomeBonus: 'Welcome benefit as per current campaign',
+          milestoneBenefits: 'Spend milestone vouchers on select thresholds',
+          loungeAccess: 'Domestic + international access',
+          forexMarkup: '2%',
+          golfBenefits: 'Complimentary rounds (subject to terms)',
+          pros: 'Premium travel and rewards ecosystem',
+          cons: 'High annual fee',
+          reviewSummary: 'Top choice for high spenders.',
+          bestFor: 'Travel, premium lifestyle, high annual spends',
+          cardType: 'Premium',
+          merchantExclusions: 'As per issuer reward exclusion list'
+        },
+        {
+          id: uid(),
+          bank: 'ICICI',
+          cardName: 'Amazon Pay ICICI Credit Card',
+          rating: '4.6',
+          network: 'Visa',
+          cardImageUrl: 'https://via.placeholder.com/120x70/1f2937/ffffff?text=Amazon+Pay',
+          description: 'Lifetime free cashback card for Amazon ecosystem users.',
+          joiningFee: 'Nil',
+          annualFee: 'Nil',
+          financeCharges: '3.5% p.m.',
+          cashWithdrawalFee: '2.5% (min ₹500)',
+          redemptionFee: 'Nil',
+          latePaymentCharges: 'As per issuer slabs',
+          cashbackRate: 'Up to 5% on Amazon',
+          cashbackCap: 'As per issuer terms',
+          rewardsRate: '',
+          keyBenefits: 'No annual fee\nSimple cashback credit',
+          welcomeBonus: '',
+          milestoneBenefits: '',
+          loungeAccess: 'NA',
+          forexMarkup: '3.5%',
+          golfBenefits: 'NA',
+          pros: 'Strong Amazon value for Prime users',
+          cons: 'Lower value outside partner spends',
+          reviewSummary: 'Very good no-fee cashback option.',
+          bestFor: 'Frequent Amazon shoppers',
+          cardType: 'Cashback',
+          merchantExclusions: 'Rent, fuel surcharge, wallet transfers'
+        },
+        {
+          id: uid(),
+          bank: 'Axis',
+          cardName: 'Axis Bank ACE Credit Card',
+          rating: '4.4',
+          network: 'Visa',
+          cardImageUrl: 'https://via.placeholder.com/120x70/0ea5e9/ffffff?text=Axis+ACE',
+          description: 'Everyday utility + bill payment cashback card.',
+          joiningFee: '₹499 + taxes',
+          annualFee: '₹499 + taxes',
+          financeCharges: '3.6% p.m.',
+          cashWithdrawalFee: '2.5% (min ₹500)',
+          redemptionFee: 'Nil',
+          latePaymentCharges: 'As per outstanding amount',
+          cashbackRate: '5% on utilities (partner based), 1.5% offline',
+          cashbackCap: 'As per issuer campaign cap',
+          rewardsRate: '',
+          keyBenefits: 'Utility bill value\nDecent general cashback',
+          welcomeBonus: '',
+          milestoneBenefits: '',
+          loungeAccess: 'Limited / NA',
+          forexMarkup: '3.5%',
+          golfBenefits: 'NA',
+          pros: 'Good everyday value',
+          cons: 'Campaign terms can change',
+          reviewSummary: 'Solid entry card for household spends.',
+          bestFor: 'Utility and grocery payments',
+          cardType: 'Cashback',
+          merchantExclusions: 'Wallet loads and some excluded MCC categories'
+        },
+        {
+          id: uid(),
+          bank: 'IDFC',
+          cardName: 'IDFC FIRST Select Credit Card',
+          rating: '4.3',
+          network: 'Visa',
+          cardImageUrl: 'https://via.placeholder.com/120x70/7c3aed/ffffff?text=IDFC+Select',
+          description: 'Lifestyle-focused card with rewards and benefits.',
+          joiningFee: 'Nil',
+          annualFee: 'Nil',
+          financeCharges: '3.6% p.m.',
+          cashWithdrawalFee: '2.5% (min ₹250)',
+          redemptionFee: 'Nil / issuer specific',
+          latePaymentCharges: 'As per due amount slabs',
+          cashbackRate: '',
+          cashbackCap: '',
+          rewardsRate: 'Up to 10X on select categories',
+          keyBenefits: 'Lifestyle offers\nReward multipliers',
+          welcomeBonus: 'Welcome benefit based on campaign',
+          milestoneBenefits: '',
+          loungeAccess: 'Available as per plan',
+          forexMarkup: '1.99% to 3.5% (variant dependent)',
+          golfBenefits: 'Variant dependent',
+          pros: 'No joining/annual fee in many variants',
+          cons: 'Complex reward structure',
+          reviewSummary: 'Good long-term value with right spend pattern.',
+          bestFor: 'Lifestyle and mixed spends',
+          cardType: 'Rewards',
+          merchantExclusions: 'Issuer-defined exclusion categories'
+        }
+      ];
+
+      saveCards(seedCards);
+    }
+
+    // ------------------------------------------------------------
+    // Rendering Functions
+    // ------------------------------------------------------------
+    function renderTable() {
+      const cards = getCards();
+
+      if (!cards.length) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="8" class="text-center text-muted py-4">No cards found. Add your first card using the form above.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      tableBody.innerHTML = cards
+        .map((card) => {
+          const rate = card.cashbackRate || card.rewardsRate || '-';
+          const imageUrl = card.cardImageUrl || 'https://via.placeholder.com/120x70?text=No+Image';
+
+          return `
+            <tr>
+              <td>${escapeHtml(card.bank || '-')}</td>
+              <td class="fw-semibold">${escapeHtml(card.cardName || '-')}</td>
+              <td>${escapeHtml(card.joiningFee || '-')}</td>
+              <td>${escapeHtml(card.annualFee || '-')}</td>
+              <td>${escapeHtml(rate)}</td>
+              <td>${escapeHtml(card.rating || '-')}</td>
+              <td>
+                <img src="${escapeAttribute(imageUrl)}" alt="Card" class="thumb-preview" onerror="this.src='https://via.placeholder.com/120x70?text=No+Image'" />
+              </td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-primary action-btn me-1" onclick="editCard('${card.id}')">
+                  <i class="fa-solid fa-pen"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger action-btn" onclick="openDeleteModal('${card.id}')">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          `;
+        })
+        .join('');
+    }
+
+    function updateStats() {
+      const cards = getCards();
+      const uniqueBanks = new Set(cards.map((c) => c.bank).filter(Boolean));
+
+      // Placeholder logic for pending leads:
+      // count cards missing review summary as pending data checks.
+      const pendingLeads = cards.filter((c) => !(c.reviewSummary || '').trim()).length;
+
+      statTotalCards.textContent = cards.length;
+      statTotalBanks.textContent = uniqueBanks.size;
+      statPendingLeads.textContent = pendingLeads;
+    }
+
+    // ------------------------------------------------------------
+    // Form Submission + Validation
+    // ------------------------------------------------------------
+    function handleFormSubmit(event) {
+      event.preventDefault();
+
+      const payload = collectFormData();
+
+      // Reset old invalid states
+      clearValidationState();
+
+      // Mandatory field checks
+      let hasErrors = false;
+      if (!payload.cardName.trim()) {
+        setInvalid('cardName');
+        hasErrors = true;
+      }
+      if (!payload.bank.trim()) {
+        setInvalid('bank');
+        hasErrors = true;
+      }
+
+      if (hasErrors) {
+        showAlert('Please complete required fields before saving.', 'danger');
+        return;
+      }
+
+      // Numeric/rate positive checks (optional fields)
+      const numericCheckFields = [
+        payload.rating,
+        payload.cashbackRate,
+        payload.cashbackCap,
+        payload.rewardsRate,
+        payload.forexMarkup,
+        payload.financeCharges,
+      ];
+
+      if (!validatePositiveValues(numericCheckFields)) {
+        showAlert('Please enter a valid number (positive) in number/rate fields.', 'danger');
+        return;
+      }
+
+      // Textarea max length checks (2000)
+      if (!validateTextareaLimits()) {
+        return;
+      }
+
+      // Rating range validation if given
+      if (payload.rating) {
+        const ratingValue = Number(payload.rating);
+        if (Number.isNaN(ratingValue) || ratingValue < 1 || ratingValue > 5) {
+          showAlert('Rating must be between 1 and 5 (e.g., 4.8).', 'danger');
+          return;
+        }
+      }
+
+      const cards = getCards();
+
+      // Edit vs Add mode
+      if (payload.id) {
+        const index = cards.findIndex((card) => card.id === payload.id);
+        if (index > -1) {
+          cards[index] = payload;
+          showAlert('Card updated successfully.', 'success');
+        }
+      } else {
+        payload.id = uid();
+        cards.unshift(payload);
+        showAlert('Card added successfully.', 'success');
+      }
+
+      saveCards(cards);
+      renderTable();
+      updateStats();
+      resetForm();
+    }
+
+    function collectFormData() {
+      return {
+        id: editingCardIdInput.value || '',
+        bank: valueOf('bank'),
+        cardName: valueOf('cardName'),
+        rating: valueOf('rating'),
+        network: valueOf('network'),
+        cardImageUrl: valueOf('cardImageUrl'),
+        description: valueOf('description'),
+        joiningFee: valueOf('joiningFee'),
+        annualFee: valueOf('annualFee'),
+        financeCharges: valueOf('financeCharges'),
+        cashWithdrawalFee: valueOf('cashWithdrawalFee'),
+        redemptionFee: valueOf('redemptionFee'),
+        latePaymentCharges: valueOf('latePaymentCharges'),
+        cashbackRate: valueOf('cashbackRate'),
+        cashbackCap: valueOf('cashbackCap'),
+        rewardsRate: valueOf('rewardsRate'),
+        keyBenefits: valueOf('keyBenefits'),
+        welcomeBonus: valueOf('welcomeBonus'),
+        milestoneBenefits: valueOf('milestoneBenefits'),
+        loungeAccess: valueOf('loungeAccess'),
+        forexMarkup: valueOf('forexMarkup'),
+        golfBenefits: valueOf('golfBenefits'),
+        pros: valueOf('pros'),
+        cons: valueOf('cons'),
+        reviewSummary: valueOf('reviewSummary'),
+        bestFor: valueOf('bestFor'),
+        cardType: valueOf('cardType'),
+        merchantExclusions: valueOf('merchantExclusions'),
+      };
+    }
+
+    function validatePositiveValues(fields) {
+      for (const raw of fields) {
+        if (!raw || !raw.trim()) continue;
+
+        // If contains explicit negative sign with numeric context, fail.
+        if (/-\s*\d/.test(raw)) return false;
+
+        // If pure numeric, validate as positive.
+        if (/^\s*-?\d+(\.\d+)?\s*$/.test(raw)) {
+          if (Number(raw) < 0) return false;
+        }
+      }
+      return true;
+    }
+
+    function validateTextareaLimits() {
+      const textareas = document.querySelectorAll('.textarea-limit');
+      for (const textarea of textareas) {
+        if (textarea.value.length > 2000) {
+          textarea.value = textarea.value.slice(0, 2000);
+          showAlert('One or more text areas exceeded 2000 characters and were trimmed.', 'warning');
+          return false;
+        }
+      }
+      return true;
+    }
+
+    // ------------------------------------------------------------
+    // Edit / Delete handlers
+    // ------------------------------------------------------------
+    function editCard(id) {
+      const cards = getCards();
+      const card = cards.find((c) => c.id === id);
+      if (!card) return;
+
+      editingCardIdInput.value = card.id;
+
+      setValue('bank', card.bank);
+      setValue('cardName', card.cardName);
+      setValue('rating', card.rating);
+      setValue('network', card.network);
+      setValue('cardImageUrl', card.cardImageUrl);
+      setValue('description', card.description);
+      setValue('joiningFee', card.joiningFee);
+      setValue('annualFee', card.annualFee);
+      setValue('financeCharges', card.financeCharges);
+      setValue('cashWithdrawalFee', card.cashWithdrawalFee);
+      setValue('redemptionFee', card.redemptionFee);
+      setValue('latePaymentCharges', card.latePaymentCharges);
+      setValue('cashbackRate', card.cashbackRate);
+      setValue('cashbackCap', card.cashbackCap);
+      setValue('rewardsRate', card.rewardsRate);
+      setValue('keyBenefits', card.keyBenefits);
+      setValue('welcomeBonus', card.welcomeBonus);
+      setValue('milestoneBenefits', card.milestoneBenefits);
+      setValue('loungeAccess', card.loungeAccess);
+      setValue('forexMarkup', card.forexMarkup);
+      setValue('golfBenefits', card.golfBenefits);
+      setValue('pros', card.pros);
+      setValue('cons', card.cons);
+      setValue('reviewSummary', card.reviewSummary);
+      setValue('bestFor', card.bestFor);
+      setValue('cardType', card.cardType);
+      setValue('merchantExclusions', card.merchantExclusions);
+
+      handleImagePreview();
+      clearValidationState();
+
+      // Open first accordion pane for edit context clarity
+      const basicCollapse = document.getElementById('basicInfoCollapse');
+      const basicAccordion = new bootstrap.Collapse(basicCollapse, { toggle: false });
+      basicAccordion.show();
+
+      // Scroll into form
+      document.getElementById('cardFormSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      showAlert('Loaded card details for editing.', 'info');
+    }
+
+    function openDeleteModal(id) {
+      deleteTargetId = id;
+      deleteModal.show();
+    }
+
+    function deleteCard(id) {
+      const cards = getCards().filter((card) => card.id !== id);
+      saveCards(cards);
+      renderTable();
+      updateStats();
+      showAlert('Card deleted successfully.', 'success');
+    }
+
+    // ------------------------------------------------------------
+    // UI helpers
+    // ------------------------------------------------------------
+    function resetForm() {
+      form.reset();
+      editingCardIdInput.value = '';
+      imagePreview.src = 'https://via.placeholder.com/120x70?text=Preview';
+      clearValidationState();
+    }
+
+    function handleImagePreview() {
+      const url = imageInput.value.trim();
+      imagePreview.src = url || 'https://via.placeholder.com/120x70?text=Preview';
+    }
+
+    function showAlert(message, type = 'success') {
+      const id = `alert-${Date.now()}`;
+      const html = `
+        <div id="${id}" class="alert alert-${type} alert-dismissible fade show" role="alert">
+          ${escapeHtml(message)}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      `;
+      alertContainer.insertAdjacentHTML('afterbegin', html);
+
+      // Auto-remove alert after 4 seconds for cleaner UX
+      setTimeout(() => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const instance = bootstrap.Alert.getOrCreateInstance(el);
+        instance.close();
+      }, 4000);
+    }
+
+    function clearValidationState() {
+      ['bank', 'cardName'].forEach((id) => {
+        const input = document.getElementById(id);
+        input.classList.remove('is-invalid');
+      });
+    }
+
+    function setInvalid(id) {
+      const input = document.getElementById(id);
+      input.classList.add('is-invalid');
+    }
+
+    function valueOf(id) {
+      const el = document.getElementById(id);
+      return (el && el.value ? String(el.value).trim() : '');
+    }
+
+    function setValue(id, val) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.value = val || '';
+    }
+
+    function uid() {
+      return `card_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    }
+
+    // Basic HTML escaping helpers for safe rendering
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function escapeAttribute(str) {
+      return escapeHtml(str).replace(/`/g, '&#96;');
+    }
+
+    // Expose edit/delete handlers to inline table action buttons
+    window.editCard = editCard;
+    window.openDeleteModal = openDeleteModal;
+  </script>
+</body>
+</html>

@@ -260,7 +260,7 @@ export default function HomePage() {
                   </a>
                 </li>
                 <li className="nav-item">
-                  <a className="nav-link" href="/admin">
+                  <a className="nav-link" href="/admin.html">
                     Admin
                   </a>
                 </li>

@@ -15,7 +15,7 @@ npm run dev
 
 ## Supabase Cloud Storage (Recommended)
 
-This project now supports cloud persistence for scraped banks/cards and uploaded images.
+This project supports cloud-backed marketplace reads and a standalone admin panel.
 
 ### 1) Create Supabase resources
 
@@ -35,15 +35,13 @@ NEXT_PUBLIC_SUPABASE_URL=...
 
 ### 3) Runtime behavior
 
-- `POST /api/admin/scrape-card`
-	- Scrapes metadata from source URL
-	- Saves bank/card in Supabase (`banks`, `cards`)
-	- Uploads image to `card-images` (when admin uploads file)
 - `GET /api/marketplace-data`
 	- Reads from Supabase first
 	- Falls back to local `public/data/marketplace-data.js` if cloud is not configured/empty
 
-`public/bank.html` and `public/card.html` now fetch `/api/marketplace-data` so newly saved cloud data can be rendered when needed.
+`public/bank.html` and `public/card.html` fetch `/api/marketplace-data` to render marketplace data.
+
+`admin.html` is a standalone localStorage-based admin panel and does not use server-side scraping or OCR.
 
 ## Card Scraper + Google Sheets Sync
 
