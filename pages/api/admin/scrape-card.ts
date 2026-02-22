@@ -20,6 +20,11 @@ type Body = {
   description?: string;
 };
 
+type WriteResult = {
+  persisted: boolean;
+  warnings: string[];
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ ok: false, error: 'Method not allowed' });
@@ -55,11 +60,77 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const root = process.cwd();
     const fileName = `${cardSlug}.html`;
 
-    for (const dataPath of marketplacePaths(root)) {
-      if (!fs.existsSync(dataPath)) {
-        continue;
-      }
+    const writeResult = writeMarketplaceFiles({
+      root,
+      bankSlug,
+      bankName,
+      cardName,
+      fileName,
+      sourceUrl: validatedUrl.toString(),
+      annualFee,
+      description,
+      keyBenefits,
+    });
 
+    return res.status(200).json({
+      ok: true,
+      persisted: writeResult.persisted,
+      warnings: writeResult.warnings,
+      bankSlug,
+      cardSlug,
+      annualFee: annualFee || null,
+      keyBenefits: keyBenefits || [],
+      bankPageUrl: `/bank.html?bank=${encodeURIComponent(bankSlug)}`,
+      cardQueryUrl: `/card.html?bank=${encodeURIComponent(bankSlug)}&card=${encodeURIComponent(cardSlug)}`,
+      generatedCardUrl: writeResult.persisted ? `/cards/${bankSlug}/${cardSlug}.html` : null,
+      cardDraft: {
+        title: cardName,
+        filename: fileName,
+        annualFee: annualFee || null,
+        description: description || null,
+        keyBenefits: keyBenefits || [],
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      error: error instanceof Error ? error.message : 'Unexpected server error',
+    });
+  }
+}
+
+function writeMarketplaceFiles(params: {
+  root: string;
+  bankSlug: string;
+  bankName: string;
+  cardName: string;
+  fileName: string;
+  sourceUrl: string;
+  annualFee?: string;
+  description?: string;
+  keyBenefits?: string[];
+}): WriteResult {
+  const {
+    root,
+    bankSlug,
+    bankName,
+    cardName,
+    fileName,
+    sourceUrl,
+    annualFee,
+    description,
+    keyBenefits,
+  } = params;
+
+  const warnings: string[] = [];
+  let persisted = true;
+
+  for (const dataPath of marketplacePaths(root)) {
+    if (!fs.existsSync(dataPath)) {
+      continue;
+    }
+
+    try {
       const data = loadMarketplaceFile(dataPath);
       upsertBankAndCard({
         data,
@@ -74,8 +145,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       });
       saveMarketplaceFile(dataPath, data);
+    } catch (error) {
+      if (isReadOnlyFsError(error)) {
+        persisted = false;
+        warnings.push('Read-only filesystem detected. Data file was not updated on this environment.');
+        continue;
+      }
+      throw error;
     }
+  }
 
+  try {
     const cardDir = path.join(root, 'public', 'cards', bankSlug);
     ensureDir(cardDir);
 
@@ -85,30 +165,39 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       createCardHtml({
         bankName,
         cardName,
-        sourceUrl: validatedUrl.toString(),
+        sourceUrl,
         annualFee,
         description,
         keyBenefits,
       }),
       'utf8'
     );
-
-    return res.status(200).json({
-      ok: true,
-      bankSlug,
-      cardSlug,
-      annualFee: annualFee || null,
-      keyBenefits: keyBenefits || [],
-      bankPageUrl: `/bank.html?bank=${encodeURIComponent(bankSlug)}`,
-      cardQueryUrl: `/card.html?bank=${encodeURIComponent(bankSlug)}&card=${encodeURIComponent(cardSlug)}`,
-      generatedCardUrl: `/cards/${bankSlug}/${cardSlug}.html`,
-    });
   } catch (error) {
-    return res.status(500).json({
-      ok: false,
-      error: error instanceof Error ? error.message : 'Unexpected server error',
-    });
+    if (isReadOnlyFsError(error)) {
+      persisted = false;
+      warnings.push('Read-only filesystem detected. Card HTML file was not generated on this environment.');
+    } else {
+      throw error;
+    }
   }
+
+  if (!persisted && warnings.length === 0) {
+    warnings.push('Changes were not persisted in this environment.');
+  }
+
+  return {
+    persisted,
+    warnings,
+  };
+}
+
+function isReadOnlyFsError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const nodeError = error as NodeJS.ErrnoException;
+  return nodeError.code === 'EROFS' || nodeError.code === 'EPERM';
 }
 
 async function fetchHtml(url: string): Promise<string> {

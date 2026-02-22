@@ -4,6 +4,8 @@ import Head from 'next/head';
 type Result = {
   ok: boolean;
   error?: string;
+  persisted?: boolean;
+  warnings?: string[];
   bankSlug?: string;
   cardSlug?: string;
   annualFee?: string | null;
@@ -186,6 +188,18 @@ export default function AdminScrapePage() {
             {result.ok ? (
               <>
                 <div className="fw-semibold mb-2">Card saved successfully.</div>
+                {result.persisted === false && (
+                  <div className="small mb-2">
+                    Running in read-only environment (like Vercel runtime). Scrape succeeded, but files were not persisted.
+                  </div>
+                )}
+                {Array.isArray(result.warnings) && result.warnings.length > 0 && (
+                  <ul className="small mb-2">
+                    {result.warnings.map((warning) => (
+                      <li key={warning}>{warning}</li>
+                    ))}
+                  </ul>
+                )}
                 <div className="small mb-2">Annual fee: {result.annualFee || 'Not found'}</div>
                 <div className="d-flex flex-wrap gap-2">
                   {result.bankPageUrl && (
