@@ -137,6 +137,21 @@ export default function HomePage() {
           margin-bottom: 0;
         }
 
+        .bank-card {
+          border: 1px solid var(--border-soft);
+          border-radius: 0.9rem;
+          background: #fff;
+          padding: 1rem;
+          height: 100%;
+          transition: all 0.22s ease;
+          box-shadow: 0 4px 14px rgba(2, 6, 23, 0.04);
+        }
+
+        .bank-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 10px 22px rgba(2, 6, 23, 0.08);
+        }
+
         .privacy-note {
           font-size: 0.95rem;
           color: var(--text-muted);
@@ -197,7 +212,7 @@ export default function HomePage() {
                   </a>
                 </li>
                 <li className="nav-item">
-                  <a className="nav-link" href="#">
+                  <a className="nav-link" href="#banks">
                     Banks
                   </a>
                 </li>
@@ -247,7 +262,7 @@ export default function HomePage() {
               <a href="#" className="btn btn-primary">
                 Check Eligibility Now
               </a>
-              <a href="#" className="btn btn-outline-primary">
+              <a href="#banks" className="btn btn-outline-primary">
                 See All Cards
               </a>
             </div>
@@ -282,6 +297,36 @@ export default function HomePage() {
                   <i className="fa-solid fa-tags" aria-hidden="true"></i>
                   <h3>Track Offers</h3>
                   <p>Stay updated on cashback, lounge, and joining bonus deals.</p>
+                </article>
+              </div>
+            </div>
+
+            <div id="banks" className="row g-3 g-md-4 mt-2 justify-content-center">
+              <div className="col-12 col-md-4">
+                <article className="bank-card text-start">
+                  <h3 className="h5 fw-bold">HDFC Credit Cards</h3>
+                  <p className="text-muted mb-3">Explore HDFC card listings and offers.</p>
+                  <a href="/bank.html?bank=hdfc" className="btn btn-primary btn-sm">
+                    View Cards
+                  </a>
+                </article>
+              </div>
+              <div className="col-12 col-md-4">
+                <article className="bank-card text-start">
+                  <h3 className="h5 fw-bold">SBI Credit Cards</h3>
+                  <p className="text-muted mb-3">Explore SBI card listings and offers.</p>
+                  <a href="/bank.html?bank=sbi" className="btn btn-primary btn-sm">
+                    View Cards
+                  </a>
+                </article>
+              </div>
+              <div className="col-12 col-md-4">
+                <article className="bank-card text-start">
+                  <h3 className="h5 fw-bold">Bank n Credit Cards</h3>
+                  <p className="text-muted mb-3">Explore partner bank card listings.</p>
+                  <a href="/bank.html?bank=bankn" className="btn btn-primary btn-sm">
+                    View Cards
+                  </a>
                 </article>
               </div>
             </div>
