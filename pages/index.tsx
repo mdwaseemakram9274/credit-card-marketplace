@@ -259,6 +259,11 @@ export default function HomePage() {
                     FAQ
                   </a>
                 </li>
+                <li className="nav-item">
+                  <a className="nav-link" href="/admin">
+                    Admin
+                  </a>
+                </li>
                 <li className="nav-item ms-lg-3 mt-2 mt-lg-0">
                   <a className="btn btn-dark btn-dark-round" href="#">
                     Get Started
