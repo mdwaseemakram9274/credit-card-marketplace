@@ -180,7 +180,10 @@ export default function AdminScrapePage() {
     setLoading(true);
 
     try {
-      const uploadedImageDataList = uploadedImages.length ? await Promise.all(uploadedImages.map((file) => fileToDataUrl(file))) : [];
+      const selectedImages = uploadedImages.slice(0, 4);
+      const uploadedImageDataList = selectedImages.length
+        ? await Promise.all(selectedImages.map((file) => fileToCompressedDataUrl(file)))
+        : [];
       const uploadedImageData = uploadedImageDataList[0];
 
       const response = await fetch('/api/admin/scrape-card', {
@@ -265,7 +268,10 @@ export default function AdminScrapePage() {
 
     setExtracting(true);
     try {
-      const uploadedImageDataList = uploadedImages.length ? await Promise.all(uploadedImages.map((file) => fileToDataUrl(file))) : [];
+      const selectedImages = uploadedImages.slice(0, 4);
+      const uploadedImageDataList = selectedImages.length
+        ? await Promise.all(selectedImages.map((file) => fileToCompressedDataUrl(file)))
+        : [];
       const uploadedImageData = uploadedImageDataList[0];
 
       const response = await fetch('/api/admin/extract-mapped-fields', {
@@ -278,7 +284,19 @@ export default function AdminScrapePage() {
         }),
       });
 
-      const payload = (await response.json()) as AutoFillResponse;
+      const raw = await response.text();
+      let payload: AutoFillResponse;
+      try {
+        payload = JSON.parse(raw) as AutoFillResponse;
+      } catch {
+        payload = { ok: false, error: `Server returned non-JSON response (status ${response.status}).` };
+      }
+
+      if (!response.ok) {
+        setAutoFillMessage(payload.error || `Auto-fill failed with status ${response.status}.`);
+        return;
+      }
+
       if (!payload.ok || !payload.mappedFields) {
         setAutoFillMessage((payload.error || 'Unable to auto-fill fields.') + ' You can fill mapped fields manually below.');
         return;
@@ -302,7 +320,7 @@ export default function AdminScrapePage() {
         `Mapped fields auto-filled. Source used: ${used.url ? 'URL' : ''}${used.url && used.image ? ' + ' : ''}${used.image ? 'Image OCR' : ''}${!used.url && !used.image ? 'None' : ''}.`
       );
     } catch {
-      setAutoFillMessage('Auto-fill failed due to network/server issue. You can fill mapped fields manually below.');
+      setAutoFillMessage('Auto-fill request failed before reaching server. Please try smaller images or fewer uploads.');
     } finally {
       setExtracting(false);
     }
@@ -800,6 +818,44 @@ function fileToDataUrl(file: File): Promise<string> {
       } else {
         reject(new Error('Unable to read file as data URL.'));
       }
+    };
+    reader.onerror = () => reject(new Error('Unable to read selected file.'));
+    reader.readAsDataURL(file);
+  });
+}
+
+function fileToCompressedDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result !== 'string') {
+        reject(new Error('Unable to read selected file.'));
+        return;
+      }
+
+      const img = new Image();
+      img.onload = () => {
+        const maxWidth = 1600;
+        const scale = img.width > maxWidth ? maxWidth / img.width : 1;
+        const width = Math.round(img.width * scale);
+        const height = Math.round(img.height * scale);
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) {
+          reject(new Error('Unable to process image on this browser.'));
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressed = canvas.toDataURL('image/jpeg', 0.78);
+        resolve(compressed);
+      };
+      img.onerror = () => reject(new Error('Failed to load image for compression.'));
+      img.src = reader.result;
     };
     reader.onerror = () => reject(new Error('Unable to read selected file.'));
     reader.readAsDataURL(file);
