@@ -32,7 +32,7 @@ export default function AdminScrapePage() {
   const [cardName, setCardName] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
   const [description, setDescription] = useState('');
-  const [imageUrlOverride, setImageUrlOverride] = useState('');
+  const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [useScrapedImage, setUseScrapedImage] = useState(true);
   const [coBrandedMode, setCoBrandedMode] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -56,6 +56,8 @@ export default function AdminScrapePage() {
     setLoading(true);
 
     try {
+      const uploadedImageData = uploadedImage ? await fileToDataUrl(uploadedImage) : undefined;
+
       const response = await fetch('/api/admin/scrape-card', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -64,7 +66,8 @@ export default function AdminScrapePage() {
           cardName: resolvedCard,
           sourceUrl: sourceUrl.trim(),
           description: description.trim(),
-          imageUrl: imageUrlOverride.trim(),
+          uploadedImageData,
+          uploadedImageName: uploadedImage?.name,
           useScrapedImage,
           bankSlug: toSlug(resolvedBank),
           cardSlug: toSlug(resolvedCard),
@@ -188,17 +191,17 @@ export default function AdminScrapePage() {
           </div>
 
           <div className="mb-3">
-            <label className="form-label" htmlFor="imageUrlOverride">
-              Image URL (optional override)
+            <label className="form-label" htmlFor="uploadedImage">
+              Upload Image (optional)
             </label>
             <input
-              id="imageUrlOverride"
-              type="url"
+              id="uploadedImage"
+              type="file"
+              accept="image/*"
               className="form-control"
-              value={imageUrlOverride}
-              onChange={(e) => setImageUrlOverride(e.target.value)}
-              placeholder="https://..."
+              onChange={(e) => setUploadedImage(e.target.files?.[0] || null)}
             />
+            <div className="form-text">If provided, uploaded image will be used for this card.</div>
           </div>
 
           <div className="row g-2 mb-4 text-muted small">
@@ -283,4 +286,19 @@ export default function AdminScrapePage() {
       </div>
     </>
   );
+}
+
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result);
+      } else {
+        reject(new Error('Unable to read file as data URL.'));
+      }
+    };
+    reader.onerror = () => reject(new Error('Unable to read selected file.'));
+    reader.readAsDataURL(file);
+  });
 }

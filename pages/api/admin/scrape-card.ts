@@ -19,12 +19,15 @@ type Body = {
   cardSlug?: string;
   description?: string;
   imageUrl?: string;
+  uploadedImageData?: string;
+  uploadedImageName?: string;
   useScrapedImage?: boolean;
 };
 
 type WriteResult = {
   persisted: boolean;
   warnings: string[];
+  imageUrl?: string;
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -61,7 +64,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const description = (body.description || extracted.description || '').trim();
     const overrideImageUrl = (body.imageUrl || '').trim();
     const useScrapedImage = body.useScrapedImage !== false;
-    const imageUrl = overrideImageUrl || (useScrapedImage ? imageCandidates[0] || '' : '');
+    const selectedImageUrl = overrideImageUrl || (useScrapedImage ? imageCandidates[0] || '' : '');
+    const uploadedImageData = (body.uploadedImageData || '').trim();
+    const uploadedImageName = (body.uploadedImageName || '').trim();
 
     const root = process.cwd();
     const fileName = `${cardSlug}.html`;
@@ -73,7 +78,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       cardName,
       fileName,
       sourceUrl: validatedUrl.toString(),
-      imageUrl: imageUrl || undefined,
+      imageUrl: selectedImageUrl || undefined,
+      uploadedImageData: uploadedImageData || undefined,
+      uploadedImageName: uploadedImageName || undefined,
       annualFee,
       description,
       keyBenefits,
@@ -86,7 +93,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       bankSlug,
       cardSlug,
       annualFee: annualFee || null,
-      imageUrl: imageUrl || null,
+      imageUrl: writeResult.imageUrl || null,
       imageCandidates,
       keyBenefits: keyBenefits || [],
       bankPageUrl: `/bank.html?bank=${encodeURIComponent(bankSlug)}`,
@@ -95,7 +102,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       cardDraft: {
         title: cardName,
         filename: fileName,
-        imageUrl: imageUrl || null,
+        imageUrl: writeResult.imageUrl || null,
         annualFee: annualFee || null,
         description: description || null,
         keyBenefits: keyBenefits || [],
@@ -117,6 +124,8 @@ function writeMarketplaceFiles(params: {
   fileName: string;
   sourceUrl: string;
   imageUrl?: string;
+  uploadedImageData?: string;
+  uploadedImageName?: string;
   annualFee?: string;
   description?: string;
   keyBenefits?: string[];
@@ -129,6 +138,8 @@ function writeMarketplaceFiles(params: {
     fileName,
     sourceUrl,
     imageUrl,
+    uploadedImageData,
+    uploadedImageName,
     annualFee,
     description,
     keyBenefits,
@@ -136,6 +147,27 @@ function writeMarketplaceFiles(params: {
 
   const warnings: string[] = [];
   let persisted = true;
+  let finalImageUrl = imageUrl;
+
+  if (uploadedImageData) {
+    try {
+      finalImageUrl = saveUploadedImage({
+        root,
+        bankSlug,
+        cardName,
+        fileName,
+        uploadedImageData,
+        uploadedImageName,
+      });
+    } catch (error) {
+      if (isReadOnlyFsError(error)) {
+        persisted = false;
+        warnings.push('Read-only filesystem detected. Uploaded image was not saved on this environment.');
+      } else {
+        throw error;
+      }
+    }
+  }
 
   for (const dataPath of marketplacePaths(root)) {
     if (!fs.existsSync(dataPath)) {
@@ -151,7 +183,7 @@ function writeMarketplaceFiles(params: {
         card: {
           title: cardName,
           filename: fileName,
-          imageUrl,
+          imageUrl: finalImageUrl,
           annualFee,
           description,
           keyBenefits,
@@ -179,7 +211,7 @@ function writeMarketplaceFiles(params: {
         bankName,
         cardName,
         sourceUrl,
-        imageUrl,
+        imageUrl: finalImageUrl,
         annualFee,
         description,
         keyBenefits,
@@ -202,7 +234,39 @@ function writeMarketplaceFiles(params: {
   return {
     persisted,
     warnings,
+    imageUrl: finalImageUrl,
   };
+}
+
+function saveUploadedImage(params: {
+  root: string;
+  bankSlug: string;
+  cardName: string;
+  fileName: string;
+  uploadedImageData: string;
+  uploadedImageName?: string;
+}): string {
+  const { root, bankSlug, cardName, fileName, uploadedImageData, uploadedImageName } = params;
+
+  const parsed = parseDataUrl(uploadedImageData);
+  if (!parsed) {
+    throw new Error('Invalid uploaded image data.');
+  }
+
+  const extension =
+    extensionFromMime(parsed.mimeType) ||
+    extensionFromFilename(uploadedImageName || '') ||
+    'png';
+
+  const baseName = fileName.replace(/\.html$/i, '') || toSlug(cardName) || 'card';
+  const imageFileName = `${baseName}.${extension}`;
+  const imageDir = path.join(root, 'public', 'uploads', 'cards', bankSlug);
+  ensureDir(imageDir);
+
+  const outputPath = path.join(imageDir, imageFileName);
+  fs.writeFileSync(outputPath, parsed.buffer);
+
+  return `/uploads/cards/${bankSlug}/${imageFileName}`;
 }
 
 function isReadOnlyFsError(error: unknown): boolean {
@@ -276,6 +340,49 @@ function stripTags(input: string): string {
 
 function normalizeWhitespace(value: string): string {
   return value.replace(/\s+/g, ' ').trim();
+}
+
+function parseDataUrl(dataUrl: string): { mimeType: string; buffer: Buffer } | null {
+  const match = dataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+  if (!match) {
+    return null;
+  }
+
+  const mimeType = match[1].toLowerCase();
+  const base64 = match[2];
+  const buffer = Buffer.from(base64, 'base64');
+
+  if (!buffer.length) {
+    return null;
+  }
+
+  return { mimeType, buffer };
+}
+
+function extensionFromMime(mimeType: string): string | null {
+  const map: Record<string, string> = {
+    'image/jpeg': 'jpg',
+    'image/jpg': 'jpg',
+    'image/png': 'png',
+    'image/webp': 'webp',
+    'image/gif': 'gif',
+    'image/svg+xml': 'svg',
+  };
+  return map[mimeType] || null;
+}
+
+function extensionFromFilename(fileName: string): string | null {
+  const match = fileName.toLowerCase().match(/\.([a-z0-9]+)$/);
+  if (!match) {
+    return null;
+  }
+
+  const ext = match[1];
+  if (['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'].includes(ext)) {
+    return ext === 'jpeg' ? 'jpg' : ext;
+  }
+
+  return null;
 }
 
 function extractImageCandidates(html: string, baseUrl: URL): string[] {
