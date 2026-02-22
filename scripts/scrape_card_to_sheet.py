@@ -3,7 +3,7 @@ import argparse
 import json
 import re
 from pathlib import Path
-from typing import List
+from typing import List, Dict, Any
 
 import requests
 from bs4 import BeautifulSoup
@@ -22,6 +22,65 @@ def extract_text(soup: BeautifulSoup, selector: str, default: str = "Unknown") -
 
 def extract_list(soup: BeautifulSoup, selector: str) -> List[str]:
     return [item.get_text(strip=True) for item in soup.select(selector)]
+
+
+def parse_marketplace_js(js_text: str) -> Dict[str, Any]:
+    payload = js_text
+    payload = payload.replace("window.marketplaceData", "", 1).strip()
+    if payload.startswith("="):
+        payload = payload[1:].strip()
+    if payload.endswith(";"):
+        payload = payload[:-1].strip()
+
+    payload = re.sub(r"([{,]\s*)([A-Za-z_][A-Za-z0-9_]*)(\s*:)", r'\1"\2"\3', payload)
+    payload = payload.replace("'", '"')
+    return json.loads(payload)
+
+
+def write_marketplace_js(file_path: Path, data: Dict[str, Any]) -> None:
+    content = "window.marketplaceData = " + json.dumps(data, indent=2, ensure_ascii=False) + "\n"
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    file_path.write_text(content, encoding="utf-8")
+
+
+def upsert_marketplace_card(
+    marketplace_file: Path,
+    bank_slug: str,
+    bank_name: str,
+    card_slug: str,
+    card_name: str,
+    description: str,
+) -> None:
+    if marketplace_file.exists():
+        parsed = parse_marketplace_js(marketplace_file.read_text(encoding="utf-8"))
+    else:
+        parsed = {"banks": []}
+
+    banks = parsed.setdefault("banks", [])
+    bank_entry = next((entry for entry in banks if entry.get("slug") == bank_slug), None)
+    if bank_entry is None:
+        bank_entry = {
+            "slug": bank_slug,
+            "name": bank_name,
+            "description": f"Explore {bank_name}.",
+            "cards": [],
+        }
+        banks.append(bank_entry)
+
+    cards = bank_entry.setdefault("cards", [])
+    existing = next((entry for entry in cards if entry.get("slug") == card_slug), None)
+    payload = {
+        "slug": card_slug,
+        "name": card_name,
+        "description": description,
+    }
+
+    if existing is None:
+        cards.append(payload)
+    else:
+        existing.update(payload)
+
+    write_marketplace_js(marketplace_file, parsed)
 
 
 def fetch_card_data(url: str, bank: str, title_selector: str, fee_selector: str, benefit_selector: str) -> dict:
@@ -61,7 +120,8 @@ def append_to_google_sheet(service_account_file: str, spreadsheet_name: str, wor
     sheet.append_row(row)
 
 
-def generate_card_html(data: dict, output_dir: Path, apply_url: str) -> Path:
+def generate_card_html(data: dict, output_dir: Path, bank_slug: str, apply_url: str) -> Path:
+    output_dir = output_dir / bank_slug
     output_dir.mkdir(parents=True, exist_ok=True)
     slug = to_slug(data["card_name"] or "card")
     file_path = output_dir / f"{slug}.html"
@@ -114,8 +174,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--service-account-file", default="", help="Path to Google service account JSON file")
     parser.add_argument("--skip-sheet", action="store_true", help="Skip Google Sheets append")
 
-    parser.add_argument("--output-dir", default="generated-cards")
+    parser.add_argument("--output-dir", default="public/cards")
+    parser.add_argument("--bank-slug", default="", help="Optional bank slug override, e.g. hdfc")
     parser.add_argument("--apply-url", default="#")
+    parser.add_argument("--update-marketplace-data", action="store_true", help="Upsert card into marketplace-data.js")
+    parser.add_argument("--marketplace-data-file", default="data/marketplace-data.js")
+    parser.add_argument("--public-marketplace-data-file", default="public/data/marketplace-data.js")
 
     return parser.parse_args()
 
@@ -145,8 +209,31 @@ def main() -> None:
         )
         print("Data appended to Google Sheets")
 
-    output_path = generate_card_html(data, Path(args.output_dir), args.apply_url)
+    bank_slug = args.bank_slug or to_slug(args.bank)
+    output_path = generate_card_html(data, Path(args.output_dir), bank_slug, args.apply_url)
     print(f"Generated card page: {output_path}")
+
+    if args.update_marketplace_data:
+        description = data["fees"] if data["fees"] != "Unknown" else ", ".join(data["benefits"][:2])
+        description = description or "Card details and benefits"
+
+        upsert_marketplace_card(
+            marketplace_file=Path(args.marketplace_data_file),
+            bank_slug=bank_slug,
+            bank_name=args.bank,
+            card_slug=to_slug(data["card_name"]),
+            card_name=data["card_name"],
+            description=description,
+        )
+        upsert_marketplace_card(
+            marketplace_file=Path(args.public_marketplace_data_file),
+            bank_slug=bank_slug,
+            bank_name=args.bank,
+            card_slug=to_slug(data["card_name"]),
+            card_name=data["card_name"],
+            description=description,
+        )
+        print("Marketplace data updated in data/ and public/data/")
 
 
 if __name__ == "__main__":

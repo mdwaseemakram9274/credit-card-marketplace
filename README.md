@@ -45,6 +45,16 @@ python3 scripts/scrape_card_to_sheet.py \
 	--service-account-file "/absolute/path/service-account.json" \
 	--sheet-name "Credit Cards Sheet" \
 	--worksheet-name "Sheet1"
+
+Example (auto-register into marketplace data + output under `public/cards`):
+
+```bash
+python3 scripts/scrape_card_to_sheet.py \
+	--url "https://example.com/hdfc-regalia" \
+	--bank "HDFC" \
+	--skip-sheet \
+	--update-marketplace-data
+```
 ```
 
 Useful selector flags:
@@ -52,6 +62,14 @@ Useful selector flags:
 - `--title-selector`
 - `--fee-selector`
 - `--benefit-selector`
+
+Useful output/data flags:
+
+- `--output-dir` (default: `public/cards`)
+- `--bank-slug` (optional override)
+- `--update-marketplace-data`
+- `--marketplace-data-file` (default: `data/marketplace-data.js`)
+- `--public-marketplace-data-file` (default: `public/data/marketplace-data.js`)
 
 ## License
 
