@@ -18,6 +18,29 @@ type Result = {
   generatedCardUrl?: string;
 };
 
+type AutoFillResponse = {
+  ok: boolean;
+  mappedFields?: Partial<{
+    benefitTags: string;
+    primaryCardType: string;
+    joiningFee: string;
+    annualFeeInput: string;
+    foreignMarkup: string;
+    minAge: string;
+    minIncome: string;
+    applicationUrl: string;
+    baseRewardRule: string;
+    redemptionOptions: string;
+    keyTerms: string;
+  }>;
+  usedSources?: {
+    url: boolean;
+    image: boolean;
+  };
+  missingRequired?: string[];
+  error?: string;
+};
+
 type AdminStatus = {
   mode: 'cloud' | 'local';
   configured: boolean;
@@ -73,9 +96,11 @@ export default function AdminScrapePage() {
   const [creditLimitRange, setCreditLimitRange] = useState('');
 
   const [loading, setLoading] = useState(false);
+  const [extracting, setExtracting] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
   const [status, setStatus] = useState<AdminStatus | null>(null);
   const [validation, setValidation] = useState<ValidationState>({ errors: [], warnings: [] });
+  const [autoFillMessage, setAutoFillMessage] = useState('');
 
   const bankSlug = useMemo(() => toSlug(bankName || cardName), [bankName, cardName]);
   const cardSlug = useMemo(() => toSlug(cardName), [cardName]);
@@ -213,6 +238,58 @@ export default function AdminScrapePage() {
       setResult({ ok: false, error: 'Failed to connect to server.' });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAutoFillMappedFields = async () => {
+    setAutoFillMessage('');
+    setResult(null);
+    setValidation({ errors: [], warnings: [] });
+
+    if (!sourceUrl.trim() && !uploadedImage) {
+      setAutoFillMessage('Provide source URL or upload image for extraction.');
+      return;
+    }
+
+    setExtracting(true);
+    try {
+      const uploadedImageData = uploadedImage ? await fileToDataUrl(uploadedImage) : undefined;
+
+      const response = await fetch('/api/admin/extract-mapped-fields', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sourceUrl: sourceUrl.trim(),
+          uploadedImageData,
+        }),
+      });
+
+      const payload = (await response.json()) as AutoFillResponse;
+      if (!payload.ok || !payload.mappedFields) {
+        setAutoFillMessage(payload.error || 'Unable to auto-fill fields.');
+        return;
+      }
+
+      setBenefitTags(payload.mappedFields.benefitTags || benefitTags);
+      setPrimaryCardType(payload.mappedFields.primaryCardType || primaryCardType);
+      setJoiningFee(payload.mappedFields.joiningFee || joiningFee);
+      setAnnualFeeInput(payload.mappedFields.annualFeeInput || annualFeeInput);
+      setForeignMarkup(payload.mappedFields.foreignMarkup || foreignMarkup);
+      setMinAge(payload.mappedFields.minAge || minAge);
+      setMinIncome(payload.mappedFields.minIncome || minIncome);
+      setApplicationUrl(payload.mappedFields.applicationUrl || applicationUrl || sourceUrl.trim());
+      setBaseRewardRule(payload.mappedFields.baseRewardRule || baseRewardRule);
+      setRedemptionOptions(payload.mappedFields.redemptionOptions || redemptionOptions);
+      setKeyTerms(payload.mappedFields.keyTerms || keyTerms);
+
+      const used = payload.usedSources || { url: false, image: false };
+      setAutoFillMessage(
+        `Mapped fields auto-filled. Source used: ${used.url ? 'URL' : ''}${used.url && used.image ? ' + ' : ''}${used.image ? 'Image OCR' : ''}${!used.url && !used.image ? 'None' : ''}.`
+      );
+    } catch {
+      setAutoFillMessage('Auto-fill failed due to network/server issue.');
+    } finally {
+      setExtracting(false);
     }
   };
 
@@ -479,6 +556,13 @@ export default function AdminScrapePage() {
               onChange={(e) => setUploadedImage(e.target.files?.[0] || null)}
             />
             <div className="form-text">If provided, uploaded image will be used for this card.</div>
+          </div>
+
+          <div className="mb-3">
+            <button type="button" className="btn btn-outline-primary" disabled={extracting} onClick={handleAutoFillMappedFields}>
+              {extracting ? 'Auto Filling...' : 'Auto Fill Mapped Fields (URL → Image)'}
+            </button>
+            {autoFillMessage && <div className="small mt-2 text-muted">{autoFillMessage}</div>}
           </div>
 
           <div className="row g-2 mb-4 text-muted small">
