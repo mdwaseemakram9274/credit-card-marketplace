@@ -53,30 +53,48 @@
   const bankSlug = params.get('bank')
   const cardSlug = params.get('card')
 
-  const bank = (window.marketplaceData?.banks || []).find((entry) => entry.slug === bankSlug)
-  const card = bank?.cards?.find((entry) => entry.slug === cardSlug)
-
   const titleEl = document.getElementById('cardTitle')
   const descEl = document.getElementById('cardDesc')
   const imageEl = document.getElementById('cardImage')
   const overviewEl = document.getElementById('overview')
   const backEl = document.getElementById('backToBank')
 
-  if (!bank || !card) {
-    titleEl.textContent = 'Card Not Found'
-    descEl.textContent = 'Please return to Home and select a valid card.'
-    overviewEl.textContent = 'No data available for this card.'
-    backEl.href = 'index.html'
-    backEl.textContent = 'Back to Home'
-  } else {
+  init()
+
+  async function init() {
+    const marketplaceData = await loadMarketplaceData()
+    const bank = (marketplaceData?.banks || []).find((entry) => entry.slug === bankSlug)
+    const card = bank?.cards?.find((entry) => entry.slug === cardSlug)
+
+    if (!bank || !card) {
+      titleEl.textContent = 'Card Not Found'
+      descEl.textContent = 'Please return to Home and select a valid card.'
+      overviewEl.textContent = 'No data available for this card.'
+      backEl.href = 'index.html'
+      backEl.textContent = 'Back to Home'
+      return
+    }
+
     document.title = `${card.name} | CreditCardMarket`
     titleEl.textContent = card.name
-    descEl.textContent = card.description
-    imageEl.src = `https://via.placeholder.com/900x360/0d6efd/ffffff?text=${encodeURIComponent(card.name)}`
+    descEl.textContent = card.description || 'Card overview and application.'
+    imageEl.src = card.imageUrl || `https://via.placeholder.com/900x360/0d6efd/ffffff?text=${encodeURIComponent(card.name)}`
     imageEl.alt = card.name
-    overviewEl.textContent = card.description
+    overviewEl.textContent = card.description || 'Card details will be updated soon.'
     backEl.href = `bank.html?bank=${bank.slug}`
     backEl.textContent = `Back to ${bank.name}`
+  }
+
+  async function loadMarketplaceData() {
+    try {
+      const response = await fetch('/api/marketplace-data')
+      if (!response.ok) {
+        throw new Error('api failed')
+      }
+      return await response.json()
+    } catch {
+      return window.marketplaceData || { banks: [] }
+    }
   }
 </script>
 </body>

@@ -13,6 +13,38 @@ npm install
 npm run dev
 ```
 
+## Supabase Cloud Storage (Recommended)
+
+This project now supports cloud persistence for scraped banks/cards and uploaded images.
+
+### 1) Create Supabase resources
+
+- Run SQL in [supabase/schema.sql](supabase/schema.sql) in your Supabase SQL editor.
+- Create a storage bucket named `card-images`.
+- (Recommended) Make bucket public for direct image URLs.
+
+### 2) Add environment variables
+
+Copy [`.env.example`](.env.example) to `.env.local` and set values:
+
+```bash
+SUPABASE_URL=...
+SUPABASE_SERVICE_ROLE_KEY=...
+NEXT_PUBLIC_SUPABASE_URL=...
+```
+
+### 3) Runtime behavior
+
+- `POST /api/admin/scrape-card`
+	- Scrapes metadata from source URL
+	- Saves bank/card in Supabase (`banks`, `cards`)
+	- Uploads image to `card-images` (when admin uploads file)
+- `GET /api/marketplace-data`
+	- Reads from Supabase first
+	- Falls back to local `public/data/marketplace-data.js` if cloud is not configured/empty
+
+`public/bank.html` and `public/card.html` now fetch `/api/marketplace-data` so newly saved cloud data can be rendered when needed.
+
 ## Card Scraper + Google Sheets Sync
 
 Use the Python utility in `scripts/scrape_card_to_sheet.py` to:

@@ -10,6 +10,7 @@ import {
   toSlug,
   upsertBankAndCard,
 } from '../../../lib/marketplace';
+import { getSupabaseServerClient, hasSupabaseConfig } from '../../../lib/supabase-server';
 
 type Body = {
   bankName?: string;
@@ -28,6 +29,7 @@ type WriteResult = {
   persisted: boolean;
   warnings: string[];
   imageUrl?: string;
+  target?: 'cloud' | 'local';
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -71,20 +73,61 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const root = process.cwd();
     const fileName = `${cardSlug}.html`;
 
-    const writeResult = writeMarketplaceFiles({
-      root,
-      bankSlug,
-      bankName,
-      cardName,
-      fileName,
-      sourceUrl: validatedUrl.toString(),
-      imageUrl: selectedImageUrl || undefined,
-      uploadedImageData: uploadedImageData || undefined,
-      uploadedImageName: uploadedImageName || undefined,
-      annualFee,
-      description,
-      keyBenefits,
-    });
+    let writeResult: WriteResult;
+
+    if (hasSupabaseConfig()) {
+      const cloudResult = await writeMarketplaceToSupabase({
+        bankSlug,
+        bankName,
+        cardSlug,
+        cardName,
+        sourceUrl: validatedUrl.toString(),
+        imageUrl: selectedImageUrl || undefined,
+        uploadedImageData: uploadedImageData || undefined,
+        uploadedImageName: uploadedImageName || undefined,
+        annualFee,
+        description,
+        keyBenefits,
+      });
+
+      if (cloudResult.persisted) {
+        writeResult = cloudResult;
+      } else {
+        const localFallback = writeMarketplaceFiles({
+          root,
+          bankSlug,
+          bankName,
+          cardName,
+          fileName,
+          sourceUrl: validatedUrl.toString(),
+          imageUrl: selectedImageUrl || undefined,
+          uploadedImageData: uploadedImageData || undefined,
+          uploadedImageName: uploadedImageName || undefined,
+          annualFee,
+          description,
+          keyBenefits,
+        });
+        writeResult = {
+          ...localFallback,
+          warnings: [...cloudResult.warnings, ...localFallback.warnings],
+        };
+      }
+    } else {
+      writeResult = writeMarketplaceFiles({
+        root,
+        bankSlug,
+        bankName,
+        cardName,
+        fileName,
+        sourceUrl: validatedUrl.toString(),
+        imageUrl: selectedImageUrl || undefined,
+        uploadedImageData: uploadedImageData || undefined,
+        uploadedImageName: uploadedImageName || undefined,
+        annualFee,
+        description,
+        keyBenefits,
+      });
+    }
 
     return res.status(200).json({
       ok: true,
@@ -98,7 +141,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       keyBenefits: keyBenefits || [],
       bankPageUrl: `/bank.html?bank=${encodeURIComponent(bankSlug)}`,
       cardQueryUrl: `/card.html?bank=${encodeURIComponent(bankSlug)}&card=${encodeURIComponent(cardSlug)}`,
-      generatedCardUrl: writeResult.persisted ? `/cards/${bankSlug}/${cardSlug}.html` : null,
+      generatedCardUrl: writeResult.target === 'local' && writeResult.persisted ? `/cards/${bankSlug}/${cardSlug}.html` : null,
       cardDraft: {
         title: cardName,
         filename: fileName,
@@ -235,7 +278,158 @@ function writeMarketplaceFiles(params: {
     persisted,
     warnings,
     imageUrl: finalImageUrl,
+    target: 'local',
   };
+}
+
+async function writeMarketplaceToSupabase(params: {
+  bankSlug: string;
+  bankName: string;
+  cardSlug: string;
+  cardName: string;
+  sourceUrl: string;
+  imageUrl?: string;
+  uploadedImageData?: string;
+  uploadedImageName?: string;
+  annualFee?: string;
+  description?: string;
+  keyBenefits?: string[];
+}): Promise<WriteResult> {
+  const {
+    bankSlug,
+    bankName,
+    cardSlug,
+    cardName,
+    sourceUrl,
+    imageUrl,
+    uploadedImageData,
+    uploadedImageName,
+    annualFee,
+    description,
+    keyBenefits,
+  } = params;
+
+  const warnings: string[] = [];
+
+  try {
+    const supabase = getSupabaseServerClient();
+
+    const { data: bankRow, error: bankError } = await supabase
+      .from('banks')
+      .upsert(
+        {
+          slug: bankSlug,
+          name: bankName,
+          description: null,
+        },
+        { onConflict: 'slug' }
+      )
+      .select('id')
+      .single();
+
+    if (bankError || !bankRow?.id) {
+      throw new Error(bankError?.message || 'Failed to upsert bank in Supabase.');
+    }
+
+    let finalImageUrl = imageUrl;
+
+    if (uploadedImageData) {
+      try {
+        finalImageUrl = await uploadImageToSupabaseStorage({
+          supabase,
+          bankSlug,
+          cardSlug,
+          cardName,
+          uploadedImageData,
+          uploadedImageName,
+        });
+      } catch (error) {
+        warnings.push(
+          error instanceof Error
+            ? `Image upload to Supabase failed: ${error.message}`
+            : 'Image upload to Supabase failed.'
+        );
+      }
+    }
+
+    const { error: cardError } = await supabase.from('cards').upsert(
+      {
+        bank_id: bankRow.id,
+        slug: cardSlug,
+        title: cardName,
+        source_url: sourceUrl,
+        image_url: finalImageUrl || null,
+        annual_fee: annualFee || null,
+        description: description || null,
+        key_benefits: keyBenefits || [],
+      },
+      { onConflict: 'bank_id,slug' }
+    );
+
+    if (cardError) {
+      throw new Error(cardError.message || 'Failed to upsert card in Supabase.');
+    }
+
+    return {
+      persisted: true,
+      warnings,
+      imageUrl: finalImageUrl,
+      target: 'cloud',
+    };
+  } catch (error) {
+    return {
+      persisted: false,
+      warnings: [
+        error instanceof Error
+          ? `Supabase save failed: ${error.message}`
+          : 'Supabase save failed.',
+      ],
+      imageUrl,
+      target: 'cloud',
+    };
+  }
+}
+
+async function uploadImageToSupabaseStorage(params: {
+  supabase: ReturnType<typeof getSupabaseServerClient>;
+  bankSlug: string;
+  cardSlug: string;
+  cardName: string;
+  uploadedImageData: string;
+  uploadedImageName?: string;
+}): Promise<string> {
+  const { supabase, bankSlug, cardSlug, cardName, uploadedImageData, uploadedImageName } = params;
+
+  const parsed = parseDataUrl(uploadedImageData);
+  if (!parsed) {
+    throw new Error('Invalid uploaded image payload.');
+  }
+
+  const extension =
+    extensionFromMime(parsed.mimeType) ||
+    extensionFromFilename(uploadedImageName || '') ||
+    'png';
+
+  const baseName = cardSlug || toSlug(cardName) || 'card';
+  const storagePath = `cards/${bankSlug}/${baseName}.${extension}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('card-images')
+    .upload(storagePath, parsed.buffer, {
+      upsert: true,
+      contentType: parsed.mimeType,
+    });
+
+  if (uploadError) {
+    throw new Error(uploadError.message || 'Supabase storage upload error.');
+  }
+
+  const { data } = supabase.storage.from('card-images').getPublicUrl(storagePath);
+  if (!data?.publicUrl) {
+    throw new Error('Could not resolve public URL for uploaded image.');
+  }
+
+  return data.publicUrl;
 }
 
 function saveUploadedImage(params: {

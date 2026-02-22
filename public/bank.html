@@ -52,31 +52,53 @@
 <script>
   const params = new URLSearchParams(window.location.search)
   const bankSlug = params.get('bank') || 'hdfc'
-  const bank = (window.marketplaceData?.banks || []).find((entry) => entry.slug === bankSlug)
 
   const titleEl = document.getElementById('bankTitle')
   const descEl = document.getElementById('bankDesc')
   const gridEl = document.getElementById('cardsGrid')
 
-  if (!bank) {
-    titleEl.textContent = 'Bank Not Found'
-    descEl.textContent = 'Please go back to Home and select a valid bank.'
-  } else {
+  init()
+
+  async function init() {
+    const marketplaceData = await loadMarketplaceData()
+    const bank = (marketplaceData?.banks || []).find((entry) => entry.slug === bankSlug)
+
+    if (!bank) {
+      titleEl.textContent = 'Bank Not Found'
+      descEl.textContent = 'Please go back to Home and select a valid bank.'
+      return
+    }
+
     document.title = `${bank.name} – Compare & Apply`
     titleEl.textContent = bank.name
-    descEl.textContent = bank.description
-    gridEl.innerHTML = bank.cards.map((card) => `
+    descEl.textContent = bank.description || 'Browse cards.'
+    gridEl.innerHTML = (bank.cards || []).map((card) => {
+      const imageSrc = card.imageUrl || `https://via.placeholder.com/600x220/0d6efd/ffffff?text=${encodeURIComponent(card.name)}`
+      return `
       <div class="col-12 col-md-6 col-lg-4">
         <article class="card card-link h-100">
-          <img src="https://via.placeholder.com/600x220/0d6efd/ffffff?text=${encodeURIComponent(card.name)}" class="card-img-top" alt="${card.name}">
+          <img src="${imageSrc}" class="card-img-top" alt="${card.name}">
           <div class="card-body d-flex flex-column">
             <h2 class="h5 fw-bold">${card.name}</h2>
-            <p class="text-muted small flex-grow-1">${card.description}</p>
+            <p class="text-muted small flex-grow-1">${card.description || ''}</p>
             <a href="card.html?bank=${bank.slug}&card=${card.slug}" class="btn btn-primary mt-auto">View Details</a>
           </div>
         </article>
       </div>
-    `).join('')
+    `
+    }).join('')
+  }
+
+  async function loadMarketplaceData() {
+    try {
+      const response = await fetch('/api/marketplace-data')
+      if (!response.ok) {
+        throw new Error('api failed')
+      }
+      return await response.json()
+    } catch {
+      return window.marketplaceData || { banks: [] }
+    }
   }
 </script>
 </body>
