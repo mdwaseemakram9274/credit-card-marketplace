@@ -5,6 +5,7 @@ import vm from 'vm';
 export type CardEntry = {
   title: string;
   filename: string;
+  imageUrl?: string;
   annualFee?: string;
   description?: string;
   keyBenefits?: string[];
@@ -91,11 +92,12 @@ export function createCardHtml(params: {
   bankName: string;
   cardName: string;
   sourceUrl: string;
+  imageUrl?: string;
   annualFee?: string;
   description?: string;
   keyBenefits?: string[];
 }): string {
-  const { bankName, cardName, sourceUrl, annualFee, description, keyBenefits } = params;
+  const { bankName, cardName, sourceUrl, imageUrl, annualFee, description, keyBenefits } = params;
 
   const benefitsHtml = (keyBenefits || [])
     .slice(0, 8)
@@ -123,6 +125,7 @@ export function createCardHtml(params: {
       <div class="card-body p-4 p-md-5">
         <p class="text-uppercase text-muted small mb-2">${escapeHtml(bankName)}</p>
         <h1 class="h3 mb-3">${escapeHtml(cardName)}</h1>
+        ${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(cardName)}" class="img-fluid rounded border mb-3" style="max-height:240px;object-fit:contain;">` : ''}
         <p class="mb-2"><strong>Annual fee:</strong> ${escapeHtml(annualFee || 'Not available')}</p>
         <p class="text-secondary">${escapeHtml(description || 'Details will be updated soon.')}</p>
         ${benefitsHtml ? `<h2 class="h5 mt-4">Key benefits</h2><ul>${benefitsHtml}</ul>` : ''}

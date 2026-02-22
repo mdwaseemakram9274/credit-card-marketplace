@@ -8,6 +8,8 @@ type Result = {
   warnings?: string[];
   bankSlug?: string;
   cardSlug?: string;
+  imageUrl?: string | null;
+  imageCandidates?: string[];
   annualFee?: string | null;
   keyBenefits?: string[];
   bankPageUrl?: string;
@@ -30,6 +32,8 @@ export default function AdminScrapePage() {
   const [cardName, setCardName] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
   const [description, setDescription] = useState('');
+  const [imageUrlOverride, setImageUrlOverride] = useState('');
+  const [useScrapedImage, setUseScrapedImage] = useState(true);
   const [coBrandedMode, setCoBrandedMode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
@@ -60,6 +64,8 @@ export default function AdminScrapePage() {
           cardName: resolvedCard,
           sourceUrl: sourceUrl.trim(),
           description: description.trim(),
+          imageUrl: imageUrlOverride.trim(),
+          useScrapedImage,
           bankSlug: toSlug(resolvedBank),
           cardSlug: toSlug(resolvedCard),
         }),
@@ -168,6 +174,33 @@ export default function AdminScrapePage() {
             />
           </div>
 
+          <div className="form-check mb-3">
+            <input
+              id="useScrapedImage"
+              className="form-check-input"
+              type="checkbox"
+              checked={useScrapedImage}
+              onChange={(e) => setUseScrapedImage(e.target.checked)}
+            />
+            <label className="form-check-label" htmlFor="useScrapedImage">
+              Auto-pick image from scraped page
+            </label>
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label" htmlFor="imageUrlOverride">
+              Image URL (optional override)
+            </label>
+            <input
+              id="imageUrlOverride"
+              type="url"
+              className="form-control"
+              value={imageUrlOverride}
+              onChange={(e) => setImageUrlOverride(e.target.value)}
+              placeholder="https://..."
+            />
+          </div>
+
           <div className="row g-2 mb-4 text-muted small">
             <div className="col-md-6">
               <strong>Bank Slug:</strong> {bankSlug || '-'}
@@ -201,6 +234,29 @@ export default function AdminScrapePage() {
                   </ul>
                 )}
                 <div className="small mb-2">Annual fee: {result.annualFee || 'Not found'}</div>
+                {result.imageUrl && (
+                  <div className="mb-2">
+                    <img
+                      src={result.imageUrl}
+                      alt="Scraped card"
+                      className="img-fluid rounded border"
+                      style={{ maxHeight: 220, objectFit: 'contain' }}
+                    />
+                  </div>
+                )}
+                {Array.isArray(result.imageCandidates) && result.imageCandidates.length > 0 && (
+                  <div className="small mb-2">
+                    Found image candidates:{' '}
+                    {result.imageCandidates.slice(0, 3).map((candidate, index) => (
+                      <span key={candidate}>
+                        <a href={candidate} target="_blank" rel="noreferrer">
+                          image {index + 1}
+                        </a>
+                        {index < Math.min(result.imageCandidates!.length, 3) - 1 ? ', ' : ''}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <div className="d-flex flex-wrap gap-2">
                   {result.bankPageUrl && (
                     <a className="btn btn-sm btn-outline-primary" href={result.bankPageUrl} target="_blank" rel="noreferrer">

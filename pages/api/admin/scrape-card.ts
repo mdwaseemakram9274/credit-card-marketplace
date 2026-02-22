@@ -18,6 +18,8 @@ type Body = {
   bankSlug?: string;
   cardSlug?: string;
   description?: string;
+  imageUrl?: string;
+  useScrapedImage?: boolean;
 };
 
 type WriteResult = {
@@ -52,10 +54,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const html = await fetchHtml(validatedUrl.toString());
     const extracted = extractCardDetails(html);
+    const imageCandidates = extractImageCandidates(html, validatedUrl);
 
     const annualFee = extracted.annualFee;
     const keyBenefits = extracted.keyBenefits;
     const description = (body.description || extracted.description || '').trim();
+    const overrideImageUrl = (body.imageUrl || '').trim();
+    const useScrapedImage = body.useScrapedImage !== false;
+    const imageUrl = overrideImageUrl || (useScrapedImage ? imageCandidates[0] || '' : '');
 
     const root = process.cwd();
     const fileName = `${cardSlug}.html`;
@@ -67,6 +73,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       cardName,
       fileName,
       sourceUrl: validatedUrl.toString(),
+      imageUrl: imageUrl || undefined,
       annualFee,
       description,
       keyBenefits,
@@ -79,6 +86,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       bankSlug,
       cardSlug,
       annualFee: annualFee || null,
+      imageUrl: imageUrl || null,
+      imageCandidates,
       keyBenefits: keyBenefits || [],
       bankPageUrl: `/bank.html?bank=${encodeURIComponent(bankSlug)}`,
       cardQueryUrl: `/card.html?bank=${encodeURIComponent(bankSlug)}&card=${encodeURIComponent(cardSlug)}`,
@@ -86,6 +95,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       cardDraft: {
         title: cardName,
         filename: fileName,
+        imageUrl: imageUrl || null,
         annualFee: annualFee || null,
         description: description || null,
         keyBenefits: keyBenefits || [],
@@ -106,6 +116,7 @@ function writeMarketplaceFiles(params: {
   cardName: string;
   fileName: string;
   sourceUrl: string;
+  imageUrl?: string;
   annualFee?: string;
   description?: string;
   keyBenefits?: string[];
@@ -117,6 +128,7 @@ function writeMarketplaceFiles(params: {
     cardName,
     fileName,
     sourceUrl,
+    imageUrl,
     annualFee,
     description,
     keyBenefits,
@@ -139,6 +151,7 @@ function writeMarketplaceFiles(params: {
         card: {
           title: cardName,
           filename: fileName,
+          imageUrl,
           annualFee,
           description,
           keyBenefits,
@@ -166,6 +179,7 @@ function writeMarketplaceFiles(params: {
         bankName,
         cardName,
         sourceUrl,
+        imageUrl,
         annualFee,
         description,
         keyBenefits,
@@ -262,4 +276,54 @@ function stripTags(input: string): string {
 
 function normalizeWhitespace(value: string): string {
   return value.replace(/\s+/g, ' ').trim();
+}
+
+function extractImageCandidates(html: string, baseUrl: URL): string[] {
+  const candidates: string[] = [];
+
+  const pushCandidate = (url: string) => {
+    const normalized = toAbsoluteUrl(url, baseUrl);
+    if (!normalized) {
+      return;
+    }
+    if (!candidates.includes(normalized)) {
+      candidates.push(normalized);
+    }
+  };
+
+  const metaRegex = /<meta[^>]+(?:property|name)=["'](?:og:image|twitter:image)["'][^>]+content=["']([^"']+)["'][^>]*>/gi;
+  let metaMatch: RegExpExecArray | null;
+  while ((metaMatch = metaRegex.exec(html)) !== null && candidates.length < 8) {
+    pushCandidate(metaMatch[1]);
+  }
+
+  const linkImageRegex = /<link[^>]+rel=["']image_src["'][^>]+href=["']([^"']+)["'][^>]*>/gi;
+  let linkMatch: RegExpExecArray | null;
+  while ((linkMatch = linkImageRegex.exec(html)) !== null && candidates.length < 8) {
+    pushCandidate(linkMatch[1]);
+  }
+
+  const imgRegex = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi;
+  let imgMatch: RegExpExecArray | null;
+  while ((imgMatch = imgRegex.exec(html)) !== null && candidates.length < 12) {
+    const src = imgMatch[1] || '';
+    const low = src.toLowerCase();
+    if (low.includes('card') || low.includes('credit') || low.includes('product') || low.includes('hero')) {
+      pushCandidate(src);
+    }
+  }
+
+  return candidates.slice(0, 6);
+}
+
+function toAbsoluteUrl(value: string, baseUrl: URL): string | null {
+  try {
+    const url = new URL(value, baseUrl);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      return null;
+    }
+    return url.toString();
+  } catch {
+    return null;
+  }
 }
