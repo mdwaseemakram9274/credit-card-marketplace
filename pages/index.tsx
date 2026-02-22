@@ -1,17 +1,19 @@
 import Head from 'next/head'
 import { useEffect, useMemo, useState } from 'react'
 
+type MarketplaceCard = {
+  slug: string
+  name: string
+  description?: string
+  imageUrl?: string
+  annualFee?: string
+}
+
 type MarketplaceBank = {
   slug: string
   name: string
   description?: string
-  cards?: Array<{
-    slug: string
-    name: string
-    description?: string
-    imageUrl?: string
-    annualFee?: string
-  }>
+  cards?: MarketplaceCard[]
 }
 
 type MarketplaceResponse = {
@@ -19,9 +21,14 @@ type MarketplaceResponse = {
   banks: MarketplaceBank[]
 }
 
+type FeaturedCard = MarketplaceCard & {
+  bankSlug: string
+  bankName: string
+}
+
 export default function HomePage() {
   const [banks, setBanks] = useState<MarketplaceBank[]>([])
-  const [isLoadingBanks, setIsLoadingBanks] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const loadData = async () => {
@@ -37,7 +44,7 @@ export default function HomePage() {
       } catch {
         setBanks([])
       } finally {
-        setIsLoadingBanks(false)
+        setIsLoading(false)
       }
     }
 
@@ -45,6 +52,30 @@ export default function HomePage() {
   }, [])
 
   const banksToShow = useMemo(() => banks.slice(0, 6), [banks])
+
+  const featuredCards = useMemo<FeaturedCard[]>(() => {
+    return banks
+      .flatMap((bank) =>
+        (bank.cards || []).map((card) => ({
+          ...card,
+          bankSlug: bank.slug,
+          bankName: bank.name,
+        }))
+      )
+      .slice(0, 6)
+  }, [banks])
+
+  const totalCards = useMemo(
+    () => banks.reduce((acc, bank) => acc + (bank.cards?.length || 0), 0),
+    [banks]
+  )
+
+  const formatCompact = (value: number) => {
+    if (!value) return '0'
+    return new Intl.NumberFormat('en-IN', { notation: 'compact' }).format(value)
+  }
+
+  const heroImage = featuredCards[0]?.imageUrl || 'https://via.placeholder.com/900x520/1A73E8/ffffff?text=Credit+Card+Marketplace'
 
   return (
     <>
@@ -73,170 +104,631 @@ export default function HomePage() {
 
       <style jsx global>{`
         :root {
-          --primary: #0d6efd;
-          --text-dark: #111827;
+          --primary: #1a73e8;
+          --primary-hover: #155fc1;
+          --bg: #f5f7fa;
+          --surface: #ffffff;
+          --text: #1f2937;
           --text-muted: #6b7280;
-          --bg-soft: #f8fafc;
-          --border-soft: #e5e7eb;
+          --border: #e5e7eb;
+          --shadow-sm: 0 4px 14px rgba(15, 23, 42, 0.06);
+          --shadow-md: 0 10px 28px rgba(15, 23, 42, 0.1);
+          --radius-card: 14px;
+          --radius-btn: 10px;
+          --section-space: 64px;
+          --container: 1200px;
+          --ease: 0.25s ease;
         }
 
+        *,
+        *::before,
+        *::after {
+          box-sizing: border-box;
+        }
+
+        html,
         body {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
-            Arial, 'Noto Sans', sans-serif;
-          color: var(--text-dark);
-          background: #fff;
+          margin: 0;
+          padding: 0;
+          background: var(--bg);
+          color: var(--text);
+          font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial,
+            sans-serif;
+          line-height: 1.5;
         }
 
-        .navbar-custom {
-          background: #fff;
-          box-shadow: 0 1px 10px rgba(15, 23, 42, 0.07);
-          padding-top: 0.85rem;
-          padding-bottom: 0.85rem;
+        img {
+          max-width: 100%;
+          display: block;
         }
 
-        .brand-logo {
+        a {
+          color: inherit;
+          text-decoration: none;
+        }
+
+        .section {
+          padding: var(--section-space) 0;
+        }
+
+        .page-container {
+          width: min(100% - 2rem, var(--container));
+          margin-inline: auto;
+        }
+
+        .section-heading {
+          font-size: clamp(1.5rem, 3.2vw, 2rem);
           font-weight: 800;
-          font-size: 1.4rem;
+          letter-spacing: -0.02em;
+          margin: 0 0 1rem;
+        }
+
+        .section-sub {
+          color: var(--text-muted);
+          margin-bottom: 1.4rem;
+        }
+
+        .btn,
+        .button {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+          border: 1px solid transparent;
+          border-radius: var(--radius-btn);
+          padding: 0.75rem 1.1rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all var(--ease);
+        }
+
+        .btn-primary,
+        .button-primary,
+        .cta-primary {
+          background: var(--primary);
+          color: #fff;
+        }
+
+        .btn-primary:hover,
+        .button-primary:hover,
+        .cta-primary:hover {
+          background: var(--primary-hover);
+          transform: translateY(-1px);
+        }
+
+        .btn-outline,
+        .button-outline {
+          border-color: var(--primary);
+          color: var(--primary);
+          background: #fff;
+        }
+
+        .btn-outline:hover,
+        .button-outline:hover {
+          background: #eef4ff;
+        }
+
+        .top-nav,
+        .navbar {
+          position: sticky;
+          top: 0;
+          z-index: 1000;
+          background: #fff;
+          border-bottom: 1px solid var(--border);
+          box-shadow: 0 1px 10px rgba(2, 6, 23, 0.04);
+        }
+
+        .top-nav .inner,
+        .navbar .inner {
+          width: min(100% - 2rem, var(--container));
+          margin-inline: auto;
+          min-height: 72px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1rem;
+        }
+
+        .logo,
+        .brand-logo {
+          font-size: 2rem;
+          font-weight: 800;
           color: var(--primary) !important;
           letter-spacing: -0.02em;
         }
 
-        .nav-link {
-          color: #1f2937;
+        .nav-menu {
+          display: flex;
+          align-items: center;
+          gap: 1.3rem;
+        }
+
+        .nav-menu .nav-link {
+          color: var(--text);
           font-weight: 500;
+          transition: color var(--ease);
         }
 
-        .nav-link:hover {
+        .nav-menu .nav-link:hover {
           color: var(--primary);
-        }
-
-        .btn-dark-round {
-          border-radius: 999px;
-          padding: 0.6rem 1.2rem;
-          font-weight: 600;
         }
 
         .hero {
-          background: linear-gradient(180deg, #ffffff 0%, var(--bg-soft) 100%);
-          padding: 7.5rem 0 5rem;
+          background: linear-gradient(180deg, #ffffff 0%, #eef4ff 100%);
         }
 
-        .hero-title {
-          font-size: clamp(2.1rem, 6vw, 4.2rem);
-          line-height: 1.08;
+        .hero-grid {
+          display: grid;
+          grid-template-columns: 1.1fr 1fr;
+          gap: 2.5rem;
+          align-items: center;
+        }
+
+        .hero h1 {
+          font-size: clamp(2rem, 4.5vw, 3.4rem);
+          line-height: 1.1;
           letter-spacing: -0.03em;
+          margin: 0 0 1rem;
           font-weight: 800;
-          max-width: 1000px;
-          margin: 0 auto 1.35rem;
         }
 
-        .hero-subtitle {
-          font-size: clamp(1rem, 2.1vw, 1.3rem);
+        .hero p {
           color: var(--text-muted);
-          max-width: 800px;
-          margin: 0 auto 2.2rem;
+          font-size: 1.05rem;
+          margin: 0 0 1.6rem;
+          max-width: 620px;
         }
 
-        .hero-actions .btn {
-          min-width: 210px;
-          border-radius: 0.75rem;
-          font-weight: 600;
-          padding: 0.85rem 1.2rem;
+        .hero-actions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.75rem;
         }
 
-        .feature-row {
-          margin-top: 1.75rem;
-          margin-bottom: 2.25rem;
-        }
-
-        .mini-feature {
-          border: 1px solid var(--border-soft);
-          border-radius: 0.9rem;
+        .hero-illustration {
           background: #fff;
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          box-shadow: var(--shadow-sm);
+          overflow: hidden;
+        }
+
+        .metrics-row {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 1rem;
+        }
+
+        .metric-card {
+          background: #fff;
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          text-align: center;
           padding: 1rem;
-          height: 100%;
-          transition: all 0.22s ease;
-          box-shadow: 0 4px 14px rgba(2, 6, 23, 0.04);
+          box-shadow: var(--shadow-sm);
         }
 
-        .mini-feature:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 10px 22px rgba(2, 6, 23, 0.08);
+        .metric-value {
+          font-size: 1.4rem;
+          font-weight: 800;
         }
 
-        .mini-feature i {
-          font-size: 1.25rem;
-          color: var(--primary);
-          margin-bottom: 0.6rem;
-        }
-
-        .mini-feature h3 {
-          font-size: 1rem;
-          font-weight: 700;
-          margin-bottom: 0.3rem;
-        }
-
-        .mini-feature p {
+        .metric-label {
           font-size: 0.9rem;
           color: var(--text-muted);
-          margin-bottom: 0;
         }
 
-        .bank-card {
-          border: 1px solid var(--border-soft);
-          border-radius: 0.9rem;
+        .category-row {
+          display: grid;
+          grid-template-columns: repeat(6, minmax(0, 1fr));
+          gap: 0.9rem;
+        }
+
+        .category-chip {
           background: #fff;
-          padding: 1rem;
-          height: 100%;
-          transition: all 0.22s ease;
-          box-shadow: 0 4px 14px rgba(2, 6, 23, 0.04);
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          padding: 0.85rem;
+          text-align: center;
+          box-shadow: var(--shadow-sm);
+          transition: all var(--ease);
         }
 
-        .bank-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 10px 22px rgba(2, 6, 23, 0.08);
+        .category-chip:hover {
+          border-color: #c6dbff;
+          background: #f7fbff;
+          transform: translateY(-2px);
         }
 
-        .privacy-note {
-          font-size: 0.95rem;
-          color: var(--text-muted);
-          border-top: 1px solid var(--border-soft);
-          padding: 1.2rem 0 1.8rem;
-          margin-top: 2rem;
-        }
-
-        .privacy-note a {
+        .category-chip i {
           color: var(--primary);
-          text-decoration: none;
+          margin-bottom: 0.45rem;
+          font-size: 1.1rem;
+        }
+
+        .credit-card-list {
+          display: grid;
+          gap: 1rem;
+        }
+
+        .credit-card-item {
+          background: #fff;
+          border: 1px solid var(--border);
+          border-radius: var(--radius-card);
+          box-shadow: var(--shadow-sm);
+          display: grid;
+          grid-template-columns: 220px 1fr auto;
+          gap: 1rem;
+          align-items: center;
+          padding: 1rem;
+          transition: all var(--ease);
+        }
+
+        .credit-card-item:hover {
+          transform: translateY(-3px);
+          box-shadow: var(--shadow-md);
+        }
+
+        .credit-card-media img {
+          width: 100%;
+          height: 130px;
+          object-fit: cover;
+          border-radius: 10px;
+        }
+
+        .credit-card-content h3 {
+          margin: 0 0 0.35rem;
+          font-size: 1.15rem;
+          font-weight: 700;
+        }
+
+        .credit-card-content p {
+          margin: 0 0 0.25rem;
+          color: var(--text-muted);
+          font-size: 0.93rem;
+        }
+
+        .partners-grid {
+          display: grid;
+          grid-template-columns: repeat(6, minmax(0, 1fr));
+          gap: 1rem;
+        }
+
+        .partner-logo {
+          background: #fff;
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          min-height: 88px;
+          display: grid;
+          place-items: center;
+          box-shadow: var(--shadow-sm);
+          transition: all var(--ease);
+          color: var(--text-muted);
+          font-weight: 700;
+        }
+
+        .partner-logo:hover {
+          transform: translateY(-2px);
+          box-shadow: var(--shadow-md);
+          color: var(--text);
+        }
+
+        .features-grid {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 1rem;
+        }
+
+        .feature-card {
+          background: #fff;
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          padding: 1rem;
+          box-shadow: var(--shadow-sm);
+        }
+
+        .feature-card i {
+          color: var(--primary);
+          font-size: 1.15rem;
+          margin-bottom: 0.5rem;
+        }
+
+        .feature-card h4 {
+          margin: 0 0 0.35rem;
+          font-size: 1.02rem;
+          font-weight: 700;
+        }
+
+        .feature-card p {
+          margin: 0;
+          color: var(--text-muted);
+          font-size: 0.92rem;
+        }
+
+        .accordion-item {
+          background: #fff;
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          overflow: hidden;
+          margin-bottom: 0.75rem;
+          box-shadow: var(--shadow-sm);
+        }
+
+        .accordion-button {
           font-weight: 600;
+          color: var(--text);
         }
 
-        .privacy-note a:hover {
-          text-decoration: underline;
+        .accordion-button:not(.collapsed) {
+          background: #eef4ff;
+          color: #144ea5;
         }
 
-        @media (max-width: 575.98px) {
-          .hero {
-            padding-top: 6.4rem;
+        .awards-track {
+          display: grid;
+          grid-auto-flow: column;
+          grid-auto-columns: minmax(260px, 1fr);
+          gap: 1rem;
+          overflow-x: auto;
+          scroll-snap-type: x mandatory;
+          padding-bottom: 0.25rem;
+        }
+
+        .award-card {
+          scroll-snap-align: start;
+          background: #fff;
+          border: 1px solid var(--border);
+          border-radius: 14px;
+          padding: 1rem;
+          box-shadow: var(--shadow-sm);
+        }
+
+        .award-card h4 {
+          margin: 0 0 0.3rem;
+          font-size: 1.02rem;
+          font-weight: 700;
+        }
+
+        .award-card p {
+          margin: 0;
+          color: var(--text-muted);
+          font-size: 0.92rem;
+        }
+
+        .testimonials-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 1rem;
+        }
+
+        .testimonial-card {
+          background: #fff;
+          border: 1px solid var(--border);
+          border-radius: 14px;
+          padding: 1rem;
+          box-shadow: var(--shadow-sm);
+        }
+
+        .testimonial-card p {
+          margin: 0 0 0.7rem;
+          color: var(--text-muted);
+          font-size: 0.95rem;
+        }
+
+        .testimonial-user {
+          font-size: 0.92rem;
+          font-weight: 700;
+        }
+
+        .blog-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 1rem;
+        }
+
+        .blog-card {
+          background: #fff;
+          border: 1px solid var(--border);
+          border-radius: 14px;
+          overflow: hidden;
+          box-shadow: var(--shadow-sm);
+          transition: all var(--ease);
+        }
+
+        .blog-card:hover {
+          transform: translateY(-3px);
+          box-shadow: var(--shadow-md);
+        }
+
+        .blog-card-content {
+          padding: 1rem;
+        }
+
+        .blog-card h3 {
+          margin: 0 0 0.35rem;
+          font-size: 1.02rem;
+          font-weight: 700;
+        }
+
+        .blog-card p {
+          margin: 0;
+          color: var(--text-muted);
+          font-size: 0.92rem;
+        }
+
+        .app-banner {
+          background: linear-gradient(135deg, #1a73e8 0%, #2e86ff 100%);
+          color: #fff;
+          border-radius: 16px;
+          padding: 1.4rem;
+          display: grid;
+          grid-template-columns: 1fr auto;
+          gap: 1rem;
+          align-items: center;
+          box-shadow: var(--shadow-md);
+        }
+
+        .app-banner .btn {
+          background: #fff;
+          color: var(--primary);
+          border: 1px solid #fff;
+        }
+
+        .app-banner .btn:hover {
+          background: #f5f9ff;
+        }
+
+        .site-footer {
+          background: #0f172a;
+          color: #d1d5db;
+          margin-top: var(--section-space);
+        }
+
+        .footer-top {
+          padding: 3rem 0 2rem;
+        }
+
+        .footer-grid {
+          display: grid;
+          grid-template-columns: 1.4fr repeat(4, minmax(0, 1fr));
+          gap: 1.2rem;
+        }
+
+        .footer-title {
+          color: #fff;
+          font-weight: 700;
+          margin: 0 0 0.7rem;
+        }
+
+        .footer-links {
+          display: grid;
+          gap: 0.45rem;
+        }
+
+        .footer-links a {
+          color: #cbd5e1;
+          transition: color var(--ease);
+          font-size: 0.94rem;
+        }
+
+        .footer-links a:hover {
+          color: #fff;
+        }
+
+        .social-row {
+          display: flex;
+          gap: 0.6rem;
+          margin-top: 0.75rem;
+        }
+
+        .social-row a {
+          width: 34px;
+          height: 34px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.09);
+          display: grid;
+          place-items: center;
+          transition: all var(--ease);
+        }
+
+        .social-row a:hover {
+          background: var(--primary);
+          transform: translateY(-2px);
+        }
+
+        .footer-bottom {
+          border-top: 1px solid rgba(148, 163, 184, 0.2);
+          padding: 1rem 0;
+          font-size: 0.9rem;
+          color: #94a3b8;
+        }
+
+        @media (max-width: 1100px) {
+          .category-row {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+          }
+
+          .partners-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+          }
+
+          .features-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
+          .blog-grid,
+          .testimonials-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
+          .footer-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+
+        @media (max-width: 820px) {
+          :root {
+            --section-space: 40px;
+          }
+
+          .hero-grid {
+            grid-template-columns: 1fr;
           }
 
           .hero-actions {
-            width: 100%;
+            justify-content: center;
           }
 
-          .hero-actions .btn {
+          .credit-card-item {
+            grid-template-columns: 1fr;
+          }
+
+          .metrics-row {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
+          .partners-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+          }
+
+          .app-banner {
+            grid-template-columns: 1fr;
+            text-align: center;
+          }
+        }
+
+        @media (max-width: 560px) {
+          :root {
+            --section-space: 32px;
+          }
+
+          .category-row,
+          .partners-grid,
+          .features-grid,
+          .testimonials-grid,
+          .blog-grid,
+          .footer-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .hero h1 {
+            font-size: 1.85rem;
+          }
+
+          .btn,
+          .button {
             width: 100%;
           }
         }
       `}</style>
 
-      <header>
-        <nav className="navbar navbar-expand-lg navbar-custom fixed-top" aria-label="Main navigation">
-          <div className="container">
-            <a className="navbar-brand brand-logo" href="#">
-              CreditCardMarket
-            </a>
+      <header className="top-nav">
+        <div className="inner">
+          <a className="brand-logo" href="/">
+            CreditCardMarket
+          </a>
 
+          <nav className="navbar navbar-expand-lg p-0">
             <button
               className="navbar-toggler"
               type="button"
@@ -250,9 +742,9 @@ export default function HomePage() {
             </button>
 
             <div className="collapse navbar-collapse" id="mainNav">
-              <ul className="navbar-nav ms-auto align-items-lg-center gap-lg-1">
+              <ul className="navbar-nav nav-menu ms-auto align-items-lg-center">
                 <li className="nav-item">
-                  <a className="nav-link" href="#">
+                  <a className="nav-link" href="#how-it-works">
                     How It Works
                   </a>
                 </li>
@@ -267,7 +759,7 @@ export default function HomePage() {
                     Banks
                   </a>
                   <ul className="dropdown-menu">
-                    {isLoadingBanks ? (
+                    {isLoading ? (
                       <li>
                         <span className="dropdown-item-text text-muted">Loading banks...</span>
                       </li>
@@ -287,23 +779,18 @@ export default function HomePage() {
                   </ul>
                 </li>
                 <li className="nav-item">
-                  <a className="nav-link" href="#">
+                  <a className="nav-link" href="#categories">
                     Categories
                   </a>
                 </li>
                 <li className="nav-item">
-                  <a className="nav-link" href="#">
+                  <a className="nav-link" href="#featured-cards">
                     Offers
                   </a>
                 </li>
                 <li className="nav-item">
-                  <a className="nav-link" href="#">
-                    Pricing
-                  </a>
-                </li>
-                <li className="nav-item">
-                  <a className="nav-link" href="#">
-                    FAQ
+                  <a className="nav-link" href="#blog">
+                    Blog
                   </a>
                 </li>
                 <li className="nav-item">
@@ -311,108 +798,382 @@ export default function HomePage() {
                     Admin
                   </a>
                 </li>
-                <li className="nav-item ms-lg-3 mt-2 mt-lg-0">
-                  <a className="btn btn-dark btn-dark-round" href="#">
+                <li className="nav-item ms-lg-2">
+                  <a className="btn btn-dark rounded-pill px-4" href="#download-app">
                     Get Started
                   </a>
                 </li>
               </ul>
             </div>
-          </div>
-        </nav>
+          </nav>
+        </div>
       </header>
 
       <main>
-        <div style={{ height: '80px' }}></div>
-
-        <section className="hero text-center">
-          <div className="container">
-            <h1 className="hero-title">Your Credit Cards, Compared & Recommended by AI</h1>
-            <p className="hero-subtitle">
-              Discover the best card for your lifestyle in minutes — compare rewards, fees,
-              eligibility, and instant offers from top Indian banks.
-            </p>
-
-            <div className="hero-actions d-flex flex-column flex-sm-row justify-content-center gap-3">
-              <a href="#" className="btn btn-primary">
-                Check Eligibility Now
-              </a>
-              <a href="#banks" className="btn btn-outline-primary">
-                See All Cards
-              </a>
-            </div>
-
-            <div className="row g-3 g-md-4 feature-row justify-content-center">
-              <div className="col-12 col-sm-6 col-lg-3">
-                <article className="mini-feature">
-                  <i className="fa-solid fa-scale-balanced" aria-hidden="true"></i>
-                  <h3>Compare Cards</h3>
-                  <p>Side-by-side card comparison for rewards, fees, and perks.</p>
-                </article>
-              </div>
-
-              <div className="col-12 col-sm-6 col-lg-3">
-                <article className="mini-feature">
-                  <i className="fa-solid fa-circle-check" aria-hidden="true"></i>
-                  <h3>Check Eligibility</h3>
-                  <p>Know your approval chances quickly with soft checks.</p>
-                </article>
-              </div>
-
-              <div className="col-12 col-sm-6 col-lg-3">
-                <article className="mini-feature">
-                  <i className="fa-solid fa-bolt" aria-hidden="true"></i>
-                  <h3>Apply Instantly</h3>
-                  <p>Fast application flow with trusted bank partners.</p>
-                </article>
-              </div>
-
-              <div className="col-12 col-sm-6 col-lg-3">
-                <article className="mini-feature">
-                  <i className="fa-solid fa-tags" aria-hidden="true"></i>
-                  <h3>Track Offers</h3>
-                  <p>Stay updated on cashback, lounge, and joining bonus deals.</p>
-                </article>
+        <section className="section hero" id="how-it-works">
+          <div className="page-container hero-grid">
+            <div>
+              <h1>Your Credit Cards, Compared & Recommended by AI</h1>
+              <p>
+                Discover the best card for your lifestyle in minutes — compare rewards, fees,
+                eligibility, and instant offers from top Indian banks.
+              </p>
+              <div className="hero-actions">
+                <a href="#featured-cards" className="btn btn-primary">
+                  Check Eligibility Now
+                </a>
+                <a href="#featured-cards" className="btn btn-outline">
+                  See All Cards
+                </a>
               </div>
             </div>
 
-            <div id="banks" className="row g-3 g-md-4 mt-2 justify-content-center">
-              {isLoadingBanks ? (
-                <div className="col-12">
-                  <p className="text-muted mb-0">Loading banks...</p>
-                </div>
-              ) : banksToShow.length ? (
-                banksToShow.map((bank) => (
-                  <div className="col-12 col-md-4" key={bank.slug}>
-                    <article className="bank-card text-start">
-                      <h3 className="h5 fw-bold">{bank.name} Credit Cards</h3>
-                      <p className="text-muted mb-3">
-                        {bank.description || `Explore ${bank.name} card listings and offers.`}
+            <div className="hero-illustration">
+              <img src={heroImage} alt="Credit card marketplace illustration" />
+            </div>
+          </div>
+        </section>
+
+        <section className="section pt-0">
+          <div className="page-container metrics-row">
+            <article className="metric-card">
+              <div className="metric-value">{formatCompact(totalCards)}+</div>
+              <div className="metric-label">Cards Compared</div>
+            </article>
+            <article className="metric-card">
+              <div className="metric-value">{formatCompact(banks.length)}+</div>
+              <div className="metric-label">Partner Banks</div>
+            </article>
+            <article className="metric-card">
+              <div className="metric-value">200K+</div>
+              <div className="metric-label">Monthly Users</div>
+            </article>
+            <article className="metric-card">
+              <div className="metric-value">4.8/5</div>
+              <div className="metric-label">User Satisfaction</div>
+            </article>
+          </div>
+        </section>
+
+        <section className="section pt-0" id="categories">
+          <div className="page-container">
+            <h2 className="section-heading">Popular Categories</h2>
+            <div className="category-row">
+              {[
+                ['fa-plane', 'Travel'],
+                ['fa-cart-shopping', 'Shopping'],
+                ['fa-utensils', 'Dining'],
+                ['fa-gas-pump', 'Fuel'],
+                ['fa-gift', 'Rewards'],
+                ['fa-wallet', 'Cashback'],
+              ].map(([icon, label]) => (
+                <article className="category-chip" key={label}>
+                  <i className={`fa-solid ${icon}`} aria-hidden="true"></i>
+                  <div>{label}</div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="section" id="featured-cards">
+          <div className="page-container">
+            <h2 className="section-heading">Featured Credit Cards</h2>
+            <p className="section-sub">Compare top cards and apply instantly in a few clicks.</p>
+
+            <div className="credit-card-list">
+              {featuredCards.length ? (
+                featuredCards.map((card) => (
+                  <article className="credit-card-item" key={`${card.bankSlug}-${card.slug}`}>
+                    <div className="credit-card-media">
+                      <img
+                        src={
+                          card.imageUrl ||
+                          `https://via.placeholder.com/500x280/1A73E8/ffffff?text=${encodeURIComponent(
+                            card.name
+                          )}`
+                        }
+                        alt={card.name}
+                      />
+                    </div>
+                    <div className="credit-card-content">
+                      <h3>{card.name}</h3>
+                      <p>
+                        <strong>Bank:</strong> {card.bankName}
                       </p>
-                      <a href={`/bank.html?bank=${encodeURIComponent(bank.slug)}`} className="btn btn-primary btn-sm">
-                        View Cards
+                      <p>{card.description || 'Premium benefits and rewards tailored to your spends.'}</p>
+                      <p>
+                        <strong>Annual Fee:</strong> {card.annualFee || 'As per issuer terms'}
+                      </p>
+                    </div>
+                    <div>
+                      <a
+                        className="btn btn-primary"
+                        href={`/card.html?bank=${encodeURIComponent(card.bankSlug)}&card=${encodeURIComponent(card.slug)}`}
+                      >
+                        Apply Now
                       </a>
-                    </article>
-                  </div>
+                    </div>
+                  </article>
                 ))
               ) : (
-                <div className="col-12">
-                  <article className="bank-card text-start">
-                    <h3 className="h5 fw-bold mb-2">No banks available</h3>
-                    <p className="text-muted mb-0">Add banks/cards from Admin and they will appear here automatically.</p>
-                  </article>
-                </div>
+                <article className="card-surface p-4 text-center text-muted">
+                  No cards available. Add cards from Admin and they will appear here.
+                </article>
               )}
             </div>
           </div>
         </section>
+
+        <section className="section pt-0">
+          <div className="page-container">
+            <h2 className="section-heading">Top Partner Banks</h2>
+            <div className="partners-grid">
+              {banksToShow.length
+                ? banksToShow.map((bank) => <article key={bank.slug} className="partner-logo">{bank.name}</article>)
+                : ['HDFC', 'SBI', 'Axis', 'ICICI', 'Kotak', 'IDFC'].map((name) => (
+                    <article key={name} className="partner-logo">
+                      {name}
+                    </article>
+                  ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="section" id="features">
+          <div className="page-container">
+            <h2 className="section-heading">Why Choose CreditCardMarket</h2>
+            <div className="features-grid">
+              {[
+                ['fa-scale-balanced', 'Smart Comparison', 'Compare fees, rewards, and eligibility side by side.'],
+                ['fa-circle-check', 'Fast Eligibility', 'Instantly understand your likely approval chances.'],
+                ['fa-bolt', 'Quick Apply', 'Apply directly through trusted issuer flows.'],
+                ['fa-shield', 'Secure Data', 'Your information is protected with strong safeguards.'],
+              ].map(([icon, title, desc]) => (
+                <article className="feature-card" key={title}>
+                  <i className={`fa-solid ${icon}`} aria-hidden="true"></i>
+                  <h4>{title}</h4>
+                  <p>{desc}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="section pt-0" id="education">
+          <div className="page-container">
+            <h2 className="section-heading">Learn Before You Apply</h2>
+            <div className="accordion" id="educationAccordion">
+              {[
+                ['How to choose the right card?', 'Pick based on your spend categories, annual fee value, and redemption flexibility.'],
+                ['What credit score is ideal?', 'A score of 750+ usually improves card approval and better limit offers.'],
+                ['Are there hidden charges?', 'Always review joining fee, annual fee, finance charge, and late payment terms.'],
+                ['How to maximize rewards?', 'Use category-specific cards and track milestone offers regularly.'],
+              ].map(([title, body], index) => {
+                const itemId = `edu-${index}`
+                return (
+                  <div className="accordion-item" key={itemId}>
+                    <h3 className="accordion-header" id={`${itemId}-head`}>
+                      <button
+                        className={`accordion-button ${index === 0 ? '' : 'collapsed'}`}
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target={`#${itemId}-body`}
+                        aria-expanded={index === 0}
+                        aria-controls={`${itemId}-body`}
+                      >
+                        {title}
+                      </button>
+                    </h3>
+                    <div
+                      id={`${itemId}-body`}
+                      className={`accordion-collapse collapse ${index === 0 ? 'show' : ''}`}
+                      aria-labelledby={`${itemId}-head`}
+                      data-bs-parent="#educationAccordion"
+                    >
+                      <div className="accordion-body text-muted">{body}</div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+
+        <section className="section pt-0" id="awards">
+          <div className="page-container">
+            <h2 className="section-heading">Awards & Recognition</h2>
+            <div className="awards-track">
+              {[
+                ['Best Fintech UX 2025', 'Recognized for user-first card comparison experience.'],
+                ['Top Credit Marketplace', 'Trusted platform for discovering cards in India.'],
+                ['Fastest Growth Award', 'Rapid adoption among young professionals and families.'],
+                ['Innovation in AI Advice', 'Personalized card recommendations backed by data.'],
+              ].map(([title, desc]) => (
+                <article className="award-card" key={title}>
+                  <h4>{title}</h4>
+                  <p>{desc}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="section" id="testimonials">
+          <div className="page-container">
+            <h2 className="section-heading">What Customers Say</h2>
+            <div className="testimonials-grid">
+              {[
+                ['“Found the best travel card in under 10 minutes.”', 'Aman S. · Bengaluru'],
+                ['“The comparison made annual fee vs rewards super clear.”', 'Neha P. · Mumbai'],
+                ['“Applied directly and got approved quickly.”', 'Rahul K. · Delhi'],
+              ].map(([quote, user]) => (
+                <article className="testimonial-card" key={user}>
+                  <p>{quote}</p>
+                  <div className="testimonial-user">{user}</div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="section pt-0" id="faq">
+          <div className="page-container faq-section">
+            <h2 className="section-heading">Frequently Asked Questions</h2>
+            <div className="accordion" id="faqAccordion">
+              {[
+                ['Does checking eligibility impact my score?', 'No. Soft checks on this platform do not reduce your credit score.'],
+                ['How often are card details updated?', 'We regularly sync card data; still verify final issuer terms before applying.'],
+                ['Can I compare multiple cards?', 'Yes, you can compare rewards, annual fee, and eligibility parameters side by side.'],
+              ].map(([title, body], index) => {
+                const itemId = `faq-${index}`
+                return (
+                  <div className="accordion-item" key={itemId}>
+                    <h3 className="accordion-header" id={`${itemId}-head`}>
+                      <button
+                        className={`accordion-button ${index === 0 ? '' : 'collapsed'}`}
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target={`#${itemId}-body`}
+                        aria-expanded={index === 0}
+                        aria-controls={`${itemId}-body`}
+                      >
+                        {title}
+                      </button>
+                    </h3>
+                    <div
+                      id={`${itemId}-body`}
+                      className={`accordion-collapse collapse ${index === 0 ? 'show' : ''}`}
+                      aria-labelledby={`${itemId}-head`}
+                      data-bs-parent="#faqAccordion"
+                    >
+                      <div className="accordion-body">{body}</div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+
+        <section className="section" id="blog">
+          <div className="page-container">
+            <h2 className="section-heading">Latest From Our Blog</h2>
+            <div className="blog-grid">
+              {[
+                ['https://via.placeholder.com/800x420/1A73E8/ffffff?text=Credit+Score+Guide', 'How to Improve Your Credit Score Before Applying', 'Actionable ways to strengthen approval odds for premium cards.'],
+                ['https://via.placeholder.com/800x420/1A73E8/ffffff?text=Rewards+Guide', 'Cashback vs Rewards: Which Card Is Better?', 'Pick the right card model based on your monthly spending.'],
+                ['https://via.placeholder.com/800x420/1A73E8/ffffff?text=Travel+Cards', 'Best Card Features for Frequent Travelers', 'Lounge, forex markup, and milestone benefits explained simply.'],
+              ].map(([image, title, desc]) => (
+                <article className="blog-card" key={title}>
+                  <img src={image} alt={title} />
+                  <div className="blog-card-content">
+                    <h3>{title}</h3>
+                    <p>{desc}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="section pt-0" id="download-app">
+          <div className="page-container">
+            <article className="app-banner">
+              <div>
+                <h2 className="h4 mb-2 fw-bold">Get the CreditCardMarket App</h2>
+                <p className="mb-0">Track offers, compare cards on the go, and apply instantly from your phone.</p>
+              </div>
+              <a href="#" className="btn">
+                Download App
+              </a>
+            </article>
+          </div>
+        </section>
       </main>
 
-      <footer>
-        <div className="container text-center">
-          <p className="privacy-note mb-0">
-            We respect your privacy. No spam, no selling data. <a href="#">See our Privacy Policy.</a>
-          </p>
+      <footer className="site-footer">
+        <div className="page-container footer-top">
+          <div className="footer-grid">
+            <div>
+              <h3 className="footer-title">CreditCardMarket</h3>
+              <p className="mb-2">India’s modern credit card marketplace for smarter decisions.</p>
+              <div className="social-row">
+                <a href="#" aria-label="Facebook">
+                  <i className="fa-brands fa-facebook-f"></i>
+                </a>
+                <a href="#" aria-label="X">
+                  <i className="fa-brands fa-x-twitter"></i>
+                </a>
+                <a href="#" aria-label="Instagram">
+                  <i className="fa-brands fa-instagram"></i>
+                </a>
+                <a href="#" aria-label="LinkedIn">
+                  <i className="fa-brands fa-linkedin-in"></i>
+                </a>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="footer-title">Cards</h4>
+              <div className="footer-links">
+                <a href="#featured-cards">Travel Cards</a>
+                <a href="#featured-cards">Cashback Cards</a>
+                <a href="#featured-cards">Rewards Cards</a>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="footer-title">Company</h4>
+              <div className="footer-links">
+                <a href="#how-it-works">How It Works</a>
+                <a href="#features">Features</a>
+                <a href="#blog">Blog</a>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="footer-title">Resources</h4>
+              <div className="footer-links">
+                <a href="#faq">FAQs</a>
+                <a href="#education">Guides</a>
+                <a href="/admin.html">Admin</a>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="footer-title">Legal</h4>
+              <div className="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Use</a>
+                <a href="#">Disclosures</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="footer-bottom">
+          <div className="page-container">© 2026 CreditCardMarket. All rights reserved.</div>
         </div>
       </footer>
 
