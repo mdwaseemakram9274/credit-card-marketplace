@@ -406,11 +406,6 @@
                     </div>
 
                     <div class="col-12 col-md-4">
-                      <label for="rating" class="form-label">Rating (1 to 5)</label>
-                      <input id="rating" type="number" step="0.1" min="0" max="5" class="form-control" placeholder="e.g. 4.8" />
-                    </div>
-
-                    <div class="col-12 col-md-4">
                       <label for="network" class="form-label">Powered By / Network</label>
                       <select id="network" class="form-select">
                         <option value="">Select Network</option>
@@ -436,7 +431,7 @@
                     <div class="col-12">
                       <label for="cardImageFile" class="form-label">Upload Card Image</label>
                       <input id="cardImageFile" type="file" class="form-control" accept="image/*" />
-                      <small class="text-muted d-block mt-1">Upload a card image (JPG, PNG, WEBP). This image is saved with the card data in localStorage.</small>
+                      <small class="text-muted d-block mt-1">Upload a card image (JPG, PNG, WEBP) or paste directly from clipboard using <strong>Cmd/Ctrl + V</strong>.</small>
                       <div class="img-preview-wrap" id="imagePreviewWrap">
                         <img src="https://via.placeholder.com/120x70?text=Preview" alt="Preview" class="thumb-preview" id="imagePreview" />
                         <span>Image preview</span>
@@ -596,7 +591,7 @@
           <h2 class="section-title mb-0">
             <i class="fa-solid fa-table-list text-primary me-2"></i>Dashboard - Cards List
           </h2>
-          <small class="text-muted">Stored in localStorage key: <code>creditCards</code></small>
+          <small class="text-muted">Stored in Supabase</small>
         </div>
 
         <div class="row g-2 mb-3">
@@ -670,18 +665,19 @@
     // ============================================================
     // Credit Card Admin Panel Script
     // Handles:
-    // - localStorage CRUD (add/edit/delete cards)
+    // - Supabase CRUD (add/edit/delete cards)
     // - table rendering
     // - form validation
     // - stats updates
     // - alerts and delete modal
     // ============================================================
 
-    const STORAGE_KEY = 'creditCards';
+    const ADMIN_CARDS_API = '/api/admin/cards';
 
     // In-memory state for delete modal target
     let deleteTargetId = null;
     let currentImageData = '';
+    let cardsCache = [];
 
     // Refs
     const form = document.getElementById('cardForm');
@@ -707,11 +703,9 @@
     // Initialize app on page load
     init();
 
-    function init() {
-      seedDataIfEmpty();
-      updateFilterOptions();
-      renderTable();
+    async function init() {
       wireEvents();
+      await refreshCardsFromServer();
       setActiveView('dashboard');
     }
 
@@ -725,6 +719,7 @@
       bankSelect.addEventListener('change', handleBankSelectionChange);
       filterBank.addEventListener('change', renderTable);
       filterJoiningFee.addEventListener('change', renderTable);
+      document.addEventListener('paste', handlePasteImageFromClipboard);
 
       viewLinks.forEach((link) => {
         link.addEventListener('click', (event) => {
@@ -734,9 +729,9 @@
         });
       });
 
-      confirmDeleteBtn.addEventListener('click', () => {
+      confirmDeleteBtn.addEventListener('click', async () => {
         if (!deleteTargetId) return;
-        deleteCard(deleteTargetId);
+        await deleteCard(deleteTargetId);
         deleteTargetId = null;
         deleteModal.hide();
       });
@@ -754,18 +749,53 @@
     }
 
     // ------------------------------------------------------------
-    // localStorage helpers
+    // Supabase API helpers
     // ------------------------------------------------------------
     function getCards() {
+      return cardsCache;
+    }
+
+    async function refreshCardsFromServer() {
       try {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-      } catch {
-        return [];
+        const response = await fetch(ADMIN_CARDS_API, { method: 'GET' });
+        const payload = await response.json();
+
+        if (!response.ok || !payload.ok) {
+          throw new Error(payload.error || `Unable to load cards (status ${response.status})`);
+        }
+
+        cardsCache = Array.isArray(payload.cards) ? payload.cards : [];
+        updateFilterOptions();
+        renderTable();
+      } catch (error) {
+        cardsCache = [];
+        updateFilterOptions();
+        renderTable();
+        showAlert(error instanceof Error ? error.message : 'Failed to load cards from Supabase.', 'danger');
       }
     }
 
-    function saveCards(cards) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
+    async function saveCardToServer(card) {
+      const method = card.id ? 'PUT' : 'POST';
+      const response = await fetch(ADMIN_CARDS_API, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(card),
+      });
+      const payload = await response.json();
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.error || `Failed to save card (status ${response.status}).`);
+      }
+    }
+
+    async function deleteCardFromServer(id) {
+      const response = await fetch(`${ADMIN_CARDS_API}?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+      });
+      const payload = await response.json();
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.error || `Failed to delete card (status ${response.status}).`);
+      }
     }
 
     function handleBankSelectionChange() {
@@ -835,164 +865,6 @@
         return 'free';
       }
       return 'paid';
-    }
-
-    // ------------------------------------------------------------
-    // Seed initial sample data (5 cards)
-    // ------------------------------------------------------------
-    function seedDataIfEmpty() {
-      const cards = getCards();
-      if (cards.length > 0) return;
-
-      const seedCards = [
-        {
-          id: uid(),
-          bank: 'SBI',
-          cardName: 'SBI Cashback Credit Card',
-          rating: '4.8',
-          network: 'Visa',
-          cardImageUrl: 'https://via.placeholder.com/120x70/0d6efd/ffffff?text=SBI+Cashback',
-          description: 'Flat cashback-oriented card for online-first spenders.',
-          joiningFee: '₹999 + taxes',
-          annualFee: '₹999 + taxes',
-          financeCharges: '3.5% p.m. (42% p.a.)',
-          cashWithdrawalFee: '2.5% (min ₹500)',
-          redemptionFee: 'Nil',
-          latePaymentCharges: 'As per statement outstanding slabs.',
-          cashbackRate: '5% online, 1% offline',
-          cashbackCap: '₹5,000 per statement cycle',
-          rewardsRate: '',
-          keyBenefits: 'High online cashback\nSimple value tracking',
-          welcomeBonus: 'Intro cashback campaign as per issuer terms',
-          milestoneBenefits: '',
-          loungeAccess: 'NA',
-          forexMarkup: '3.5%',
-          golfBenefits: 'NA',
-          pros: 'Strong online cashback rate\nGood fit for e-commerce users',
-          cons: 'Cap on cashback\nLimited premium travel perks',
-          bestFor: 'Online shopping, bill payments',
-          cardType: 'Cashback',
-          merchantExclusions: 'Wallet loads, rent, fuel, selected MCC exclusions'
-        },
-        {
-          id: uid(),
-          bank: 'HDFC',
-          cardName: 'HDFC Diners Club Black Credit Card',
-          rating: '4.7',
-          network: 'Mastercard',
-          cardImageUrl: 'https://via.placeholder.com/120x70/111827/ffffff?text=HDFC+DCB',
-          description: 'Premium rewards + travel-focused super card.',
-          joiningFee: '₹10,000 + taxes',
-          annualFee: '₹10,000 + taxes',
-          financeCharges: '3.6% p.m.',
-          cashWithdrawalFee: '2.5% (min ₹500)',
-          redemptionFee: 'Varies by redemption type',
-          latePaymentCharges: 'Issuer slab based',
-          cashbackRate: '',
-          cashbackCap: '',
-          rewardsRate: '10 RP per ₹150 on SmartBuy categories',
-          keyBenefits: 'Lounge access\nGolf privileges\nPremium reward multipliers',
-          welcomeBonus: 'Welcome benefit as per current campaign',
-          milestoneBenefits: 'Spend milestone vouchers on select thresholds',
-          loungeAccess: 'Domestic + international access',
-          forexMarkup: '2%',
-          golfBenefits: 'Complimentary rounds (subject to terms)',
-          pros: 'Premium travel and rewards ecosystem',
-          cons: 'High annual fee',
-          bestFor: 'Travel, premium lifestyle, high annual spends',
-          cardType: 'Premium',
-          merchantExclusions: 'As per issuer reward exclusion list'
-        },
-        {
-          id: uid(),
-          bank: 'ICICI',
-          cardName: 'Amazon Pay ICICI Credit Card',
-          rating: '4.6',
-          network: 'Visa',
-          cardImageUrl: 'https://via.placeholder.com/120x70/1f2937/ffffff?text=Amazon+Pay',
-          description: 'Lifetime free cashback card for Amazon ecosystem users.',
-          joiningFee: 'Nil',
-          annualFee: 'Nil',
-          financeCharges: '3.5% p.m.',
-          cashWithdrawalFee: '2.5% (min ₹500)',
-          redemptionFee: 'Nil',
-          latePaymentCharges: 'As per issuer slabs',
-          cashbackRate: 'Up to 5% on Amazon',
-          cashbackCap: 'As per issuer terms',
-          rewardsRate: '',
-          keyBenefits: 'No annual fee\nSimple cashback credit',
-          welcomeBonus: '',
-          milestoneBenefits: '',
-          loungeAccess: 'NA',
-          forexMarkup: '3.5%',
-          golfBenefits: 'NA',
-          pros: 'Strong Amazon value for Prime users',
-          cons: 'Lower value outside partner spends',
-          bestFor: 'Frequent Amazon shoppers',
-          cardType: 'Cashback',
-          merchantExclusions: 'Rent, fuel surcharge, wallet transfers'
-        },
-        {
-          id: uid(),
-          bank: 'Axis',
-          cardName: 'Axis Bank ACE Credit Card',
-          rating: '4.4',
-          network: 'Visa',
-          cardImageUrl: 'https://via.placeholder.com/120x70/0ea5e9/ffffff?text=Axis+ACE',
-          description: 'Everyday utility + bill payment cashback card.',
-          joiningFee: '₹499 + taxes',
-          annualFee: '₹499 + taxes',
-          financeCharges: '3.6% p.m.',
-          cashWithdrawalFee: '2.5% (min ₹500)',
-          redemptionFee: 'Nil',
-          latePaymentCharges: 'As per outstanding amount',
-          cashbackRate: '5% on utilities (partner based), 1.5% offline',
-          cashbackCap: 'As per issuer campaign cap',
-          rewardsRate: '',
-          keyBenefits: 'Utility bill value\nDecent general cashback',
-          welcomeBonus: '',
-          milestoneBenefits: '',
-          loungeAccess: 'Limited / NA',
-          forexMarkup: '3.5%',
-          golfBenefits: 'NA',
-          pros: 'Good everyday value',
-          cons: 'Campaign terms can change',
-          bestFor: 'Utility and grocery payments',
-          cardType: 'Cashback',
-          merchantExclusions: 'Wallet loads and some excluded MCC categories'
-        },
-        {
-          id: uid(),
-          bank: 'IDFC',
-          cardName: 'IDFC FIRST Select Credit Card',
-          rating: '4.3',
-          network: 'Visa',
-          cardImageUrl: 'https://via.placeholder.com/120x70/7c3aed/ffffff?text=IDFC+Select',
-          description: 'Lifestyle-focused card with rewards and benefits.',
-          joiningFee: 'Nil',
-          annualFee: 'Nil',
-          financeCharges: '3.6% p.m.',
-          cashWithdrawalFee: '2.5% (min ₹250)',
-          redemptionFee: 'Nil / issuer specific',
-          latePaymentCharges: 'As per due amount slabs',
-          cashbackRate: '',
-          cashbackCap: '',
-          rewardsRate: 'Up to 10X on select categories',
-          keyBenefits: 'Lifestyle offers\nReward multipliers',
-          welcomeBonus: 'Welcome benefit based on campaign',
-          milestoneBenefits: '',
-          loungeAccess: 'Available as per plan',
-          forexMarkup: '1.99% to 3.5% (variant dependent)',
-          golfBenefits: 'Variant dependent',
-          pros: 'No joining/annual fee in many variants',
-          cons: 'Complex reward structure',
-          bestFor: 'Lifestyle and mixed spends',
-          cardType: 'Rewards',
-          merchantExclusions: 'Issuer-defined exclusion categories'
-        }
-      ];
-
-      saveCards(seedCards);
     }
 
     // ------------------------------------------------------------
@@ -1078,7 +950,6 @@
 
       // Numeric/rate positive checks (optional fields)
       const numericCheckFields = [
-        payload.rating,
         payload.cashbackRate,
         payload.cashbackCap,
         payload.rewardsRate,
@@ -1096,35 +967,15 @@
         return;
       }
 
-      // Rating range validation if given
-      if (payload.rating) {
-        const ratingValue = Number(payload.rating);
-        if (Number.isNaN(ratingValue) || ratingValue < 1 || ratingValue > 5) {
-          showAlert('Rating must be between 1 and 5 (e.g., 4.8).', 'danger');
-          return;
-        }
+      try {
+        await saveCardToServer(payload);
+        showAlert(payload.id ? 'Card updated successfully.' : 'Card added successfully.', 'success');
+        await refreshCardsFromServer();
+        resetForm();
+        setActiveView('dashboard');
+      } catch (error) {
+        showAlert(error instanceof Error ? error.message : 'Failed to save card.', 'danger');
       }
-
-      const cards = getCards();
-
-      // Edit vs Add mode
-      if (payload.id) {
-        const index = cards.findIndex((card) => card.id === payload.id);
-        if (index > -1) {
-          cards[index] = payload;
-          showAlert('Card updated successfully.', 'success');
-        }
-      } else {
-        payload.id = uid();
-        cards.unshift(payload);
-        showAlert('Card added successfully.', 'success');
-      }
-
-      saveCards(cards);
-      updateFilterOptions();
-      renderTable();
-      resetForm();
-      setActiveView('dashboard');
     }
 
     function collectFormData() {
@@ -1132,7 +983,6 @@
         id: editingCardIdInput.value || '',
         bank: getResolvedBankName(),
         cardName: valueOf('cardName'),
-        rating: valueOf('rating'),
         network: valueOf('network'),
         description: valueOf('description'),
         joiningFee: valueOf('joiningFee'),
@@ -1197,7 +1047,6 @@
 
       setBankFieldValue(card.bank);
       setValue('cardName', card.cardName);
-      setValue('rating', card.rating);
       setValue('network', card.network);
       currentImageData = card.cardImageUrl || '';
       if (imageFileInput) {
@@ -1242,12 +1091,14 @@
       deleteModal.show();
     }
 
-    function deleteCard(id) {
-      const cards = getCards().filter((card) => card.id !== id);
-      saveCards(cards);
-      updateFilterOptions();
-      renderTable();
-      showAlert('Card deleted successfully.', 'success');
+    async function deleteCard(id) {
+      try {
+        await deleteCardFromServer(id);
+        await refreshCardsFromServer();
+        showAlert('Card deleted successfully.', 'success');
+      } catch (error) {
+        showAlert(error instanceof Error ? error.message : 'Failed to delete card.', 'danger');
+      }
     }
 
     // ------------------------------------------------------------
@@ -1274,14 +1125,50 @@
         return;
       }
 
-      const reader = new FileReader();
-      reader.onload = () => {
-        updateImagePreview(String(reader.result || ''));
-      };
-      reader.onerror = () => {
-        showAlert('Unable to preview selected image.', 'warning');
-      };
-      reader.readAsDataURL(selectedFile);
+      fileToDataUrl(selectedFile)
+        .then((dataUrl) => {
+          currentImageData = dataUrl;
+          updateImagePreview(dataUrl);
+        })
+        .catch(() => {
+          showAlert('Unable to preview selected image.', 'warning');
+        });
+    }
+
+    function handlePasteImageFromClipboard(event) {
+      if (cardFormSection.classList.contains('d-none')) {
+        return;
+      }
+
+      const clipboardItems = event.clipboardData && event.clipboardData.items;
+      if (!clipboardItems || !clipboardItems.length) {
+        return;
+      }
+
+      const imageItem = Array.from(clipboardItems).find((item) => item.type && item.type.startsWith('image/'));
+      if (!imageItem) {
+        return;
+      }
+
+      event.preventDefault();
+      const imageFile = imageItem.getAsFile();
+      if (!imageFile) {
+        showAlert('Unable to read pasted image from clipboard.', 'warning');
+        return;
+      }
+
+      fileToDataUrl(imageFile)
+        .then((dataUrl) => {
+          currentImageData = dataUrl;
+          if (imageFileInput) {
+            imageFileInput.value = '';
+          }
+          updateImagePreview(dataUrl);
+          showAlert('Image pasted from clipboard.', 'success');
+        })
+        .catch(() => {
+          showAlert('Failed to process pasted image.', 'danger');
+        });
     }
 
     function updateImagePreview(source) {
@@ -1348,10 +1235,6 @@
       const el = document.getElementById(id);
       if (!el) return;
       el.value = val || '';
-    }
-
-    function uid() {
-      return `card_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     }
 
     // Basic HTML escaping helpers for safe rendering
