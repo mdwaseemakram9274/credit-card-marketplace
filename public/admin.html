@@ -260,11 +260,8 @@
     </div>
 
     <nav class="nav flex-column mb-3">
-      <a class="nav-link active" href="#"><i class="fa-solid fa-table-columns me-2"></i>Dashboard</a>
+      <a class="nav-link active" href="#cardsTableSection"><i class="fa-solid fa-table-columns me-2"></i>Dashboard</a>
       <a class="nav-link" href="#cardFormSection"><i class="fa-solid fa-plus me-2"></i>Add / Edit Card</a>
-      <a class="nav-link" href="#cardsTableSection"><i class="fa-solid fa-list-check me-2"></i>Cards Overview</a>
-      <a class="nav-link" href="#"><i class="fa-solid fa-database me-2"></i>Data Sync</a>
-      <a class="nav-link" href="#"><i class="fa-solid fa-gear me-2"></i>Settings</a>
     </nav>
 
     <div class="sidebar-footer">
@@ -290,9 +287,8 @@
     </div>
     <div class="offcanvas-body">
       <nav class="nav flex-column">
-        <a class="nav-link text-white active" href="#">Dashboard</a>
+        <a class="nav-link text-white active" href="#cardsTableSection" data-bs-dismiss="offcanvas">Dashboard</a>
         <a class="nav-link text-white" href="#cardFormSection" data-bs-dismiss="offcanvas">Add / Edit Card</a>
-        <a class="nav-link text-white" href="#cardsTableSection" data-bs-dismiss="offcanvas">Cards Overview</a>
       </nav>
     </div>
   </div>
@@ -468,8 +464,9 @@
                     </div>
 
                     <div class="col-12">
-                      <label for="cardImageUrl" class="form-label">Card Image URL</label>
-                      <input id="cardImageUrl" type="url" class="form-control" placeholder="https://..." />
+                      <label for="cardImageFile" class="form-label">Upload Card Image</label>
+                      <input id="cardImageFile" type="file" class="form-control" accept="image/*" />
+                      <small class="text-muted d-block mt-1">Upload a card image (JPG, PNG, WEBP). This image is saved with the card data in localStorage.</small>
                       <div class="img-preview-wrap" id="imagePreviewWrap">
                         <img src="https://via.placeholder.com/120x70?text=Preview" alt="Preview" class="thumb-preview" id="imagePreview" />
                         <span>Image preview</span>
@@ -486,10 +483,6 @@
                       <input id="bestFor" type="text" class="form-control" placeholder="e.g. Online shopping, everyday spends" />
                     </div>
 
-                    <div class="col-12 col-md-6">
-                      <label for="reviewSummary" class="form-label">Review / User Rating Summary</label>
-                      <textarea id="reviewSummary" class="form-control textarea-limit" rows="2" maxlength="2000" placeholder="Quick summary of card reviews"></textarea>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -631,7 +624,7 @@
       <section id="cardsTableSection" class="panel-card p-3 p-md-4">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
           <h2 class="section-title mb-0">
-            <i class="fa-solid fa-table-list text-primary me-2"></i>Cards Overview
+            <i class="fa-solid fa-table-list text-primary me-2"></i>Dashboard - Cards List
           </h2>
           <small class="text-muted">Stored in localStorage key: <code>creditCards</code></small>
         </div>
@@ -702,12 +695,13 @@
 
     // In-memory state for delete modal target
     let deleteTargetId = null;
+    let currentImageData = '';
 
     // Refs
     const form = document.getElementById('cardForm');
     const tableBody = document.getElementById('cardsTableBody');
     const alertContainer = document.getElementById('alertContainer');
-    const imageInput = document.getElementById('cardImageUrl');
+    const imageFileInput = document.getElementById('cardImageFile');
     const imagePreview = document.getElementById('imagePreview');
     const resetFormBtn = document.getElementById('resetFormBtn');
     const editingCardIdInput = document.getElementById('editingCardId');
@@ -737,7 +731,7 @@
     function wireEvents() {
       form.addEventListener('submit', handleFormSubmit);
       resetFormBtn.addEventListener('click', resetForm);
-      imageInput.addEventListener('input', handleImagePreview);
+      imageFileInput.addEventListener('change', handleImageFilePreview);
 
       confirmDeleteBtn.addEventListener('click', () => {
         if (!deleteTargetId) return;
@@ -806,7 +800,6 @@
           golfBenefits: 'NA',
           pros: 'Strong online cashback rate\nGood fit for e-commerce users',
           cons: 'Cap on cashback\nLimited premium travel perks',
-          reviewSummary: 'Popular among value-focused users.',
           bestFor: 'Online shopping, bill payments',
           cardType: 'Cashback',
           merchantExclusions: 'Wallet loads, rent, fuel, selected MCC exclusions'
@@ -836,7 +829,6 @@
           golfBenefits: 'Complimentary rounds (subject to terms)',
           pros: 'Premium travel and rewards ecosystem',
           cons: 'High annual fee',
-          reviewSummary: 'Top choice for high spenders.',
           bestFor: 'Travel, premium lifestyle, high annual spends',
           cardType: 'Premium',
           merchantExclusions: 'As per issuer reward exclusion list'
@@ -866,7 +858,6 @@
           golfBenefits: 'NA',
           pros: 'Strong Amazon value for Prime users',
           cons: 'Lower value outside partner spends',
-          reviewSummary: 'Very good no-fee cashback option.',
           bestFor: 'Frequent Amazon shoppers',
           cardType: 'Cashback',
           merchantExclusions: 'Rent, fuel surcharge, wallet transfers'
@@ -896,7 +887,6 @@
           golfBenefits: 'NA',
           pros: 'Good everyday value',
           cons: 'Campaign terms can change',
-          reviewSummary: 'Solid entry card for household spends.',
           bestFor: 'Utility and grocery payments',
           cardType: 'Cashback',
           merchantExclusions: 'Wallet loads and some excluded MCC categories'
@@ -926,7 +916,6 @@
           golfBenefits: 'Variant dependent',
           pros: 'No joining/annual fee in many variants',
           cons: 'Complex reward structure',
-          reviewSummary: 'Good long-term value with right spend pattern.',
           bestFor: 'Lifestyle and mixed spends',
           cardType: 'Rewards',
           merchantExclusions: 'Issuer-defined exclusion categories'
@@ -985,9 +974,8 @@
       const cards = getCards();
       const uniqueBanks = new Set(cards.map((c) => c.bank).filter(Boolean));
 
-      // Placeholder logic for pending leads:
-      // count cards missing review summary as pending data checks.
-      const pendingLeads = cards.filter((c) => !(c.reviewSummary || '').trim()).length;
+      // Pending card checks: image or description missing.
+      const pendingLeads = cards.filter((c) => !(c.cardImageUrl || '').trim() || !(c.description || '').trim()).length;
 
       statTotalCards.textContent = cards.length;
       statTotalBanks.textContent = uniqueBanks.size;
@@ -997,10 +985,11 @@
     // ------------------------------------------------------------
     // Form Submission + Validation
     // ------------------------------------------------------------
-    function handleFormSubmit(event) {
+    async function handleFormSubmit(event) {
       event.preventDefault();
 
       const payload = collectFormData();
+      payload.cardImageUrl = await resolveCardImageValue();
 
       // Reset old invalid states
       clearValidationState();
@@ -1078,7 +1067,6 @@
         cardName: valueOf('cardName'),
         rating: valueOf('rating'),
         network: valueOf('network'),
-        cardImageUrl: valueOf('cardImageUrl'),
         description: valueOf('description'),
         joiningFee: valueOf('joiningFee'),
         annualFee: valueOf('annualFee'),
@@ -1097,7 +1085,6 @@
         golfBenefits: valueOf('golfBenefits'),
         pros: valueOf('pros'),
         cons: valueOf('cons'),
-        reviewSummary: valueOf('reviewSummary'),
         bestFor: valueOf('bestFor'),
         cardType: valueOf('cardType'),
         merchantExclusions: valueOf('merchantExclusions'),
@@ -1145,7 +1132,10 @@
       setValue('cardName', card.cardName);
       setValue('rating', card.rating);
       setValue('network', card.network);
-      setValue('cardImageUrl', card.cardImageUrl);
+      currentImageData = card.cardImageUrl || '';
+      if (imageFileInput) {
+        imageFileInput.value = '';
+      }
       setValue('description', card.description);
       setValue('joiningFee', card.joiningFee);
       setValue('annualFee', card.annualFee);
@@ -1164,12 +1154,11 @@
       setValue('golfBenefits', card.golfBenefits);
       setValue('pros', card.pros);
       setValue('cons', card.cons);
-      setValue('reviewSummary', card.reviewSummary);
       setValue('bestFor', card.bestFor);
       setValue('cardType', card.cardType);
       setValue('merchantExclusions', card.merchantExclusions);
 
-      handleImagePreview();
+      updateImagePreview(currentImageData);
       clearValidationState();
 
       // Open first accordion pane for edit context clarity
@@ -1202,13 +1191,53 @@
     function resetForm() {
       form.reset();
       editingCardIdInput.value = '';
-      imagePreview.src = 'https://via.placeholder.com/120x70?text=Preview';
+      currentImageData = '';
+      if (imageFileInput) {
+        imageFileInput.value = '';
+      }
+      updateImagePreview('');
       clearValidationState();
     }
 
-    function handleImagePreview() {
-      const url = imageInput.value.trim();
-      imagePreview.src = url || 'https://via.placeholder.com/120x70?text=Preview';
+    function handleImageFilePreview() {
+      const selectedFile = imageFileInput.files && imageFileInput.files[0];
+      if (!selectedFile) {
+        updateImagePreview(currentImageData);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        updateImagePreview(String(reader.result || ''));
+      };
+      reader.onerror = () => {
+        showAlert('Unable to preview selected image.', 'warning');
+      };
+      reader.readAsDataURL(selectedFile);
+    }
+
+    function updateImagePreview(source) {
+      imagePreview.src = source || 'https://via.placeholder.com/120x70?text=Preview';
+    }
+
+    async function resolveCardImageValue() {
+      const selectedFile = imageFileInput.files && imageFileInput.files[0];
+      if (!selectedFile) {
+        return currentImageData;
+      }
+
+      const dataUrl = await fileToDataUrl(selectedFile);
+      currentImageData = dataUrl;
+      return dataUrl;
+    }
+
+    function fileToDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ''));
+        reader.onerror = () => reject(new Error('Failed to read image file.'));
+        reader.readAsDataURL(file);
+      });
     }
 
     function showAlert(message, type = 'success') {
