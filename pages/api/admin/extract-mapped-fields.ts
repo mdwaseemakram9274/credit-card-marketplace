@@ -3,6 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 type Body = {
   sourceUrl?: string;
   uploadedImageData?: string;
+  uploadedImageDataList?: string[];
 };
 
 type ExtractedFields = {
@@ -28,6 +29,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const body = req.body as Body;
     const sourceUrl = (body.sourceUrl || '').trim();
     const uploadedImageData = (body.uploadedImageData || '').trim();
+    const uploadedImageDataList = Array.isArray(body.uploadedImageDataList)
+      ? body.uploadedImageDataList.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+      : [];
 
     let urlText = '';
     if (sourceUrl) {
@@ -40,17 +44,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
 
-    let imageText = '';
-    if (uploadedImageData) {
-      try {
-        imageText = await extractTextFromImage(uploadedImageData);
-      } catch {
-        imageText = '';
-      }
-    }
-
     const urlMapped = extractFromText(urlText, sourceUrl);
     let merged: ExtractedFields = { ...urlMapped };
+
+    const imageInputs = uploadedImageDataList.length ? uploadedImageDataList : uploadedImageData ? [uploadedImageData] : [];
+
+    let imageText = '';
+    if (imageInputs.length) {
+      for (const imageData of imageInputs) {
+        try {
+          const extractedText = await extractTextFromImage(imageData);
+          if (!extractedText) {
+            continue;
+          }
+
+          imageText = `${imageText} ${extractedText}`.trim();
+
+          const temporaryMerge = mergePreferExisting(merged, extractFromText(imageText, sourceUrl));
+          const remaining = requiredFieldKeys().filter((key) => !(temporaryMerge[key] || '').trim());
+          if (!remaining.length) {
+            merged = temporaryMerge;
+            break;
+          }
+        } catch {
+          continue;
+        }
+      }
+    }
 
     const missingRequired = requiredFieldKeys().filter((key) => !(merged[key] || '').trim());
 

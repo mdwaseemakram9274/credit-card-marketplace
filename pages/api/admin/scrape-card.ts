@@ -22,6 +22,7 @@ type Body = {
   annualFeeOverride?: string;
   imageUrl?: string;
   uploadedImageData?: string;
+  uploadedImageDataList?: string[];
   uploadedImageName?: string;
   useScrapedImage?: boolean;
 };
@@ -68,7 +69,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const overrideImageUrl = (body.imageUrl || '').trim();
     const useScrapedImage = body.useScrapedImage !== false;
     const selectedImageUrl = overrideImageUrl || (useScrapedImage ? imageCandidates[0] || '' : '');
-    const uploadedImageData = (body.uploadedImageData || '').trim();
+    const uploadedImageDataList = Array.isArray(body.uploadedImageDataList)
+      ? body.uploadedImageDataList.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+      : [];
+    const uploadedImageData = ((body.uploadedImageData || '').trim() || uploadedImageDataList[0] || '').trim();
     const uploadedImageName = (body.uploadedImageName || '').trim();
 
     const root = process.cwd();

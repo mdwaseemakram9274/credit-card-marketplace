@@ -68,7 +68,7 @@ export default function AdminScrapePage() {
   const [cardName, setCardName] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
   const [description, setDescription] = useState('');
-  const [uploadedImage, setUploadedImage] = useState<File | null>(null);
+  const [uploadedImages, setUploadedImages] = useState<File[]>([]);
   const [useScrapedImage, setUseScrapedImage] = useState(true);
   const [coBrandedMode, setCoBrandedMode] = useState(false);
   const [benefitTags, setBenefitTags] = useState('');
@@ -158,7 +158,7 @@ export default function AdminScrapePage() {
       publishStatus,
       sourceType,
       lastVerifiedDate,
-      hasImage: Boolean(uploadedImage) || useScrapedImage,
+      hasImage: uploadedImages.length > 0 || useScrapedImage,
       optionalFields: {
         welcomeBonus,
         travelBenefits,
@@ -180,7 +180,8 @@ export default function AdminScrapePage() {
     setLoading(true);
 
     try {
-      const uploadedImageData = uploadedImage ? await fileToDataUrl(uploadedImage) : undefined;
+      const uploadedImageDataList = uploadedImages.length ? await Promise.all(uploadedImages.map((file) => fileToDataUrl(file))) : [];
+      const uploadedImageData = uploadedImageDataList[0];
 
       const response = await fetch('/api/admin/scrape-card', {
         method: 'POST',
@@ -192,7 +193,8 @@ export default function AdminScrapePage() {
           description: description.trim(),
           annualFeeOverride: annualFeeInput.trim(),
           uploadedImageData,
-          uploadedImageName: uploadedImage?.name,
+          uploadedImageDataList,
+          uploadedImageName: uploadedImages[0]?.name,
           useScrapedImage,
           bankSlug: toSlug(resolvedBank),
           cardSlug: toSlug(resolvedCard),
@@ -254,7 +256,7 @@ export default function AdminScrapePage() {
     setValidation({ errors: [], warnings: [] });
     setExtractMissingRequired([]);
 
-    if (!sourceUrl.trim() && !uploadedImage) {
+    if (!sourceUrl.trim() && !uploadedImages.length) {
       setAutoFillMessage('Provide source URL or upload image for extraction.');
       return;
     }
@@ -263,7 +265,8 @@ export default function AdminScrapePage() {
 
     setExtracting(true);
     try {
-      const uploadedImageData = uploadedImage ? await fileToDataUrl(uploadedImage) : undefined;
+      const uploadedImageDataList = uploadedImages.length ? await Promise.all(uploadedImages.map((file) => fileToDataUrl(file))) : [];
+      const uploadedImageData = uploadedImageDataList[0];
 
       const response = await fetch('/api/admin/extract-mapped-fields', {
         method: 'POST',
@@ -271,6 +274,7 @@ export default function AdminScrapePage() {
         body: JSON.stringify({
           sourceUrl: sourceUrl.trim(),
           uploadedImageData,
+          uploadedImageDataList,
         }),
       });
 
@@ -329,8 +333,11 @@ export default function AdminScrapePage() {
           .admin-card {
             border: 1px solid #e8eef8;
             border-radius: 18px;
-            box-shadow: 0 14px 40px rgba(17, 24, 39, 0.08);
+            box-shadow: 0 18px 48px rgba(17, 24, 39, 0.12);
             background: #fff;
+          }
+          .admin-card:hover {
+            box-shadow: 0 22px 56px rgba(17, 24, 39, 0.14);
           }
           .section-title {
             font-weight: 700;
@@ -359,6 +366,23 @@ export default function AdminScrapePage() {
             border-radius: 12px;
             padding: 0.9rem;
             background: #fafcff;
+          }
+          .upload-panel {
+            border: 1px dashed #b8c7e6;
+            background: linear-gradient(180deg, #f8faff 0%, #f4f8ff 100%);
+            border-radius: 12px;
+            padding: 0.85rem;
+          }
+          .file-chip {
+            display: inline-flex;
+            align-items: center;
+            background: #edf2ff;
+            border: 1px solid #dbe5ff;
+            color: #334155;
+            border-radius: 999px;
+            padding: 0.2rem 0.6rem;
+            font-size: 0.78rem;
+            margin: 0 0.35rem 0.35rem 0;
           }
         `}</style>
       </Head>
@@ -437,13 +461,24 @@ export default function AdminScrapePage() {
               </div>
               <div className="col-12">
                 <label className="form-label" htmlFor="uploadedImage">Upload Image (optional fallback)</label>
-                <input
-                  id="uploadedImage"
-                  type="file"
-                  accept="image/*"
-                  className="form-control"
-                  onChange={(e) => setUploadedImage(e.target.files?.[0] || null)}
-                />
+                <div className="upload-panel">
+                  <input
+                    id="uploadedImage"
+                    type="file"
+                    accept="image/*"
+                    className="form-control"
+                    multiple
+                    onChange={(e) => setUploadedImages(Array.from(e.target.files || []))}
+                  />
+                  <div className="small text-muted mt-2">You can upload multiple screenshots/images. System will extract from URL first, then all images.</div>
+                  {uploadedImages.length > 0 && (
+                    <div className="mt-2">
+                      {uploadedImages.map((file) => (
+                        <span className="file-chip" key={`${file.name}-${file.size}`}>{file.name}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="col-12">
                 <label className="form-label" htmlFor="description">Description (optional override)</label>
