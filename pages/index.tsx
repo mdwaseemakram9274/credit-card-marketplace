@@ -1,6 +1,51 @@
 import Head from 'next/head'
+import { useEffect, useMemo, useState } from 'react'
+
+type MarketplaceBank = {
+  slug: string
+  name: string
+  description?: string
+  cards?: Array<{
+    slug: string
+    name: string
+    description?: string
+    imageUrl?: string
+    annualFee?: string
+  }>
+}
+
+type MarketplaceResponse = {
+  source?: 'cloud' | 'local'
+  banks: MarketplaceBank[]
+}
 
 export default function HomePage() {
+  const [banks, setBanks] = useState<MarketplaceBank[]>([])
+  const [isLoadingBanks, setIsLoadingBanks] = useState(true)
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const response = await fetch('/api/marketplace-data')
+        const payload = (await response.json()) as MarketplaceResponse
+
+        if (response.ok && Array.isArray(payload.banks)) {
+          setBanks(payload.banks)
+        } else {
+          setBanks([])
+        }
+      } catch {
+        setBanks([])
+      } finally {
+        setIsLoadingBanks(false)
+      }
+    }
+
+    loadData()
+  }, [])
+
+  const banksToShow = useMemo(() => banks.slice(0, 6), [banks])
+
   return (
     <>
       <Head>
@@ -222,21 +267,23 @@ export default function HomePage() {
                     Banks
                   </a>
                   <ul className="dropdown-menu">
-                    <li>
-                      <a className="dropdown-item" href="/bank.html?bank=hdfc">
-                        HDFC
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="/bank.html?bank=sbi">
-                        SBI
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="/bank.html?bank=bankn">
-                        Bank n
-                      </a>
-                    </li>
+                    {isLoadingBanks ? (
+                      <li>
+                        <span className="dropdown-item-text text-muted">Loading banks...</span>
+                      </li>
+                    ) : banks.length ? (
+                      banks.map((bank) => (
+                        <li key={bank.slug}>
+                          <a className="dropdown-item" href={`/bank.html?bank=${encodeURIComponent(bank.slug)}`}>
+                            {bank.name}
+                          </a>
+                        </li>
+                      ))
+                    ) : (
+                      <li>
+                        <span className="dropdown-item-text text-muted">No banks available</span>
+                      </li>
+                    )}
                   </ul>
                 </li>
                 <li className="nav-item">
@@ -330,33 +377,32 @@ export default function HomePage() {
             </div>
 
             <div id="banks" className="row g-3 g-md-4 mt-2 justify-content-center">
-              <div className="col-12 col-md-4">
-                <article className="bank-card text-start">
-                  <h3 className="h5 fw-bold">HDFC Credit Cards</h3>
-                  <p className="text-muted mb-3">Explore HDFC card listings and offers.</p>
-                  <a href="/bank.html?bank=hdfc" className="btn btn-primary btn-sm">
-                    View Cards
-                  </a>
-                </article>
-              </div>
-              <div className="col-12 col-md-4">
-                <article className="bank-card text-start">
-                  <h3 className="h5 fw-bold">SBI Credit Cards</h3>
-                  <p className="text-muted mb-3">Explore SBI card listings and offers.</p>
-                  <a href="/bank.html?bank=sbi" className="btn btn-primary btn-sm">
-                    View Cards
-                  </a>
-                </article>
-              </div>
-              <div className="col-12 col-md-4">
-                <article className="bank-card text-start">
-                  <h3 className="h5 fw-bold">Bank n Credit Cards</h3>
-                  <p className="text-muted mb-3">Explore partner bank card listings.</p>
-                  <a href="/bank.html?bank=bankn" className="btn btn-primary btn-sm">
-                    View Cards
-                  </a>
-                </article>
-              </div>
+              {isLoadingBanks ? (
+                <div className="col-12">
+                  <p className="text-muted mb-0">Loading banks...</p>
+                </div>
+              ) : banksToShow.length ? (
+                banksToShow.map((bank) => (
+                  <div className="col-12 col-md-4" key={bank.slug}>
+                    <article className="bank-card text-start">
+                      <h3 className="h5 fw-bold">{bank.name} Credit Cards</h3>
+                      <p className="text-muted mb-3">
+                        {bank.description || `Explore ${bank.name} card listings and offers.`}
+                      </p>
+                      <a href={`/bank.html?bank=${encodeURIComponent(bank.slug)}`} className="btn btn-primary btn-sm">
+                        View Cards
+                      </a>
+                    </article>
+                  </div>
+                ))
+              ) : (
+                <div className="col-12">
+                  <article className="bank-card text-start">
+                    <h3 className="h5 fw-bold mb-2">No banks available</h3>
+                    <p className="text-muted mb-0">Add banks/cards from Admin and they will appear here automatically.</p>
+                  </article>
+                </div>
+              )}
             </div>
           </div>
         </section>

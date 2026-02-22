@@ -27,10 +27,8 @@
           <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Banks</a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="/bank.html?bank=hdfc">HDFC</a></li>
-              <li><a class="dropdown-item" href="/bank.html?bank=sbi">SBI</a></li>
-              <li><a class="dropdown-item" href="/bank.html?bank=bankn">Bank n</a></li>
+            <ul class="dropdown-menu" id="bankDropdownMenu">
+              <li><span class="dropdown-item-text text-muted">Loading banks...</span></li>
             </ul>
           </li>
           <li class="nav-item"><a class="nav-link" href="#">Categories</a></li>
@@ -56,11 +54,13 @@
   const titleEl = document.getElementById('bankTitle')
   const descEl = document.getElementById('bankDesc')
   const gridEl = document.getElementById('cardsGrid')
+  const bankDropdownMenuEl = document.getElementById('bankDropdownMenu')
 
   init()
 
   async function init() {
     const marketplaceData = await loadMarketplaceData()
+    renderBankDropdown(marketplaceData)
     const bank = (marketplaceData?.banks || []).find((entry) => entry.slug === bankSlug)
 
     if (!bank) {
@@ -99,6 +99,27 @@
     } catch {
       return window.marketplaceData || { banks: [] }
     }
+  }
+
+  function renderBankDropdown(marketplaceData) {
+    const banks = marketplaceData?.banks || []
+    if (!banks.length) {
+      bankDropdownMenuEl.innerHTML = '<li><span class="dropdown-item-text text-muted">No banks available</span></li>'
+      return
+    }
+
+    bankDropdownMenuEl.innerHTML = banks.map((bank) => `
+      <li><a class="dropdown-item" href="/bank.html?bank=${encodeURIComponent(bank.slug)}">${escapeHtml(bank.name)}</a></li>
+    `).join('')
+  }
+
+  function escapeHtml(value) {
+    return String(value || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;')
   }
 </script>
 </body>
