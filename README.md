@@ -1,23 +1,58 @@
-# Nextra Docs Template 
+# Credit Card Marketplace
 
-This is a template for creating documentation with [Nextra](https://nextra.site).
+SEO-focused credit card marketplace with a dynamic static HTML flow:
 
-[**Live Demo →**](https://nextra-docs-template.vercel.app)
-
-[![](.github/screenshot.png)](https://nextra-docs-template.vercel.app)
-
-## Quick Start
-
-Click the button to clone this repository and deploy it on Vercel:
-
-[![](https://vercel.com/button)](https://vercel.com/new/clone?s=https%3A%2F%2Fgithub.com%2Fshuding%2Fnextra-docs-template&showOptionalTeamCreation=false)
+- Home: `index.html` / `/`
+- Bank list page: `/bank.html?bank=hdfc`
+- Card detail page: `/card.html?bank=hdfc&card=millennia-credit-card`
 
 ## Local Development
 
-First, run `pnpm i` to install the dependencies.
+```bash
+npm install
+npm run dev
+```
 
-Then, run `pnpm dev` to start the development server and visit localhost:3000.
+## Card Scraper + Google Sheets Sync
+
+Use the Python utility in `scripts/scrape_card_to_sheet.py` to:
+
+1. Scrape card data from a source URL
+2. Append to Google Sheets
+3. Generate a card HTML file
+
+Install Python dependencies:
+
+```bash
+pip install -r requirements-scraper.txt
+```
+
+Example (scrape + generate only):
+
+```bash
+python3 scripts/scrape_card_to_sheet.py \
+	--url "https://example.com/hdfc-regalia" \
+	--bank "HDFC" \
+	--skip-sheet
+```
+
+Example (scrape + append to sheet + generate HTML):
+
+```bash
+python3 scripts/scrape_card_to_sheet.py \
+	--url "https://example.com/hdfc-regalia" \
+	--bank "HDFC" \
+	--service-account-file "/absolute/path/service-account.json" \
+	--sheet-name "Credit Cards Sheet" \
+	--worksheet-name "Sheet1"
+```
+
+Useful selector flags:
+
+- `--title-selector`
+- `--fee-selector`
+- `--benefit-selector`
 
 ## License
 
-This project is licensed under the MIT License.
+MIT
