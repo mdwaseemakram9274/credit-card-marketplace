@@ -76,12 +76,14 @@ async function readFromSupabase(): Promise<MarketplaceResponse> {
 
   return {
     source: 'cloud',
-    banks: (banks || []).map((bank) => ({
-      slug: bank.slug,
-      name: bank.name,
-      description: bank.description || '',
-      cards: cardMap.get(bank.id) || [],
-    })),
+    banks: (banks || [])
+      .map((bank) => ({
+        slug: bank.slug,
+        name: bank.name,
+        description: bank.description || '',
+        cards: cardMap.get(bank.id) || [],
+      }))
+      .filter((bank) => bank.cards.length > 0),
   };
 }
 
