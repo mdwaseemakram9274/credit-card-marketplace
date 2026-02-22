@@ -383,16 +383,19 @@
                       <label for="bank" class="form-label">Bank <span class="required-mark">*</span></label>
                       <select id="bank" class="form-select" required>
                         <option value="">Select Bank</option>
-                        <option>HDFC</option>
-                        <option>SBI</option>
-                        <option>Axis</option>
-                        <option>ICICI</option>
-                        <option>Kotak</option>
-                        <option>IDFC</option>
-                        <option>RBL</option>
-                        <option>Yes Bank</option>
-                        <option>Others</option>
+                        <option value="HDFC">HDFC</option>
+                        <option value="SBI">SBI</option>
+                        <option value="Axis">Axis</option>
+                        <option value="ICICI">ICICI</option>
+                        <option value="Kotak">Kotak</option>
+                        <option value="IDFC">IDFC</option>
+                        <option value="RBL">RBL</option>
+                        <option value="Yes Bank">Yes Bank</option>
+                        <option value="__custom__">Other (type bank name)</option>
                       </select>
+                      <div id="bankCustomWrap" class="mt-2 d-none">
+                        <input id="bankCustom" type="text" class="form-control" placeholder="Enter bank name" />
+                      </div>
                       <div class="invalid-feedback">Please select a bank</div>
                     </div>
 
@@ -690,6 +693,9 @@
     const imagePreview = document.getElementById('imagePreview');
     const resetFormBtn = document.getElementById('resetFormBtn');
     const editingCardIdInput = document.getElementById('editingCardId');
+    const bankSelect = document.getElementById('bank');
+    const bankCustomWrap = document.getElementById('bankCustomWrap');
+    const bankCustomInput = document.getElementById('bankCustom');
     const viewLinks = document.querySelectorAll('[data-view]');
     const filterBank = document.getElementById('filterBank');
     const filterJoiningFee = document.getElementById('filterJoiningFee');
@@ -716,6 +722,7 @@
       form.addEventListener('submit', handleFormSubmit);
       resetFormBtn.addEventListener('click', resetForm);
       imageFileInput.addEventListener('change', handleImageFilePreview);
+      bankSelect.addEventListener('change', handleBankSelectionChange);
       filterBank.addEventListener('change', renderTable);
       filterJoiningFee.addEventListener('change', renderTable);
 
@@ -759,6 +766,42 @@
 
     function saveCards(cards) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
+    }
+
+    function handleBankSelectionChange() {
+      const isCustom = bankSelect.value === '__custom__';
+      bankCustomWrap.classList.toggle('d-none', !isCustom);
+      bankCustomInput.required = isCustom;
+      if (isCustom) {
+        bankCustomInput.focus();
+      } else {
+        bankCustomInput.value = '';
+      }
+    }
+
+    function getResolvedBankName() {
+      if (bankSelect.value === '__custom__') {
+        return (bankCustomInput.value || '').trim();
+      }
+      return (bankSelect.value || '').trim();
+    }
+
+    function setBankFieldValue(bankName) {
+      const normalized = String(bankName || '').trim();
+      const knownOption = Array.from(bankSelect.options).find((option) => option.value === normalized);
+
+      if (knownOption) {
+        bankSelect.value = normalized;
+        bankCustomInput.value = '';
+      } else if (normalized) {
+        bankSelect.value = '__custom__';
+        bankCustomInput.value = normalized;
+      } else {
+        bankSelect.value = '';
+        bankCustomInput.value = '';
+      }
+
+      handleBankSelectionChange();
     }
 
     function setActiveView(view) {
@@ -1087,7 +1130,7 @@
     function collectFormData() {
       return {
         id: editingCardIdInput.value || '',
-        bank: valueOf('bank'),
+        bank: getResolvedBankName(),
         cardName: valueOf('cardName'),
         rating: valueOf('rating'),
         network: valueOf('network'),
@@ -1152,7 +1195,7 @@
 
       editingCardIdInput.value = card.id;
 
-      setValue('bank', card.bank);
+      setBankFieldValue(card.bank);
       setValue('cardName', card.cardName);
       setValue('rating', card.rating);
       setValue('network', card.network);
@@ -1213,6 +1256,9 @@
     function resetForm() {
       form.reset();
       editingCardIdInput.value = '';
+      bankSelect.value = '';
+      bankCustomInput.value = '';
+      handleBankSelectionChange();
       currentImageData = '';
       if (imageFileInput) {
         imageFileInput.value = '';
