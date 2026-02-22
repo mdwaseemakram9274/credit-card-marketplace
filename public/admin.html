@@ -407,25 +407,25 @@
 
                     <div class="col-12 col-md-4">
                       <label for="network" class="form-label">Powered By / Network</label>
-                      <select id="network" class="form-select">
-                        <option value="">Select Network</option>
-                        <option>Visa</option>
-                        <option>Mastercard</option>
-                        <option>RuPay</option>
+                      <select id="network" class="form-select" multiple size="3">
+                        <option value="Visa">Visa</option>
+                        <option value="Mastercard">Mastercard</option>
+                        <option value="RuPay">RuPay</option>
                       </select>
+                      <small class="text-muted">Use Cmd/Ctrl to select multiple networks.</small>
                     </div>
 
                     <div class="col-12 col-md-4">
                       <label for="cardType" class="form-label">Card Type</label>
-                      <select id="cardType" class="form-select">
-                        <option value="">Select Type</option>
-                        <option>Cashback</option>
-                        <option>Rewards</option>
-                        <option>Travel</option>
-                        <option>Premium</option>
-                        <option>Fuel</option>
-                        <option>Shopping</option>
+                      <select id="cardType" class="form-select" multiple size="6">
+                        <option value="Cashback">Cashback</option>
+                        <option value="Rewards">Rewards</option>
+                        <option value="Travel">Travel</option>
+                        <option value="Premium">Premium</option>
+                        <option value="Fuel">Fuel</option>
+                        <option value="Shopping">Shopping</option>
                       </select>
+                      <small class="text-muted">Use Cmd/Ctrl to select multiple card types.</small>
                     </div>
 
                     <div class="col-12">
@@ -986,7 +986,7 @@
         id: editingCardIdInput.value || '',
         bank: getResolvedBankName(),
         cardName: valueOf('cardName'),
-        network: valueOf('network'),
+        network: getMultiSelectValue('network'),
         description: valueOf('description'),
         joiningFee: valueOf('joiningFee'),
         annualFee: valueOf('annualFee'),
@@ -1006,7 +1006,7 @@
         pros: valueOf('pros'),
         cons: valueOf('cons'),
         bestFor: valueOf('bestFor'),
-        cardType: valueOf('cardType'),
+        cardType: getMultiSelectValue('cardType'),
         merchantExclusions: valueOf('merchantExclusions'),
       };
     }
@@ -1050,7 +1050,7 @@
 
       setBankFieldValue(card.bank);
       setValue('cardName', card.cardName);
-      setValue('network', card.network);
+      setMultiSelectValue('network', card.network);
       currentImageData = card.cardImageUrl || '';
       if (imageFileInput) {
         imageFileInput.value = '';
@@ -1074,7 +1074,7 @@
       setValue('pros', card.pros);
       setValue('cons', card.cons);
       setValue('bestFor', card.bestFor);
-      setValue('cardType', card.cardType);
+      setMultiSelectValue('cardType', card.cardType);
       setValue('merchantExclusions', card.merchantExclusions);
 
       updateImagePreview(currentImageData);
@@ -1247,6 +1247,29 @@
       const el = document.getElementById(id);
       if (!el) return;
       el.value = val || '';
+    }
+
+    function getMultiSelectValue(id) {
+      const el = document.getElementById(id);
+      if (!el || !el.selectedOptions) return '';
+      return Array.from(el.selectedOptions)
+        .map((option) => String(option.value || '').trim())
+        .filter(Boolean)
+        .join(', ');
+    }
+
+    function setMultiSelectValue(id, rawValue) {
+      const el = document.getElementById(id);
+      if (!el || !el.options) return;
+
+      const selectedValues = String(rawValue || '')
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean);
+
+      Array.from(el.options).forEach((option) => {
+        option.selected = selectedValues.includes(option.value);
+      });
     }
 
     // Basic HTML escaping helpers for safe rendering
