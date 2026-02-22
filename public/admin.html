@@ -232,7 +232,14 @@
 
     .action-btn {
       border-radius: 10px;
-      padding: 0.38rem 0.6rem;
+      padding: 0.3rem 0.35rem;
+      border: 0 !important;
+      background: transparent !important;
+      box-shadow: none !important;
+    }
+
+    .action-btn:hover {
+      opacity: 0.8;
     }
 
     /* Mobile behavior */
@@ -347,34 +354,6 @@
       <!-- Alert container for success/error messages -->
       <section class="mb-3" id="alertContainer" aria-live="polite" aria-atomic="true"></section>
 
-      <!-- Stats cards section -->
-      <section class="mb-4">
-        <div class="row g-3">
-          <div class="col-12 col-md-6">
-            <article class="stat-card">
-              <div class="d-flex align-items-center justify-content-between">
-                <div>
-                  <p class="stat-title">Total Cards</p>
-                  <p class="stat-value mb-0" id="statTotalCards">0</p>
-                </div>
-                <i class="fa-solid fa-layer-group fa-2x text-primary"></i>
-              </div>
-            </article>
-          </div>
-          <div class="col-12 col-md-6">
-            <article class="stat-card">
-              <div class="d-flex align-items-center justify-content-between">
-                <div>
-                  <p class="stat-title">Total Banks</p>
-                  <p class="stat-value mb-0" id="statTotalBanks">0</p>
-                </div>
-                <i class="fa-solid fa-building-columns fa-2x text-success"></i>
-              </div>
-            </article>
-          </div>
-        </div>
-      </section>
-
       <!-- =========================
            ADD / EDIT FORM
            ========================= -->
@@ -383,7 +362,6 @@
           <h2 class="section-title">
             <i class="fa-solid fa-pen-to-square text-primary me-2"></i>Add / Edit Card
           </h2>
-          <small class="text-muted">Fields inspired by Paisabazaar + Finology card detail layouts</small>
         </div>
 
         <form id="cardForm" novalidate>
@@ -618,6 +596,23 @@
           <small class="text-muted">Stored in localStorage key: <code>creditCards</code></small>
         </div>
 
+        <div class="row g-2 mb-3">
+          <div class="col-12 col-md-4">
+            <label for="filterBank" class="form-label mb-1">Filter by Bank</label>
+            <select id="filterBank" class="form-select">
+              <option value="all">All Banks</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-4">
+            <label for="filterJoiningFee" class="form-label mb-1">Filter by Joining Fee</label>
+            <select id="filterJoiningFee" class="form-select">
+              <option value="all">All</option>
+              <option value="free">Free / Nil</option>
+              <option value="paid">Paid</option>
+            </select>
+          </div>
+        </div>
+
         <div class="table-responsive">
           <table class="table table-striped table-hover align-middle">
             <thead class="table-light">
@@ -627,6 +622,7 @@
                 <th>Card Name</th>
                 <th>Joining Fee</th>
                 <th>Annual Fee</th>
+                <th>Card Type</th>
                 <th class="text-end">Actions</th>
               </tr>
             </thead>
@@ -695,22 +691,20 @@
     const resetFormBtn = document.getElementById('resetFormBtn');
     const editingCardIdInput = document.getElementById('editingCardId');
     const viewLinks = document.querySelectorAll('[data-view]');
+    const filterBank = document.getElementById('filterBank');
+    const filterJoiningFee = document.getElementById('filterJoiningFee');
 
     const deleteModalEl = document.getElementById('deleteModal');
     const deleteModal = new bootstrap.Modal(deleteModalEl);
     const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-
-    // Stat refs
-    const statTotalCards = document.getElementById('statTotalCards');
-    const statTotalBanks = document.getElementById('statTotalBanks');
 
     // Initialize app on page load
     init();
 
     function init() {
       seedDataIfEmpty();
+      updateFilterOptions();
       renderTable();
-      updateStats();
       wireEvents();
       setActiveView('dashboard');
     }
@@ -722,6 +716,8 @@
       form.addEventListener('submit', handleFormSubmit);
       resetFormBtn.addEventListener('click', resetForm);
       imageFileInput.addEventListener('change', handleImageFilePreview);
+      filterBank.addEventListener('change', renderTable);
+      filterJoiningFee.addEventListener('change', renderTable);
 
       viewLinks.forEach((link) => {
         link.addEventListener('click', (event) => {
@@ -774,6 +770,28 @@
         const isActive = link.getAttribute('data-view') === view;
         link.classList.toggle('active', isActive);
       });
+    }
+
+    function updateFilterOptions() {
+      const cards = getCards();
+      const uniqueBanks = [...new Set(cards.map((card) => (card.bank || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+      const currentBank = filterBank.value || 'all';
+
+      filterBank.innerHTML = '<option value="all">All Banks</option>';
+      uniqueBanks.forEach((bank) => {
+        filterBank.insertAdjacentHTML('beforeend', `<option value="${escapeAttribute(bank)}">${escapeHtml(bank)}</option>`);
+      });
+
+      filterBank.value = uniqueBanks.includes(currentBank) ? currentBank : 'all';
+    }
+
+    function getJoiningFeeType(joiningFee) {
+      const fee = String(joiningFee || '').toLowerCase().trim();
+      if (!fee) return 'paid';
+      if (/\bnil\b|\bfree\b|₹\s*0|\b0\b|rs\.?\s*0|inr\s*0/.test(fee)) {
+        return 'free';
+      }
+      return 'paid';
     }
 
     // ------------------------------------------------------------
@@ -939,17 +957,25 @@
     // ------------------------------------------------------------
     function renderTable() {
       const cards = getCards();
+      const selectedBank = filterBank.value || 'all';
+      const selectedJoiningFee = filterJoiningFee.value || 'all';
 
-      if (!cards.length) {
+      const filteredCards = cards.filter((card) => {
+        const bankMatches = selectedBank === 'all' || (card.bank || '') === selectedBank;
+        const feeMatches = selectedJoiningFee === 'all' || getJoiningFeeType(card.joiningFee) === selectedJoiningFee;
+        return bankMatches && feeMatches;
+      });
+
+      if (!filteredCards.length) {
         tableBody.innerHTML = `
           <tr>
-            <td colspan="6" class="text-center text-muted py-4">No cards found. Add your first card using the form above.</td>
+            <td colspan="7" class="text-center text-muted py-4">No cards found for selected filters.</td>
           </tr>
         `;
         return;
       }
 
-      tableBody.innerHTML = cards
+      tableBody.innerHTML = filteredCards
         .map((card) => {
           const imageUrl = card.cardImageUrl || 'https://via.placeholder.com/120x70?text=No+Image';
 
@@ -962,12 +988,13 @@
               <td class="fw-semibold">${escapeHtml(card.cardName || '-')}</td>
               <td>${escapeHtml(card.joiningFee || '-')}</td>
               <td>${escapeHtml(card.annualFee || '-')}</td>
+              <td>${escapeHtml(card.cardType || '-')}</td>
               <td class="text-end">
                 <div class="d-inline-flex align-items-center gap-2 flex-nowrap">
-                  <button class="btn btn-sm btn-outline-primary action-btn" onclick="editCard('${card.id}')">
+                  <button class="btn btn-sm action-btn text-primary" onclick="editCard('${card.id}')">
                     <i class="fa-solid fa-pen"></i>
                   </button>
-                  <button class="btn btn-sm btn-outline-danger action-btn" onclick="openDeleteModal('${card.id}')">
+                  <button class="btn btn-sm action-btn text-danger" onclick="openDeleteModal('${card.id}')">
                     <i class="fa-solid fa-trash"></i>
                   </button>
                 </div>
@@ -976,14 +1003,6 @@
           `;
         })
         .join('');
-    }
-
-    function updateStats() {
-      const cards = getCards();
-      const uniqueBanks = new Set(cards.map((c) => c.bank).filter(Boolean));
-
-      statTotalCards.textContent = cards.length;
-      statTotalBanks.textContent = uniqueBanks.size;
     }
 
     // ------------------------------------------------------------
@@ -1059,8 +1078,8 @@
       }
 
       saveCards(cards);
+      updateFilterOptions();
       renderTable();
-      updateStats();
       resetForm();
       setActiveView('dashboard');
     }
@@ -1183,8 +1202,8 @@
     function deleteCard(id) {
       const cards = getCards().filter((card) => card.id !== id);
       saveCards(cards);
+      updateFilterOptions();
       renderTable();
-      updateStats();
       showAlert('Card deleted successfully.', 'success');
     }
 
