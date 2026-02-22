@@ -260,8 +260,8 @@
     </div>
 
     <nav class="nav flex-column mb-3">
-      <a class="nav-link active" href="#cardsTableSection"><i class="fa-solid fa-table-columns me-2"></i>Dashboard</a>
-      <a class="nav-link" href="#cardFormSection"><i class="fa-solid fa-plus me-2"></i>Add / Edit Card</a>
+      <a class="nav-link active" href="#" data-view="dashboard"><i class="fa-solid fa-table-columns me-2"></i>Dashboard</a>
+      <a class="nav-link" href="#" data-view="form"><i class="fa-solid fa-plus me-2"></i>Add / Edit Card</a>
     </nav>
 
     <div class="sidebar-footer">
@@ -287,8 +287,8 @@
     </div>
     <div class="offcanvas-body">
       <nav class="nav flex-column">
-        <a class="nav-link text-white active" href="#cardsTableSection" data-bs-dismiss="offcanvas">Dashboard</a>
-        <a class="nav-link text-white" href="#cardFormSection" data-bs-dismiss="offcanvas">Add / Edit Card</a>
+        <a class="nav-link text-white active" href="#" data-view="dashboard" data-bs-dismiss="offcanvas">Dashboard</a>
+        <a class="nav-link text-white" href="#" data-view="form" data-bs-dismiss="offcanvas">Add / Edit Card</a>
       </nav>
     </div>
   </div>
@@ -389,7 +389,7 @@
       <!-- =========================
            ADD / EDIT FORM
            ========================= -->
-      <section id="cardFormSection" class="panel-card p-3 p-md-4 mb-4">
+      <section id="cardFormSection" class="panel-card p-3 p-md-4 mb-4 d-none">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
           <h2 class="section-title">
             <i class="fa-solid fa-pen-to-square text-primary me-2"></i>Add / Edit Card
@@ -701,10 +701,13 @@
     const form = document.getElementById('cardForm');
     const tableBody = document.getElementById('cardsTableBody');
     const alertContainer = document.getElementById('alertContainer');
+    const cardFormSection = document.getElementById('cardFormSection');
+    const cardsTableSection = document.getElementById('cardsTableSection');
     const imageFileInput = document.getElementById('cardImageFile');
     const imagePreview = document.getElementById('imagePreview');
     const resetFormBtn = document.getElementById('resetFormBtn');
     const editingCardIdInput = document.getElementById('editingCardId');
+    const viewLinks = document.querySelectorAll('[data-view]');
 
     const deleteModalEl = document.getElementById('deleteModal');
     const deleteModal = new bootstrap.Modal(deleteModalEl);
@@ -723,6 +726,7 @@
       renderTable();
       updateStats();
       wireEvents();
+      setActiveView('dashboard');
     }
 
     // ------------------------------------------------------------
@@ -732,6 +736,14 @@
       form.addEventListener('submit', handleFormSubmit);
       resetFormBtn.addEventListener('click', resetForm);
       imageFileInput.addEventListener('change', handleImageFilePreview);
+
+      viewLinks.forEach((link) => {
+        link.addEventListener('click', (event) => {
+          event.preventDefault();
+          const selectedView = link.getAttribute('data-view');
+          setActiveView(selectedView === 'form' ? 'form' : 'dashboard');
+        });
+      });
 
       confirmDeleteBtn.addEventListener('click', () => {
         if (!deleteTargetId) return;
@@ -765,6 +777,17 @@
 
     function saveCards(cards) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
+    }
+
+    function setActiveView(view) {
+      const showForm = view === 'form';
+      cardFormSection.classList.toggle('d-none', !showForm);
+      cardsTableSection.classList.toggle('d-none', showForm);
+
+      viewLinks.forEach((link) => {
+        const isActive = link.getAttribute('data-view') === view;
+        link.classList.toggle('active', isActive);
+      });
     }
 
     // ------------------------------------------------------------
@@ -1058,6 +1081,7 @@
       renderTable();
       updateStats();
       resetForm();
+      setActiveView('dashboard');
     }
 
     function collectFormData() {
@@ -1160,14 +1184,12 @@
 
       updateImagePreview(currentImageData);
       clearValidationState();
+      setActiveView('form');
 
       // Open first accordion pane for edit context clarity
       const basicCollapse = document.getElementById('basicInfoCollapse');
       const basicAccordion = new bootstrap.Collapse(basicCollapse, { toggle: false });
       basicAccordion.show();
-
-      // Scroll into form
-      document.getElementById('cardFormSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
       showAlert('Loaded card details for editing.', 'info');
     }
