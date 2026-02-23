@@ -33,6 +33,9 @@ export function Header() {
             <a href="#faqs" className="text-black hover:text-purple-600 font-medium transition-colors">
               FAQs
             </a>
+            <a href="/admin.html" className="text-black hover:text-purple-600 font-medium transition-colors">
+              Admin
+            </a>
           </div>
 
           {/* CTA Button - Desktop */}
@@ -88,6 +91,13 @@ export function Header() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 FAQs
+              </a>
+              <a
+                href="/admin.html"
+                className="text-black hover:text-purple-600 font-medium transition-colors py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Admin
               </a>
               <button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium px-6 py-2.5 rounded-lg transition-all mt-2">
                 Apply Now
