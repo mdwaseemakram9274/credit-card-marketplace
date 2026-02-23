@@ -1,5 +1,5 @@
 import svgPaths from "../../imports/svg-20qdiezk2t";
-import imgBobcardPremier from "figma:asset/d326441dbe055cea6b310850b0fa9e9e904edcd5.png";
+import imgBobcardPremier from "../../assets/d326441dbe055cea6b310850b0fa9e9e904edcd5.png";
 
 // Tab Navigation Component
 function TabButton({ icon, label, isActive }: { icon: React.ReactNode; label: string; isActive?: boolean }) {
