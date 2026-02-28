@@ -9,6 +9,7 @@ export interface CreditCardData {
   benefits: string[];
   categories: string[];
   description?: string;
+  cardOrientation?: 'horizontal' | 'vertical';
 }
 
 export const creditCardsData: CreditCardData[] = [
@@ -28,6 +29,7 @@ export const creditCardsData: CreditCardData[] = [
     ],
     categories: ["Dining", "Shopping", "Travel"],
     description: "Experience premium banking with BOB Premier card, designed for lifestyle enthusiasts who value rewards and travel benefits.",
+    cardOrientation: "horizontal",
   },
   {
     id: "bob-premier-bobcard-2",
@@ -44,5 +46,6 @@ export const creditCardsData: CreditCardData[] = [
     ],
     categories: ["Dining", "Shopping"],
     description: "Experience premium banking with BOB Premier card, designed for lifestyle enthusiasts who value rewards and travel benefits.",
+    cardOrientation: "horizontal",
   },
 ];

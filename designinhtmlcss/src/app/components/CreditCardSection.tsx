@@ -181,26 +181,36 @@ interface CreditCardProps {
   renewalFee: string;
   benefits: string[];
   categories: string[];
+  cardOrientation?: 'horizontal' | 'vertical';
 }
 
 // Export CreditCard component for use in other pages
-export function CreditCard({ id, image, title, joiningFee, renewalFee, benefits, categories }: CreditCardProps) {
+export function CreditCard({ id, image, title, joiningFee, renewalFee, benefits, categories, cardOrientation = 'horizontal' }: CreditCardProps) {
+  const isVertical = cardOrientation === 'vertical';
+
   return (
-    <div className="group flex flex-col lg:flex-row gap-6 md:gap-8 lg:gap-10 w-full bg-white hover:bg-white border border-gray-200 hover:border-gray-300 rounded-2xl p-6 md:p-8 transition-all duration-200 hover:shadow-md">
+    <div className="group flex flex-col lg:flex-row lg:items-start gap-6 md:gap-8 lg:gap-10 w-full bg-white hover:bg-white border border-gray-200 hover:border-gray-300 rounded-2xl p-6 md:p-8 transition-all duration-200 hover:shadow-md">
       {/* Card Image Section */}
-      <div className="flex flex-col items-center lg:items-start gap-3 flex-shrink-0">
-        <div className="w-[200px] sm:w-[240px] h-auto rounded-lg overflow-hidden">
-          <img alt={title} className="w-full h-auto" src={image} />
+      <div className="flex flex-col items-center flex-shrink-0">
+        <div className="w-[200px] sm:w-[240px] h-auto rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center p-[0px]">
+          <img
+            alt={title}
+            className={`h-auto ${isVertical ? 'object-contain w-[140px] sm:w-[170px]' : 'object-cover w-full'}`}
+            src={image}
+            style={isVertical ? { aspectRatio: '2/3' } : { aspectRatio: '16/10' }}
+          />
         </div>
-        <h3 className="font-semibold text-base text-black text-center lg:text-left max-w-[200px] sm:max-w-[240px]">
-          {title}
-        </h3>
       </div>
 
       {/* Card Details Section */}
       <div className="flex flex-col gap-5 flex-1 w-full">
+        {/* Card Title */}
+        <h3 className="font-semibold text-base text-black">
+          {title}
+        </h3>
+
         {/* Fees Section */}
-        <div className="flex flex-row gap-4 sm:gap-8 items-center bg-gray-50 rounded-xl p-4 border border-gray-200">
+        <div className="flex flex-row gap-4 sm:gap-8 items-center justify-center lg:justify-start bg-gray-50 rounded-xl p-4 border border-gray-200 w-full">
           <div className="flex items-center gap-3">
             <div className="text-lg">💰</div>
             <div>
@@ -291,6 +301,7 @@ export default function CreditCardSection() {
     renewalFee: card.renewalFee,
     benefits: card.benefits,
     categories: card.categories,
+    cardOrientation: card.cardOrientation,
   }));
 
   const [cards, setCards] = useState<CreditCardProps[]>(fallbackCards);
@@ -314,6 +325,7 @@ export default function CreditCardSection() {
               renewalFee: uiCard.renewalFee,
               benefits: uiCard.benefits,
               categories: uiCard.categories,
+              cardOrientation: uiCard.cardOrientation,
             };
           })
         );

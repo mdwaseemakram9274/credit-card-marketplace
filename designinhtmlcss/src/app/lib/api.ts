@@ -34,6 +34,7 @@ export interface ApiCard {
   banks?: ApiMetaItem;
   card_types?: ApiMetaItem;
   card_networks?: ApiMetaItem;
+  card_orientation?: 'horizontal' | 'vertical' | null;
 }
 
 const API_BASE_URL =
@@ -320,5 +321,6 @@ export function mapApiCardToUi(card: ApiCard) {
     slug: card.slug || null,
     cardTypeId: card.card_type_id || null,
     networkId: card.network_id || null,
+    cardOrientation: card.card_orientation || 'horizontal',
   };
 }
