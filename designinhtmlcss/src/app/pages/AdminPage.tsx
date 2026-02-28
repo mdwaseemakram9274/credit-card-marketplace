@@ -1052,6 +1052,7 @@ function AddCardContent({
                 <FormSection
                   sectionId={section.id}
                   cardTypes={cardTypes}
+                  cardTypeOptions={cardTypeOptions}
                   cardNetworks={cardNetworks}
                   banks={banks}
                   formData={formData}
@@ -1197,9 +1198,10 @@ function AddCardContent({
   );
 }
 
-function FormSection({ sectionId, cardTypes, cardNetworks, banks, formData, setFormData, formErrors, setFormErrors, onImageUpload, isUploadingImage }: { 
+function FormSection({ sectionId, cardTypes, cardTypeOptions, cardNetworks, banks, formData, setFormData, formErrors, setFormErrors, onImageUpload, isUploadingImage }: { 
   sectionId: string; 
   cardTypes: string[]; 
+  cardTypeOptions: ApiMetaItem[];
   cardNetworks: string[];
   banks: Array<{ id: string; name: string }>;
   formData: any;
@@ -1293,7 +1295,9 @@ function FormSection({ sectionId, cardTypes, cardNetworks, banks, formData, setF
               className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.cardType ? 'border-red-400' : 'border-gray-300'}`}
             >
               <option value="">Select Type</option>
-              {cardTypes.map((type) => (
+              {cardTypeOptions.length ? cardTypeOptions.map((type) => (
+                <option key={type.id} value={type.name}>{type.icon ? `${type.icon} ${type.name}` : type.name}</option>
+              )) : cardTypes.map((type) => (
                 <option key={type} value={type}>{type}</option>
               ))}
             </select>
