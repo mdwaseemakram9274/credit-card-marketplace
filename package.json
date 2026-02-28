@@ -20,11 +20,14 @@
   "homepage": "https://github.com/mdwaseemakram9274/credit-card-marketplace#readme",
   "dependencies": {
     "@supabase/supabase-js": "^2.97.0",
+    "bcryptjs": "^3.0.3",
+    "jsonwebtoken": "^9.0.3",
     "next": "^13.0.6",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "18.11.10",
     "@types/react": "19.2.14",
     "autoprefixer": "^10.4.24",
