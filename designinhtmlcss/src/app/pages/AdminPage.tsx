@@ -124,7 +124,7 @@ export default function AdminPage() {
         setIsAuthenticated(false);
         setAuthError('Session expired. Please login again.');
       } else {
-        alert('Unable to load cards from API. Check backend and VITE_API_BASE_URL.');
+        alert((error as Error).message || 'Unable to load cards from API.');
       }
     } finally {
       setIsLoading(false);
