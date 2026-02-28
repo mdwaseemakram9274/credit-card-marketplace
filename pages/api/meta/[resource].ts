@@ -35,6 +35,34 @@ function toSlug(value: string): string {
     .replace(/-{2,}/g, '-');
 }
 
+async function getAvailableBankSlug(
+  supabase: ReturnType<typeof getSupabaseServerClient>,
+  name: string,
+  excludeId?: string
+) {
+  const baseSlug = toSlug(name) || 'bank';
+
+  for (let index = 0; index < 200; index += 1) {
+    const candidate = index === 0 ? baseSlug : `${baseSlug}-${index + 1}`;
+    let query = supabase.from('banks').select('id').eq('slug', candidate).limit(1);
+
+    if (excludeId) {
+      query = query.neq('id', excludeId);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!data || data.length === 0) {
+      return candidate;
+    }
+  }
+
+  throw new Error('Unable to generate unique bank slug');
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const resource = getResource(req.query.resource);
   if (!resource) {
@@ -65,7 +93,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       const payload = resource === 'banks'
-        ? { name, slug: toSlug(name) }
+        ? { name, slug: await getAvailableBankSlug(supabase, name) }
         : { name };
 
       const { data, error } = await supabase.from(table).insert(payload).select('*').single();
