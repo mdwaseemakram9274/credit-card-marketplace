@@ -1,5 +1,6 @@
 import svgPaths from "../../imports/svg-20qdiezk2t";
-import imgBobcardPremier from "../../assets/d326441dbe055cea6b310850b0fa9e9e904edcd5.png";
+import { Link } from "react-router";
+import { creditCardsData, CreditCardData } from "../data/creditCardsData";
 
 // Tab Navigation Component
 function TabButton({ icon, label, isActive }: { icon: React.ReactNode; label: string; isActive?: boolean }) {
@@ -111,18 +112,8 @@ function RewardIcon() {
   );
 }
 
-// Credit Card Component
-interface CreditCardProps {
-  image: string;
-  title: string;
-  joiningFee: string;
-  renewalFee: string;
-  benefits: string[];
-  categories: string[];
-}
-
-// Category Icon and Color Mapping
-const categoryStyles: Record<string, { icon: string; bgColor: string; textColor: string; borderColor: string }> = {
+// Category styles - exported for use in other components
+export const categoryStyles: Record<string, { icon: string; bgColor: string; textColor: string; borderColor: string }> = {
   "Dining": { 
     icon: "🍽️", 
     bgColor: "bg-orange-50", 
@@ -179,7 +170,19 @@ const categoryStyles: Record<string, { icon: string; bgColor: string; textColor:
   }
 };
 
-function CreditCard({ image, title, joiningFee, renewalFee, benefits, categories }: CreditCardProps) {
+// Credit Card Component
+interface CreditCardProps {
+  id: string;
+  image: string;
+  title: string;
+  joiningFee: string;
+  renewalFee: string;
+  benefits: string[];
+  categories: string[];
+}
+
+// Export CreditCard component for use in other pages
+export function CreditCard({ id, image, title, joiningFee, renewalFee, benefits, categories }: CreditCardProps) {
   return (
     <div className="group flex flex-col lg:flex-row gap-6 md:gap-8 lg:gap-10 w-full bg-white hover:bg-white border border-gray-200 hover:border-gray-300 rounded-2xl p-6 md:p-8 transition-all duration-200 hover:shadow-md">
       {/* Card Image Section */}
@@ -195,7 +198,7 @@ function CreditCard({ image, title, joiningFee, renewalFee, benefits, categories
       {/* Card Details Section */}
       <div className="flex flex-col gap-5 flex-1 w-full">
         {/* Fees Section */}
-        <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 items-start sm:items-center bg-gray-50 rounded-xl p-4 border border-gray-200">
+        <div className="flex flex-row gap-4 sm:gap-8 items-center bg-gray-50 rounded-xl p-4 border border-gray-200">
           <div className="flex items-center gap-3">
             <div className="text-lg">💰</div>
             <div>
@@ -204,7 +207,7 @@ function CreditCard({ image, title, joiningFee, renewalFee, benefits, categories
             </div>
           </div>
           
-          <div className="hidden sm:flex h-10 w-px bg-gray-200" />
+          <div className="flex h-10 w-px bg-gray-200" />
           
           <div className="flex items-center gap-3">
             <div className="text-lg">🔄</div>
@@ -251,9 +254,14 @@ function CreditCard({ image, title, joiningFee, renewalFee, benefits, categories
             })}
           </div>
 
-          <button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold text-sm px-8 py-3 rounded-lg transition-colors w-full sm:w-auto whitespace-nowrap">
-            Apply now →
-          </button>
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <button className="border border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50 text-gray-700 font-medium text-sm px-6 py-3 rounded-lg transition-all w-full sm:w-auto whitespace-nowrap">
+              More Details
+            </button>
+            <button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold text-sm px-8 py-3 rounded-lg transition-colors w-full sm:w-auto whitespace-nowrap">
+              Apply now →
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -273,32 +281,15 @@ export default function CreditCardSection() {
     { icon: <RewardIcon />, label: 'Reward Points', isActive: false },
   ];
 
-  const cards: CreditCardProps[] = [
-    {
-      image: imgBobcardPremier,
-      title: "Bank of Baroda Premier BOBCARD",
-      joiningFee: "₹1200",
-      renewalFee: "₹1200",
-      benefits: [
-        "5X Reward Points on online, dining, and travel spends",
-        "1% Fuel Surcharge Waiver on fuel transactions between ₹400–₹5,000",
-        "500 Bonus Reward Points on spending ₹5,000 within 60 days of card issuance",
-      ],
-      categories: ["Dining", "Shopping"],
-    },
-    {
-      image: imgBobcardPremier,
-      title: "Bank of Baroda Premier BOBCARD",
-      joiningFee: "₹1200",
-      renewalFee: "₹1200",
-      benefits: [
-        "5X Reward Points on online, dining, and travel spends",
-        "1% Fuel Surcharge Waiver on fuel transactions between ₹400–₹5,000",
-        "500 Bonus Reward Points on spending ₹5,000 within 60 days of card issuance",
-      ],
-      categories: ["Dining", "Shopping"],
-    },
-  ];
+  const cards: CreditCardProps[] = creditCardsData.map((card: CreditCardData) => ({
+    id: card.id,
+    image: card.image,
+    title: card.title,
+    joiningFee: card.joiningFee,
+    renewalFee: card.renewalFee,
+    benefits: card.benefits,
+    categories: card.categories,
+  }));
 
   return (
     <section className="bg-gray-50 py-16 md:py-24">
@@ -326,7 +317,9 @@ export default function CreditCardSection() {
         <div className="flex flex-col gap-8">
           {cards.map((card, index) => (
             <div key={index}>
-              <CreditCard {...card} />
+              <Link to={`/card/${card.id}`} className="block">
+                <CreditCard {...card} />
+              </Link>
               {index < cards.length - 1 && (
                 <div className="h-px w-full bg-gray-200 mt-8" />
               )}

@@ -8,6 +8,7 @@ interface FAQItem {
 }
 
 export function FAQSection() {
+  // Start with all FAQs expanded for LLM crawlability
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const faqs: FAQItem[] = [
@@ -17,17 +18,17 @@ export function FAQSection() {
       category: "Basics",
     },
     {
-      question: "How long does it take to get a credit card approved?",
+      question: "How long does it take to get a credit card approved in India?",
       answer: "The approval process typically takes 7-10 working days. Some banks offer instant approval for pre-approved customers. After approval, the physical card is delivered within 7-15 days. You can start using the card immediately by adding it to digital wallets even before the physical card arrives.",
       category: "Basics",
     },
     {
-      question: "What is the difference between minimum amount due and total amount due?",
+      question: "What is the difference between minimum amount due and total amount due on a credit card?",
       answer: "The minimum amount due is typically 5% of your total outstanding balance (or ₹100-200, whichever is higher). Paying only this amount keeps your account active but you'll be charged high interest (24-48% annually) on the remaining balance. The total amount due is the full balance, which if paid, attracts no interest charges.",
       category: "Payments",
     },
     {
-      question: "Can I have multiple credit cards from different banks?",
+      question: "Can I have multiple credit cards from different banks at the same time?",
       answer: "Yes, you can have multiple credit cards from different banks. In fact, having multiple cards can improve your overall credit limit and reduce credit utilization ratio. However, ensure you can manage all cards responsibly and pay all bills on time. Too many applications in a short period can negatively impact your credit score.",
       category: "Usage",
     },
@@ -42,22 +43,22 @@ export function FAQSection() {
       category: "Usage",
     },
     {
-      question: "Are there any charges for closing a credit card?",
+      question: "Are there any charges for closing a credit card account?",
       answer: "Most banks don't charge for closing a credit card, but you must clear all outstanding dues first. However, closing a card within the first year may attract closure charges. Before closing, consider the impact on your credit score - it reduces your available credit and can increase utilization ratio.",
       category: "Fees",
     },
     {
-      question: "Can I convert my purchases into EMI?",
+      question: "How can I convert my credit card purchases into EMI?",
       answer: "Yes, most credit cards allow you to convert purchases above a certain amount (usually ₹2,500-5,000) into EMIs. You can do this through mobile app, internet banking, or by calling customer care. EMI tenure ranges from 3 to 24 months. An EMI processing fee (₹99-999) is usually charged.",
       category: "Usage",
     },
     {
-      question: "What is the credit card interest-free period?",
+      question: "What is the credit card interest-free period and how does it work?",
       answer: "The interest-free period is typically 45-50 days from the date of purchase. This includes the billing cycle (usually 30 days) plus the payment due date (15-20 days after bill generation). You pay no interest if you pay the total amount due before the payment due date. This period doesn't apply to cash withdrawals.",
       category: "Fees",
     },
     {
-      question: "How do credit card rewards and cashback work?",
+      question: "How do credit card rewards and cashback work in India?",
       answer: "Rewards points are earned on every purchase (typically 1-4 points per ₹100-150 spent) and can be redeemed for vouchers, merchandise, or air miles. Cashback is direct money credited to your account (1-5% of purchase value). Different cards have different earning rates for categories like dining, fuel, shopping, etc.",
       category: "Rewards",
     },
@@ -67,22 +68,22 @@ export function FAQSection() {
       category: "Security",
     },
     {
-      question: "Can I use my credit card internationally?",
+      question: "Can I use my credit card internationally for payments?",
       answer: "Yes, Visa and Mastercard credit cards are accepted internationally. However, you'll pay a forex markup fee (typically 3-3.5% of transaction value). Inform your bank before international travel to avoid card blocking. Some premium cards offer zero forex markup and travel benefits like insurance and lounge access.",
       category: "Usage",
     },
     {
-      question: "What is credit utilization ratio and why does it matter?",
+      question: "What is credit utilization ratio and why does it matter for my credit score?",
       answer: "Credit utilization ratio is the percentage of your credit limit that you're using. For example, if your limit is ₹1,00,000 and you've used ₹30,000, your utilization is 30%. Keeping it below 30% is ideal for a good credit score. High utilization suggests you're credit-dependent and can lower your score.",
       category: "Credit Score",
     },
     {
-      question: "How are credit card annual fees waived?",
+      question: "How are credit card annual fees waived or reduced?",
       answer: "Many cards waive annual fees if you meet minimum spending criteria (e.g., spend ₹1,50,000 annually). Some cards are lifetime free with no annual fees ever. Premium cards usually charge non-waivable fees but offer benefits worth more than the fee. You can also call customer care and request a waiver based on your usage.",
       category: "Fees",
     },
     {
-      question: "What happens if I miss my credit card payment?",
+      question: "What happens if I miss my credit card payment due date?",
       answer: "Missing a payment results in late payment fees (₹500-1,300), interest charges on the outstanding balance, and negative impact on your credit score. If you miss payments for 30+ days, it's reported to credit bureaus and can drop your score by 50-100 points. Contact your bank immediately if you anticipate difficulty in payment.",
       category: "Payments",
     },
@@ -94,7 +95,7 @@ export function FAQSection() {
 
   return (
     <section id="faqs" className="py-16 md:py-24 bg-gray-50">
-      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative max-w-5xl mx-auto p-[0px]">
         {/* Section Header */}
         <div className="mb-12 text-center">
           <h2 className="font-semibold text-xl sm:text-2xl md:text-3xl text-black leading-tight mb-4">
@@ -118,7 +119,8 @@ export function FAQSection() {
               >
                 <button
                   onClick={() => toggleFAQ(index)}
-                  className="w-full flex items-center justify-between gap-6 px-6 md:px-8 py-5 md:py-6 text-left hover:bg-gray-50 transition-colors"
+                  className="w-full flex items-center justify-between gap-6 px-3 md:px-8 py-5 md:py-6 text-left hover:bg-gray-50 transition-colors"
+                  aria-expanded={isOpen}
                 >
                   <h3 className="text-base md:text-lg font-medium text-gray-900 flex-1">
                     {faq.question}
@@ -131,13 +133,16 @@ export function FAQSection() {
                     )}
                   </div>
                 </button>
-                {isOpen && (
-                  <div className="px-6 md:px-8 pb-5 md:pb-6">
-                    <p className="text-sm md:text-base text-gray-600 leading-relaxed">
-                      {faq.answer}
-                    </p>
-                  </div>
-                )}
+                {/* Answer always in DOM for LLM crawling, but visually hidden when collapsed */}
+                <div 
+                  className={`px-3 md:px-8 overflow-hidden transition-all duration-300 ${
+                    isOpen ? 'pb-5 md:pb-6 max-h-[1000px]' : 'max-h-0'
+                  }`}
+                >
+                  <p className="text-sm md:text-base text-gray-600 leading-relaxed">
+                    {faq.answer}
+                  </p>
+                </div>
               </div>
             );
           })}
