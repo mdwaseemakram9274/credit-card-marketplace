@@ -6,6 +6,7 @@ import { env } from './lib/env.js';
 import { authRouter } from './routes/auth.js';
 import { metaRouter } from './routes/meta.js';
 import { cardsRouter } from './routes/cards.js';
+import { uploadsRouter } from './routes/uploads.js';
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.get('/health', (_, res) => {
 app.use('/api/auth', authRouter);
 app.use('/api/meta', metaRouter);
 app.use('/api', cardsRouter);
+app.use('/api/uploads', uploadsRouter);
 
 app.use((_, res) => {
   res.status(404).json({ success: false, message: 'Not found' });

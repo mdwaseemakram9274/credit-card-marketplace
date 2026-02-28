@@ -12,9 +12,12 @@ for (const key of required) {
 
 export const env = {
   port: Number(process.env.PORT || 3001),
+  PORT: Number(process.env.PORT || 3001),
   nodeEnv: process.env.NODE_ENV || 'development',
   supabaseUrl: process.env.SUPABASE_URL || '',
   supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
   jwtSecret: process.env.JWT_SECRET || 'dev-secret',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '8h',
+  CORS_ORIGIN: process.env.CORS_ORIGIN || '*',
+  storageBucket: process.env.SUPABASE_STORAGE_BUCKET || 'card-images',
 };

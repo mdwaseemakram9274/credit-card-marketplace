@@ -660,6 +660,7 @@ function AddCardContent({
   const [openSection, setOpenSection] = useState<string | null>('basic');
   const [showPreview, setShowPreview] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   
   // Form state
@@ -838,6 +839,27 @@ function AddCardContent({
     }
   };
 
+  const handleImageUpload = async (file: File) => {
+    if (!api.getToken()) {
+      alert('Please login as admin first.');
+      return;
+    }
+
+    setIsUploadingImage(true);
+    try {
+      const uploaded = await api.uploadCardImage(file);
+      setFormData({
+        ...formData,
+        cardImageUrl: uploaded.publicUrl,
+        cardImage: uploaded.publicUrl,
+      });
+    } catch (error) {
+      alert((error as Error).message || 'Image upload failed');
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
   const selectedBank = banks.find((bank) => bank.name === formData.bank);
   const canPublish =
     Boolean(formData.cardName.trim()) &&
@@ -891,6 +913,8 @@ function AddCardContent({
                   setFormData={setFormData}
                   formErrors={formErrors}
                   setFormErrors={setFormErrors}
+                  onImageUpload={handleImageUpload}
+                  isUploadingImage={isUploadingImage}
                 />
               </div>
             )}
@@ -1021,7 +1045,7 @@ function AddCardContent({
   );
 }
 
-function FormSection({ sectionId, cardTypes, cardNetworks, banks, formData, setFormData, formErrors, setFormErrors }: { 
+function FormSection({ sectionId, cardTypes, cardNetworks, banks, formData, setFormData, formErrors, setFormErrors, onImageUpload, isUploadingImage }: { 
   sectionId: string; 
   cardTypes: string[]; 
   cardNetworks: string[];
@@ -1030,6 +1054,8 @@ function FormSection({ sectionId, cardTypes, cardNetworks, banks, formData, setF
   setFormData: (data: any) => void;
   formErrors: Record<string, string>;
   setFormErrors: (data: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => void;
+  onImageUpload: (file: File) => Promise<void>;
+  isUploadingImage: boolean;
 }) {
   if (sectionId === 'basic') {
     return (
@@ -1092,8 +1118,16 @@ function FormSection({ sectionId, cardTypes, cardNetworks, banks, formData, setF
           <input
             type="file"
             accept="image/*"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              await onImageUpload(file);
+              e.currentTarget.value = '';
+            }}
+            disabled={isUploadingImage}
             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+          {isUploadingImage ? <p className="text-xs text-blue-600 mt-1">Uploading image...</p> : null}
         </div>
         <div className="grid grid-cols-3 gap-4">
           <div>

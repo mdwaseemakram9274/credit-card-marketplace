@@ -14,9 +14,10 @@ Fill `.env`:
 
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
+- `SUPABASE_STORAGE_BUCKET` (default `card-images`)
 - `JWT_SECRET`
-- `PORT` (optional, default `4000`)
-- `JWT_EXPIRES_IN` (optional, default `1d`)
+- `PORT` (optional, default `3001`)
+- `JWT_EXPIRES_IN` (optional, default `8h`)
 - `CORS_ORIGIN` (optional, default `*`)
 
 ## 2) Database
@@ -59,3 +60,8 @@ curl http://localhost:4000/health
 - `POST /api/cards` (auth)
 - `PUT /api/cards/:id` (auth)
 - `DELETE /api/cards/:id` (auth)
+- `POST /api/uploads/card-image` (auth, multipart form-data with `file`)
+
+## 5) Storage bucket
+
+Create a Supabase Storage bucket matching `SUPABASE_STORAGE_BUCKET` and make it public for direct image URLs.

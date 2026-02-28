@@ -93,7 +93,10 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   }
 
   const headers = new Headers(options.headers || {});
-  headers.set('Content-Type', 'application/json');
+  const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
+  if (!isFormData) {
+    headers.set('Content-Type', 'application/json');
+  }
   if (token) headers.set('Authorization', `Bearer ${token}`);
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -176,6 +179,18 @@ export const api = {
     await request<{ success: true }>(`/api/cards/${id}`, {
       method: 'DELETE',
     });
+  },
+
+  async uploadCardImage(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const payload = await request<{ data: { publicUrl: string; path: string; bucket: string } }>('/api/uploads/card-image', {
+      method: 'POST',
+      body: formData,
+    });
+
+    return payload.data;
   },
 };
 
