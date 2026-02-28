@@ -33,7 +33,7 @@ export default function AdminRedirectPage({ destination }: AdminRedirectPageProp
 export const getServerSideProps: GetServerSideProps = async () => {
   return {
     redirect: {
-      destination: '/admin.html',
+      destination: '/designinhtmlcss/index.html#/admin',
       permanent: false,
     },
   };

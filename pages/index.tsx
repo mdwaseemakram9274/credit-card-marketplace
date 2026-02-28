@@ -3,7 +3,7 @@ import { GetServerSideProps } from 'next';
 export const getServerSideProps: GetServerSideProps = async () => {
   return {
     redirect: {
-      destination: '/designinhtmlcss/index.html',
+      destination: '/designinhtmlcss/index.html#/',
       permanent: false,
     },
   };
