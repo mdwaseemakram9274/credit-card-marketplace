@@ -82,8 +82,11 @@ export default function AdminPage() {
   const [banks, setBanks] = useState<Array<{ id: string; name: string }>>([]);
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(api.isRemembered());
   const [loginLoading, setLoginLoading] = useState(false);
   const [authError, setAuthError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   
   // Card Types and Networks state
   const [cardTypes, setCardTypes] = useState<string[]>([]);
@@ -146,15 +149,38 @@ export default function AdminPage() {
   }, [isAuthenticated]);
 
   const handleAdminLogin = async () => {
-    if (!loginEmail.trim() || !loginPassword) {
-      setAuthError('Email and password are required.');
+    const email = loginEmail.trim();
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    let hasError = false;
+
+    setEmailError('');
+    setPasswordError('');
+
+    if (!email) {
+      setEmailError('Email is required.');
+      hasError = true;
+    } else if (!emailPattern.test(email)) {
+      setEmailError('Enter a valid email address.');
+      hasError = true;
+    }
+
+    if (!loginPassword) {
+      setPasswordError('Password is required.');
+      hasError = true;
+    } else if (loginPassword.length < 6) {
+      setPasswordError('Password must be at least 6 characters.');
+      hasError = true;
+    }
+
+    if (hasError) {
+      setAuthError('Please fix the highlighted fields.');
       return;
     }
 
     setLoginLoading(true);
     setAuthError('');
     try {
-      await api.login(loginEmail.trim(), loginPassword);
+      await api.login(email, loginPassword, rememberMe);
       setIsAuthenticated(true);
       setLoginPassword('');
     } catch (error) {
@@ -292,11 +318,23 @@ export default function AdminPage() {
             <AdminLoginPanel
               email={loginEmail}
               password={loginPassword}
-              onEmailChange={setLoginEmail}
-              onPasswordChange={setLoginPassword}
+              onEmailChange={(value) => {
+                setLoginEmail(value);
+                if (emailError) setEmailError('');
+                if (authError) setAuthError('');
+              }}
+              onPasswordChange={(value) => {
+                setLoginPassword(value);
+                if (passwordError) setPasswordError('');
+                if (authError) setAuthError('');
+              }}
+              rememberMe={rememberMe}
+              onRememberMeChange={setRememberMe}
               onSubmit={handleAdminLogin}
               loading={loginLoading}
               error={authError}
+              emailError={emailError}
+              passwordError={passwordError}
             />
           ) : activeTab === 'dashboard' ? (
             <DashboardContent 
@@ -357,17 +395,25 @@ function AdminLoginPanel({
   password,
   onEmailChange,
   onPasswordChange,
+  rememberMe,
+  onRememberMeChange,
   onSubmit,
   loading,
   error,
+  emailError,
+  passwordError,
 }: {
   email: string;
   password: string;
   onEmailChange: (value: string) => void;
   onPasswordChange: (value: string) => void;
+  rememberMe: boolean;
+  onRememberMeChange: (value: boolean) => void;
   onSubmit: () => void;
   loading: boolean;
   error: string;
+  emailError: string;
+  passwordError: string;
 }) {
   return (
     <div className="min-h-full flex items-center justify-center">
@@ -385,6 +431,7 @@ function AdminLoginPanel({
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="admin@example.com"
             />
+            {emailError ? <p className="text-xs text-red-600 mt-1">{emailError}</p> : null}
           </div>
 
           <div>
@@ -396,7 +443,18 @@ function AdminLoginPanel({
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="••••••••"
             />
+            {passwordError ? <p className="text-xs text-red-600 mt-1">{passwordError}</p> : null}
           </div>
+
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(event) => onRememberMeChange(event.target.checked)}
+              className="h-4 w-4"
+            />
+            Remember me
+          </label>
 
           {error ? <p className="text-sm text-red-600">{error}</p> : null}
 

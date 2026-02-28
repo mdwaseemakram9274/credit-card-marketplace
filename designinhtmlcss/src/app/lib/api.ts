@@ -33,6 +33,7 @@ export interface ApiCard {
 
 const API_BASE_URL = ((globalThis as any).__API_BASE_URL__ as string | undefined) || 'http://localhost:4000';
 const TOKEN_KEY = 'admin_token';
+const PERSIST_KEY = 'admin_token_persist';
 
 function decodeTokenPayload(token: string): { exp?: number } | null {
   try {
@@ -48,17 +49,31 @@ function decodeTokenPayload(token: string): { exp?: number } | null {
 
 function getToken() {
   if (typeof window === 'undefined') return '';
-  return localStorage.getItem(TOKEN_KEY) || '';
+  return localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY) || '';
 }
 
-function setToken(token: string) {
+function setToken(token: string, rememberMe = true) {
   if (typeof window === 'undefined') return;
-  localStorage.setItem(TOKEN_KEY, token);
+  if (rememberMe) {
+    localStorage.setItem(TOKEN_KEY, token);
+    sessionStorage.removeItem(TOKEN_KEY);
+  } else {
+    sessionStorage.setItem(TOKEN_KEY, token);
+    localStorage.removeItem(TOKEN_KEY);
+  }
+  localStorage.setItem(PERSIST_KEY, rememberMe ? '1' : '0');
 }
 
 function clearToken() {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(TOKEN_KEY);
+  sessionStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(PERSIST_KEY);
+}
+
+function isRemembered() {
+  if (typeof window === 'undefined') return true;
+  return localStorage.getItem(PERSIST_KEY) !== '0';
 }
 
 function isTokenValid() {
@@ -104,13 +119,14 @@ export const api = {
   setToken,
   clearToken,
   isTokenValid,
+  isRemembered,
 
-  async login(email: string, password: string) {
+  async login(email: string, password: string, rememberMe = true) {
     const payload = await request<{ data: { token: string } }>('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
-    setToken(payload.data.token);
+    setToken(payload.data.token, rememberMe);
     return payload.data.token;
   },
 
