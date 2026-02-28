@@ -46,7 +46,7 @@ function dedupePayloads(payloads: Array<Record<string, string>>) {
 }
 
 function isMissingColumnError(message: string) {
-  return /column/i.test(message) && /(does not exist|unknown)/i.test(message);
+  return /column/i.test(message) && /(does not exist|unknown|could not find|schema cache)/i.test(message);
 }
 
 function toSlug(value: string): string {
