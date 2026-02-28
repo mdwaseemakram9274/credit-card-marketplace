@@ -119,8 +119,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       const payloadAttempts = dedupePayloads([
         { ...basePayload, description, logo_url: logoUrl },
+        { ...basePayload, description, logo: logoUrl },
+        { ...basePayload, description, image_url: logoUrl },
         { ...basePayload, description },
         { ...basePayload, logo_url: logoUrl },
+        { ...basePayload, logo: logoUrl },
+        { ...basePayload, image_url: logoUrl },
         { ...basePayload },
       ].map((payload) => Object.fromEntries(Object.entries(payload).filter(([, value]) => value !== ''))));
 
