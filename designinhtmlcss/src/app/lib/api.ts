@@ -1,5 +1,6 @@
 export interface ApiMetaItem {
   id: string;
+  slug?: string;
   name: string;
   description?: string;
   logo_url?: string;

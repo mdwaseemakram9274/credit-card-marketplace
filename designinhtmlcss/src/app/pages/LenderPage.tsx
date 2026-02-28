@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { FAQSection } from '../components/FAQSection';
 import { creditCardsData } from '../data/creditCardsData';
 import HdfcBankLogo from '../../imports/HdfcBankId6PGbXHe01';
-import { api, mapApiCardToUi } from '../lib/api';
+import { api, ApiMetaItem, mapApiCardToUi } from '../lib/api';
 
 // Import CreditCard component
 function CreditCard({ id, image, title, joiningFee, renewalFee, benefits, categories }: {
@@ -231,21 +231,44 @@ const cardVariants = [
   }
 ];
 
-const allLenders = [
-  { id: 'hdfc', name: 'HDFC Bank', logo: '🏦' },
-  { id: 'sbi', name: 'State Bank of India', logo: '🏛️' },
-  { id: 'icici', name: 'ICICI Bank', logo: '🏢' },
-  { id: 'axis', name: 'Axis Bank', logo: '🏦' },
-  { id: 'kotak', name: 'Kotak Mahindra', logo: '🏦' },
-  { id: 'bob', name: 'Bank of Baroda', logo: '🏦' },
-  { id: 'indusind', name: 'IndusInd Bank', logo: '🏦' },
-  { id: 'yes', name: 'YES Bank', logo: '🏦' },
-];
-
 export default function LenderPage() {
   const { lenderId } = useParams<{ lenderId: string }>();
-  const lender = lenderId ? lenderData[lenderId] : null;
+  const [banks, setBanks] = useState<ApiMetaItem[]>([]);
   const [cards, setCards] = useState(creditCardsData);
+
+  const lender = useMemo(() => {
+    if (!lenderId) return null;
+
+    const dynamicBank = banks.find((bank) => bank.slug === lenderId || bank.id === lenderId);
+    if (dynamicBank) {
+      return {
+        name: dynamicBank.name,
+        logo: dynamicBank.logo_url
+          ? <img src={dynamicBank.logo_url} alt={`${dynamicBank.name} logo`} className="h-12 w-auto object-contain" />
+          : '🏦',
+        description: dynamicBank.description || `${dynamicBank.name} credit cards and offers.`,
+        totalCards: 0,
+      };
+    }
+
+    return lenderData[lenderId] || null;
+  }, [banks, lenderId]);
+
+  const allLenders = useMemo(() => {
+    if (banks.length) {
+      return banks.map((bank) => ({
+        id: bank.slug || bank.id,
+        name: bank.name,
+        logoUrl: bank.logo_url || '',
+      }));
+    }
+
+    return Object.entries(lenderData).map(([id, value]) => ({
+      id,
+      name: value.name,
+      logoUrl: '',
+    }));
+  }, [banks]);
 
   useEffect(() => {
     let active = true;
@@ -276,6 +299,26 @@ export default function LenderPage() {
     };
 
     loadCards();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadBanks = async () => {
+      try {
+        const bankRows = await api.getBanks();
+        if (!active) return;
+        setBanks(bankRows);
+      } catch {
+        if (!active) return;
+        setBanks([]);
+      }
+    };
+
+    loadBanks();
     return () => {
       active = false;
     };
@@ -605,7 +648,13 @@ export default function LenderPage() {
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
-                <span className="text-xl sm:text-2xl flex-shrink-0">{otherLender.logo}</span>
+                <span className="text-xl sm:text-2xl flex-shrink-0">
+                  {otherLender.logoUrl ? (
+                    <img src={otherLender.logoUrl} alt={`${otherLender.name} logo`} className="h-6 w-auto object-contain" />
+                  ) : (
+                    '🏦'
+                  )}
+                </span>
                 <span className={`font-semibold text-xs sm:text-sm whitespace-nowrap ${
                   otherLender.id === lenderId ? 'text-purple-600' : 'text-gray-700 group-hover:text-gray-900'
                 }`}>

@@ -1,19 +1,29 @@
 import { Link } from 'react-router';
+import { useEffect, useState } from 'react';
+import { api, ApiMetaItem } from '../lib/api';
 
 export function StickySidebar() {
-  const partners = [
-    "HDFC Bank", "ICICI Bank", "SBI Card", "Axis Bank", 
-    "Kotak Mahindra", "IndusInd Bank", "YES Bank", "RBL Bank"
-  ];
+  const [partners, setPartners] = useState<ApiMetaItem[]>([]);
 
-  // Map partner names to lender IDs
-  const getLenderId = (partner: string): string | null => {
-    const mapping: Record<string, string> = {
-      "HDFC Bank": "hdfc",
-      // Add more mappings as needed
+  useEffect(() => {
+    let active = true;
+
+    const loadBanks = async () => {
+      try {
+        const banks = await api.getBanks();
+        if (!active) return;
+        setPartners(banks.slice(0, 8));
+      } catch {
+        if (!active) return;
+        setPartners([]);
+      }
     };
-    return mapping[partner] || null;
-  };
+
+    loadBanks();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <div className="lg:sticky lg:top-8 pt-20 md:pt-32">
@@ -27,30 +37,15 @@ export function StickySidebar() {
 
         {/* Partner Banks Grid */}
         <div className="grid grid-cols-2 gap-3 mb-6">
-          {partners.map((partner, index) => {
-            const lenderId = getLenderId(partner);
-            
-            if (lenderId) {
-              return (
-                <Link
-                  key={index}
-                  to={`/lender/${lenderId}`}
-                  className="group bg-white border border-gray-100 rounded-lg p-3 text-center hover:border-purple-600 hover:bg-purple-50 transition-all duration-300 cursor-pointer"
-                >
-                  <p className="text-xs font-semibold text-black group-hover:text-purple-600 transition-colors">{partner}</p>
-                </Link>
-              );
-            }
-            
-            return (
-              <div 
-                key={index} 
-                className="group bg-white border border-gray-100 rounded-lg p-3 text-center hover:border-purple-600 hover:bg-purple-50 transition-all duration-300 cursor-pointer"
-              >
-                <p className="text-xs font-semibold text-black group-hover:text-purple-600 transition-colors">{partner}</p>
-              </div>
-            );
-          })}
+          {partners.map((partner) => (
+            <Link
+              key={partner.id}
+              to={`/lender/${partner.slug || partner.id}`}
+              className="group bg-white border border-gray-100 rounded-lg p-3 text-center hover:border-purple-600 hover:bg-purple-50 transition-all duration-300 cursor-pointer"
+            >
+              <p className="text-xs font-semibold text-black group-hover:text-purple-600 transition-colors">{partner.name}</p>
+            </Link>
+          ))}
         </div>
 
         {/* CTA Button */}
