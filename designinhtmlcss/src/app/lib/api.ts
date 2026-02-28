@@ -161,14 +161,80 @@ export const api = {
     return payload.data;
   },
 
+  async createBank(name: string) {
+    const payload = await request<{ data: ApiMetaItem }>('/api/meta/banks', {
+      method: 'POST',
+      body: JSON.stringify({ name }),
+    });
+    return payload.data;
+  },
+
+  async updateBank(id: string, name: string) {
+    const payload = await request<{ data: ApiMetaItem }>(`/api/meta/banks/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ name }),
+    });
+    return payload.data;
+  },
+
+  async deleteBank(id: string) {
+    await request<{ success: true }>(`/api/meta/banks/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
   async getCardTypes() {
     const payload = await request<{ data: ApiMetaItem[] }>('/api/meta/card-types');
     return payload.data;
   },
 
+  async createCardType(name: string) {
+    const payload = await request<{ data: ApiMetaItem }>('/api/meta/card-types', {
+      method: 'POST',
+      body: JSON.stringify({ name }),
+    });
+    return payload.data;
+  },
+
+  async updateCardType(id: string, name: string) {
+    const payload = await request<{ data: ApiMetaItem }>(`/api/meta/card-types/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ name }),
+    });
+    return payload.data;
+  },
+
+  async deleteCardType(id: string) {
+    await request<{ success: true }>(`/api/meta/card-types/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
   async getCardNetworks() {
     const payload = await request<{ data: ApiMetaItem[] }>('/api/meta/card-networks');
     return payload.data;
+  },
+
+  async createCardNetwork(name: string) {
+    const payload = await request<{ data: ApiMetaItem }>('/api/meta/card-networks', {
+      method: 'POST',
+      body: JSON.stringify({ name }),
+    });
+    return payload.data;
+  },
+
+  async updateCardNetwork(id: string, name: string) {
+    const payload = await request<{ data: ApiMetaItem }>(`/api/meta/card-networks/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ name }),
+    });
+    return payload.data;
+  },
+
+  async deleteCardNetwork(id: string) {
+    await request<{ success: true }>(`/api/meta/card-networks/${id}`, {
+      method: 'DELETE',
+    });
   },
 
   async createCard(input: Partial<ApiCard>) {

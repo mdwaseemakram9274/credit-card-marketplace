@@ -1,4 +1,4 @@
-import imgBobcardPremier from "figma:asset/d326441dbe055cea6b310850b0fa9e9e904edcd5.png";
+const imgBobcardPremier = "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=900&auto=format&fit=crop&q=80";
 
 export interface CreditCardData {
   id: string;

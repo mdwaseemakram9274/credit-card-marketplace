@@ -94,6 +94,24 @@ export default function AdminPage() {
   const [cardTypeOptions, setCardTypeOptions] = useState<ApiMetaItem[]>([]);
   const [cardNetworkOptions, setCardNetworkOptions] = useState<ApiMetaItem[]>([]);
 
+  const loadMeta = async () => {
+    if (!isAuthenticated) return;
+    try {
+      const [bankRows, typeRows, networkRows] = await Promise.all([
+        api.getBanks(),
+        api.getCardTypes(),
+        api.getCardNetworks(),
+      ]);
+      setBanks(bankRows);
+      setCardTypeOptions(typeRows);
+      setCardNetworkOptions(networkRows);
+      setCardTypes(typeRows.map((item) => item.name));
+      setCardNetworks(networkRows.map((item) => item.name));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const loadCards = async () => {
     if (!isAuthenticated) return;
     setIsLoading(true);
@@ -118,24 +136,6 @@ export default function AdminPage() {
   }, [isAuthenticated]);
 
   useEffect(() => {
-    const loadMeta = async () => {
-      if (!isAuthenticated) return;
-      try {
-        const [bankRows, typeRows, networkRows] = await Promise.all([
-          api.getBanks(),
-          api.getCardTypes(),
-          api.getCardNetworks(),
-        ]);
-        setBanks(bankRows);
-        setCardTypeOptions(typeRows);
-        setCardNetworkOptions(networkRows);
-        setCardTypes(typeRows.map((item) => item.name));
-        setCardNetworks(networkRows.map((item) => item.name));
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
     loadMeta();
   }, [isAuthenticated]);
 
@@ -370,10 +370,10 @@ export default function AdminPage() {
             />
           ) : activeTab === 'banks' ? (
             <BanksManagementContent 
-              cardTypes={cardTypes}
-              setCardTypes={setCardTypes}
-              cardNetworks={cardNetworks}
-              setCardNetworks={setCardNetworks}
+              bankOptions={banks}
+              cardTypeOptions={cardTypeOptions}
+              cardNetworkOptions={cardNetworkOptions}
+              refreshMeta={loadMeta}
             />
           ) : (
             <AddCardContent 
@@ -671,6 +671,12 @@ function AddCardContent({
     joiningFee: editingCard?.joiningFee || '',
     renewalFee: editingCard?.renewalFee || '',
     interestRate: '',
+    latePaymentFee: '',
+    overlimitFee: '',
+    cashAdvanceFee: '',
+    foreignTransactionFee: '',
+    returnedPaymentFee: '',
+    cardReplacementFee: '',
     cardImage: editingCard?.image || 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400',
     cardImageUrl: editingCard?.image || '',
     cardImageStoragePath: '',
@@ -710,6 +716,12 @@ function AddCardContent({
       joiningFee: editingCard?.joiningFee || '',
       renewalFee: editingCard?.renewalFee || '',
       interestRate: '',
+      latePaymentFee: '',
+      overlimitFee: '',
+      cashAdvanceFee: '',
+      foreignTransactionFee: '',
+      returnedPaymentFee: '',
+      cardReplacementFee: '',
       cardImage: editingCard?.image || 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400',
       cardImageUrl: editingCard?.image || '',
       cardImageStoragePath: '',
@@ -781,6 +793,15 @@ function AddCardContent({
       Draft: 'draft',
     };
 
+    const standardFees = [
+      { feeType: 'Late Payment Fee', amount: formData.latePaymentFee },
+      { feeType: 'Overlimit Fee', amount: formData.overlimitFee },
+      { feeType: 'Cash Advance Fee', amount: formData.cashAdvanceFee },
+      { feeType: 'Foreign Transaction Fee', amount: formData.foreignTransactionFee },
+      { feeType: 'Returned Payment Fee', amount: formData.returnedPaymentFee },
+      { feeType: 'Card Replacement Fee', amount: formData.cardReplacementFee },
+    ].filter((item) => item.amount.trim());
+
     const payload = {
       card_name: formData.cardName,
       bank_id: selectedBank.id,
@@ -818,7 +839,7 @@ function AddCardContent({
       pros: formData.prosText.split('\n').map((item) => item.trim()).filter(Boolean),
       cons: formData.consText.split('\n').map((item) => item.trim()).filter(Boolean),
       custom_fees: {
-        items: formData.customFees,
+        items: [...standardFees, ...formData.customFees],
         fee_waiver_conditions: formData.feeWaiverConditions,
       },
       status: mode === 'draft' ? 'draft' : (statusMap[formData.status] || 'enabled'),
@@ -962,6 +983,12 @@ function AddCardContent({
               joiningFee: '',
               renewalFee: '',
               interestRate: '',
+              latePaymentFee: '',
+              overlimitFee: '',
+              cashAdvanceFee: '',
+              foreignTransactionFee: '',
+              returnedPaymentFee: '',
+              cardReplacementFee: '',
               cardImage: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400',
               cardImageUrl: '',
               cardImageStoragePath: '',
@@ -1398,6 +1425,8 @@ function FeesSection({ formData, setFormData, formErrors, setFormErrors }: { for
                   <input
                     type="text"
                     placeholder="e.g., ₹500"
+                    value={formData.latePaymentFee}
+                    onChange={(e) => setFormData({ ...formData, latePaymentFee: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </td>
@@ -1409,6 +1438,8 @@ function FeesSection({ formData, setFormData, formErrors, setFormErrors }: { for
                   <input
                     type="text"
                     placeholder="e.g., ₹600"
+                    value={formData.overlimitFee}
+                    onChange={(e) => setFormData({ ...formData, overlimitFee: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </td>
@@ -1420,6 +1451,8 @@ function FeesSection({ formData, setFormData, formErrors, setFormErrors }: { for
                   <input
                     type="text"
                     placeholder="e.g., 2.5% or ₹300 (whichever is higher)"
+                    value={formData.cashAdvanceFee}
+                    onChange={(e) => setFormData({ ...formData, cashAdvanceFee: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </td>
@@ -1431,6 +1464,8 @@ function FeesSection({ formData, setFormData, formErrors, setFormErrors }: { for
                   <input
                     type="text"
                     placeholder="e.g., 3.5% + GST"
+                    value={formData.foreignTransactionFee}
+                    onChange={(e) => setFormData({ ...formData, foreignTransactionFee: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </td>
@@ -1442,6 +1477,8 @@ function FeesSection({ formData, setFormData, formErrors, setFormErrors }: { for
                   <input
                     type="text"
                     placeholder="e.g., ₹450"
+                    value={formData.returnedPaymentFee}
+                    onChange={(e) => setFormData({ ...formData, returnedPaymentFee: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </td>
@@ -1453,6 +1490,8 @@ function FeesSection({ formData, setFormData, formErrors, setFormErrors }: { for
                   <input
                     type="text"
                     placeholder="e.g., ₹100"
+                    value={formData.cardReplacementFee}
+                    onChange={(e) => setFormData({ ...formData, cardReplacementFee: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </td>
@@ -1810,24 +1849,19 @@ function RewardsSection({ formData, setFormData }: { formData: any; setFormData:
 }
 
 function BanksManagementContent({
-  cardTypes,
-  setCardTypes,
-  cardNetworks,
-  setCardNetworks
+  bankOptions,
+  cardTypeOptions,
+  cardNetworkOptions,
+  refreshMeta,
 }: {
-  cardTypes: string[];
-  setCardTypes: (types: string[]) => void;
-  cardNetworks: string[];
-  setCardNetworks: (networks: string[]) => void;
+  bankOptions: ApiMetaItem[];
+  cardTypeOptions: ApiMetaItem[];
+  cardNetworkOptions: ApiMetaItem[];
+  refreshMeta: () => Promise<void>;
 }) {
-  const [banks, setBanks] = useState([
-    { id: 1, name: 'HDFC Bank', description: 'Leading private sector bank with extensive network', logo: '', status: 'Enabled' },
-    { id: 2, name: 'ICICI Bank', description: 'Second-largest private sector bank in India', logo: '', status: 'Enabled' },
-    { id: 3, name: 'SBI', description: 'India\'s largest public sector bank', logo: '', status: 'Enabled' },
-    { id: 4, name: 'Axis Bank', description: 'Third-largest private sector bank', logo: '', status: 'Enabled' },
-  ]);
+  const banks = bankOptions.map((item) => ({ ...item, status: 'Enabled' }));
   const [showAddModal, setShowAddModal] = useState(false);
-  const [editingBank, setEditingBank] = useState<{ id: number; name: string; description: string; logo: string; status: string } | null>(null);
+  const [editingBank, setEditingBank] = useState<{ id: string; name: string; status: string } | null>(null);
   const [newBankName, setNewBankName] = useState('');
   const [newBankDescription, setNewBankDescription] = useState('');
   const [newBankLogo, setNewBankLogo] = useState('');
@@ -1836,66 +1870,64 @@ function BanksManagementContent({
   // Card Type management state
   const [newCardType, setNewCardType] = useState('');
   const [showAddTypeModal, setShowAddTypeModal] = useState(false);
+  const [editingCardType, setEditingCardType] = useState<ApiMetaItem | null>(null);
   const [deleteConfirmType, setDeleteConfirmType] = useState<string | null>(null);
   
   // Card Network management state
   const [newCardNetwork, setNewCardNetwork] = useState('');
   const [showAddNetworkModal, setShowAddNetworkModal] = useState(false);
+  const [editingCardNetwork, setEditingCardNetwork] = useState<ApiMetaItem | null>(null);
   const [deleteConfirmNetwork, setDeleteConfirmNetwork] = useState<string | null>(null);
 
-  const handleAddBank = () => {
+  const handleAddBank = async () => {
     if (newBankName.trim()) {
-      const newBank = {
-        id: banks.length + 1,
-        name: newBankName.trim(),
-        description: newBankDescription.trim(),
-        logo: newBankLogo,
-        status: 'Enabled'
-      };
-      setBanks([...banks, newBank]);
-      setNewBankName('');
-      setNewBankDescription('');
-      setNewBankLogo('');
-      setLogoFileName('');
-      setShowAddModal(false);
+      try {
+        await api.createBank(newBankName.trim());
+        await refreshMeta();
+        setNewBankName('');
+        setNewBankDescription('');
+        setNewBankLogo('');
+        setLogoFileName('');
+        setShowAddModal(false);
+      } catch (error) {
+        alert((error as Error).message || 'Unable to add bank');
+      }
     }
   };
 
-  const handleEditBank = () => {
+  const handleEditBank = async () => {
     if (editingBank && newBankName.trim()) {
-      setBanks(banks.map(bank => 
-        bank.id === editingBank.id 
-          ? { ...bank, name: newBankName.trim(), description: newBankDescription.trim(), logo: newBankLogo }
-          : bank
-      ));
-      setNewBankName('');
-      setNewBankDescription('');
-      setNewBankLogo('');
-      setLogoFileName('');
-      setEditingBank(null);
+      try {
+        await api.updateBank(editingBank.id, newBankName.trim());
+        await refreshMeta();
+        setNewBankName('');
+        setNewBankDescription('');
+        setNewBankLogo('');
+        setLogoFileName('');
+        setEditingBank(null);
+      } catch (error) {
+        alert((error as Error).message || 'Unable to update bank');
+      }
     }
   };
 
-  const handleDeleteBank = (id: number) => {
+  const handleDeleteBank = async (id: string) => {
     if (confirm('Are you sure you want to delete this bank?')) {
-      setBanks(banks.filter(bank => bank.id !== id));
+      try {
+        await api.deleteBank(id);
+        await refreshMeta();
+      } catch (error) {
+        alert((error as Error).message || 'Unable to delete bank');
+      }
     }
   };
 
-  const toggleBankStatus = (id: number) => {
-    setBanks(banks.map(bank => 
-      bank.id === id 
-        ? { ...bank, status: bank.status === 'Enabled' ? 'Disabled' : 'Enabled' }
-        : bank
-    ));
-  };
-
-  const openEditModal = (bank: typeof banks[0]) => {
+  const openEditModal = (bank: { id: string; name: string; status: string }) => {
     setEditingBank(bank);
     setNewBankName(bank.name);
-    setNewBankDescription(bank.description);
-    setNewBankLogo(bank.logo);
-    setLogoFileName(bank.logo ? 'Uploaded' : '');
+    setNewBankDescription('');
+    setNewBankLogo('');
+    setLogoFileName('');
   };
 
   const closeModal = () => {
@@ -1920,30 +1952,72 @@ function BanksManagementContent({
   };
   
   // Card Type handlers
-  const handleAddCardType = () => {
-    if (newCardType.trim() && !cardTypes.includes(newCardType.trim())) {
-      setCardTypes([...cardTypes, newCardType.trim()]);
-      setNewCardType('');
-      setShowAddTypeModal(false);
+  const handleAddCardType = async () => {
+    const value = newCardType.trim();
+    const duplicate = cardTypeOptions.some(
+      (item) => item.name.toLowerCase() === value.toLowerCase() && item.id !== editingCardType?.id
+    );
+    if (value && !duplicate) {
+      try {
+        if (editingCardType) {
+          await api.updateCardType(editingCardType.id, value);
+        } else {
+          await api.createCardType(value);
+        }
+        await refreshMeta();
+        setNewCardType('');
+        setEditingCardType(null);
+        setShowAddTypeModal(false);
+      } catch (error) {
+        alert((error as Error).message || 'Unable to save card type');
+      }
     }
   };
   
-  const handleDeleteCardType = (type: string) => {
-    setCardTypes(cardTypes.filter(t => t !== type));
+  const handleDeleteCardType = async (type: string) => {
+    const existing = cardTypeOptions.find((item) => item.name === type);
+    if (!existing) return;
+    try {
+      await api.deleteCardType(existing.id);
+      await refreshMeta();
+    } catch (error) {
+      alert((error as Error).message || 'Unable to delete card type');
+    }
     setDeleteConfirmType(null);
   };
   
   // Card Network handlers
-  const handleAddCardNetwork = () => {
-    if (newCardNetwork.trim() && !cardNetworks.includes(newCardNetwork.trim())) {
-      setCardNetworks([...cardNetworks, newCardNetwork.trim()]);
-      setNewCardNetwork('');
-      setShowAddNetworkModal(false);
+  const handleAddCardNetwork = async () => {
+    const value = newCardNetwork.trim();
+    const duplicate = cardNetworkOptions.some(
+      (item) => item.name.toLowerCase() === value.toLowerCase() && item.id !== editingCardNetwork?.id
+    );
+    if (value && !duplicate) {
+      try {
+        if (editingCardNetwork) {
+          await api.updateCardNetwork(editingCardNetwork.id, value);
+        } else {
+          await api.createCardNetwork(value);
+        }
+        await refreshMeta();
+        setNewCardNetwork('');
+        setEditingCardNetwork(null);
+        setShowAddNetworkModal(false);
+      } catch (error) {
+        alert((error as Error).message || 'Unable to save card network');
+      }
     }
   };
   
-  const handleDeleteCardNetwork = (network: string) => {
-    setCardNetworks(cardNetworks.filter(n => n !== network));
+  const handleDeleteCardNetwork = async (network: string) => {
+    const existing = cardNetworkOptions.find((item) => item.name === network);
+    if (!existing) return;
+    try {
+      await api.deleteCardNetwork(existing.id);
+      await refreshMeta();
+    } catch (error) {
+      alert((error as Error).message || 'Unable to delete card network');
+    }
     setDeleteConfirmNetwork(null);
   };
 
@@ -1985,16 +2059,7 @@ function BanksManagementContent({
                 <tr key={bank.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-4 text-sm font-medium text-gray-900">{bank.name}</td>
                   <td className="px-4 py-4">
-                    <button
-                      onClick={() => toggleBankStatus(bank.id)}
-                      className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold cursor-pointer transition-colors ${
-                        bank.status === 'Enabled' 
-                          ? 'bg-green-100 text-green-800 hover:bg-green-200' 
-                          : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                      }`}
-                    >
-                      {bank.status}
-                    </button>
+                    <span className="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">Enabled</span>
                   </td>
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-2">
@@ -2034,7 +2099,11 @@ function BanksManagementContent({
             <h2 className="text-lg font-bold text-gray-900">Card Types</h2>
           </div>
           <button 
-            onClick={() => setShowAddTypeModal(true)}
+            onClick={() => {
+              setEditingCardType(null);
+              setNewCardType('');
+              setShowAddTypeModal(true);
+            }}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
           >
             <Plus className="w-4 h-4" />
@@ -2042,11 +2111,22 @@ function BanksManagementContent({
           </button>
         </div>
         <div className="flex flex-wrap gap-2">
-          {cardTypes.map((type) => (
-            <div key={type} className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg">
-              <span className="text-sm font-medium text-gray-700">{type}</span>
+          {cardTypeOptions.map((type) => (
+            <div key={type.id} className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg">
+              <span className="text-sm font-medium text-gray-700">{type.name}</span>
               <button
-                onClick={() => setDeleteConfirmType(type)}
+                onClick={() => {
+                  setEditingCardType(type);
+                  setNewCardType(type.name);
+                  setShowAddTypeModal(true);
+                }}
+                className="p-0.5 hover:bg-blue-100 rounded transition-colors"
+                title="Edit type"
+              >
+                <Edit2 className="w-3.5 h-3.5 text-blue-600" />
+              </button>
+              <button
+                onClick={() => setDeleteConfirmType(type.name)}
                 className="p-0.5 hover:bg-red-100 rounded transition-colors"
                 title="Delete type"
               >
@@ -2065,7 +2145,11 @@ function BanksManagementContent({
             <h2 className="text-lg font-bold text-gray-900">Card Networks</h2>
           </div>
           <button 
-            onClick={() => setShowAddNetworkModal(true)}
+            onClick={() => {
+              setEditingCardNetwork(null);
+              setNewCardNetwork('');
+              setShowAddNetworkModal(true);
+            }}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
           >
             <Plus className="w-4 h-4" />
@@ -2073,11 +2157,22 @@ function BanksManagementContent({
           </button>
         </div>
         <div className="flex flex-wrap gap-2">
-          {cardNetworks.map((network) => (
-            <div key={network} className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg">
-              <span className="text-sm font-medium text-gray-700">{network}</span>
+          {cardNetworkOptions.map((network) => (
+            <div key={network.id} className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg">
+              <span className="text-sm font-medium text-gray-700">{network.name}</span>
               <button
-                onClick={() => setDeleteConfirmNetwork(network)}
+                onClick={() => {
+                  setEditingCardNetwork(network);
+                  setNewCardNetwork(network.name);
+                  setShowAddNetworkModal(true);
+                }}
+                className="p-0.5 hover:bg-blue-100 rounded transition-colors"
+                title="Edit network"
+              >
+                <Edit2 className="w-3.5 h-3.5 text-blue-600" />
+              </button>
+              <button
+                onClick={() => setDeleteConfirmNetwork(network.name)}
                 className="p-0.5 hover:bg-red-100 rounded transition-colors"
                 title="Delete network"
               >
@@ -2223,10 +2318,11 @@ function BanksManagementContent({
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-gray-900">Add New Card Type</h2>
+                <h2 className="text-lg font-bold text-gray-900">{editingCardType ? 'Edit Card Type' : 'Add New Card Type'}</h2>
                 <button
                   onClick={() => {
                     setShowAddTypeModal(false);
+                    setEditingCardType(null);
                     setNewCardType('');
                   }}
                   className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
@@ -2258,6 +2354,7 @@ function BanksManagementContent({
               <button
                 onClick={() => {
                   setShowAddTypeModal(false);
+                  setEditingCardType(null);
                   setNewCardType('');
                 }}
                 className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
@@ -2269,7 +2366,7 @@ function BanksManagementContent({
                 disabled={!newCardType.trim()}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Add Type
+                {editingCardType ? 'Save Type' : 'Add Type'}
               </button>
             </div>
           </div>
@@ -2282,10 +2379,11 @@ function BanksManagementContent({
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-gray-900">Add New Card Network</h2>
+                <h2 className="text-lg font-bold text-gray-900">{editingCardNetwork ? 'Edit Card Network' : 'Add New Card Network'}</h2>
                 <button
                   onClick={() => {
                     setShowAddNetworkModal(false);
+                    setEditingCardNetwork(null);
                     setNewCardNetwork('');
                   }}
                   className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
@@ -2317,6 +2415,7 @@ function BanksManagementContent({
               <button
                 onClick={() => {
                   setShowAddNetworkModal(false);
+                  setEditingCardNetwork(null);
                   setNewCardNetwork('');
                 }}
                 className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
@@ -2328,7 +2427,7 @@ function BanksManagementContent({
                 disabled={!newCardNetwork.trim()}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Add Network
+                {editingCardNetwork ? 'Save Network' : 'Add Network'}
               </button>
             </div>
           </div>
