@@ -97,16 +97,25 @@ export default function AdminPage() {
   const loadMeta = async () => {
     if (!isAuthenticated) return;
     try {
-      const [bankRows, typeRows, networkRows] = await Promise.all([
+      const [bankRowsResult, typeRowsResult, networkRowsResult] = await Promise.allSettled([
         api.getBanks(),
         api.getCardTypes(),
         api.getCardNetworks(),
       ]);
-      setBanks(bankRows);
-      setCardTypeOptions(typeRows);
-      setCardNetworkOptions(networkRows);
-      setCardTypes(typeRows.map((item) => item.name));
-      setCardNetworks(networkRows.map((item) => item.name));
+
+      if (bankRowsResult.status === 'fulfilled') {
+        setBanks(bankRowsResult.value);
+      }
+
+      if (typeRowsResult.status === 'fulfilled') {
+        setCardTypeOptions(typeRowsResult.value);
+        setCardTypes(typeRowsResult.value.map((item) => item.name));
+      }
+
+      if (networkRowsResult.status === 'fulfilled') {
+        setCardNetworkOptions(networkRowsResult.value);
+        setCardNetworks(networkRowsResult.value.map((item) => item.name));
+      }
     } catch (error) {
       console.error(error);
     }
