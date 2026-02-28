@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { 
   CreditCard, 
   LayoutDashboard, 
@@ -18,22 +18,56 @@ import {
   Upload,
   X
 } from 'lucide-react';
-import { creditCardsData } from '../data/creditCardsData';
 import { Link } from 'react-router';
 import { CreditCard as CreditCardPreview } from '../components/CreditCardSection';
+import { api, mapApiCardToUi } from '../lib/api';
 
 type TabType = 'dashboard' | 'add-card' | 'banks';
 
-// Extended card data with bank and status
-const extendedCardsData = creditCardsData.map((card, index) => ({
-  ...card,
-  bank: card.title.split(' ')[0], // Extract bank name from title
-  cardName: card.title,
-  joiningFeeDisplay: card.joiningFee,
-  annualFeeDisplay: card.renewalFee,
-  cardType: card.categories[0] || 'General',
-  status: index % 3 === 0 ? 'Draft' : index % 2 === 0 ? 'Enabled' : 'Disabled',
-}));
+type AdminCardRow = {
+  id: string;
+  rawId: string;
+  image: string;
+  title: string;
+  bank: string;
+  bankId: string;
+  cardName: string;
+  joiningFee: string;
+  joiningFeeDisplay: string;
+  renewalFee: string;
+  annualFeeDisplay: string;
+  benefits: string[];
+  categories: string[];
+  cardType: string;
+  status: 'Draft' | 'Enabled' | 'Disabled';
+  slug: string | null;
+  cardTypeId: string | null;
+  networkId: string | null;
+};
+
+const mapApiToAdminRow = (card: any): AdminCardRow => {
+  const uiCard = mapApiCardToUi(card);
+  return {
+    id: uiCard.slug || uiCard.rawId,
+    rawId: uiCard.rawId,
+    image: uiCard.image,
+    title: uiCard.title,
+    bank: uiCard.bankName || 'Unknown Bank',
+    bankId: uiCard.bankId,
+    cardName: uiCard.title,
+    joiningFee: uiCard.joiningFee,
+    joiningFeeDisplay: uiCard.joiningFee,
+    renewalFee: uiCard.renewalFee,
+    annualFeeDisplay: uiCard.renewalFee,
+    benefits: uiCard.benefits,
+    categories: uiCard.categories,
+    cardType: uiCard.categories[0] || 'General',
+    status: uiCard.status === 'enabled' ? 'Enabled' : uiCard.status === 'disabled' ? 'Disabled' : 'Draft',
+    slug: uiCard.slug,
+    cardTypeId: uiCard.cardTypeId,
+    networkId: uiCard.networkId,
+  };
+};
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
@@ -41,17 +75,80 @@ export default function AdminPage() {
   const [filterBank, setFilterBank] = useState('All Banks');
   const [filterFee, setFilterFee] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All Status');
-  const [editingCard, setEditingCard] = useState<typeof extendedCardsData[0] | null>(null);
+  const [editingCard, setEditingCard] = useState<AdminCardRow | null>(null);
+  const [cards, setCards] = useState<AdminCardRow[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(Boolean(api.getToken()));
+  const [banks, setBanks] = useState<Array<{ id: string; name: string }>>([]);
   
   // Card Types and Networks state
-  const [cardTypes, setCardTypes] = useState<string[]>(['Travel', 'Shopping', 'Dining', 'Cashback', 'Rewards', 'Fuel', 'Business']);
-  const [cardNetworks, setCardNetworks] = useState<string[]>(['Visa', 'Mastercard', 'RuPay', 'American Express']);
+  const [cardTypes, setCardTypes] = useState<string[]>([]);
+  const [cardNetworks, setCardNetworks] = useState<string[]>([]);
+
+  const loadCards = async () => {
+    setIsLoading(true);
+    try {
+      const apiCards = await api.getCards('all');
+      setCards(apiCards.map(mapApiToAdminRow));
+    } catch (error) {
+      console.error(error);
+      alert('Unable to load cards from API. Check backend and VITE_API_BASE_URL.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadCards();
+  }, []);
+
+  useEffect(() => {
+    const loadMeta = async () => {
+      try {
+        const [bankRows, typeRows, networkRows] = await Promise.all([
+          api.getBanks(),
+          api.getCardTypes(),
+          api.getCardNetworks(),
+        ]);
+        setBanks(bankRows);
+        setCardTypes(typeRows.map((item) => item.name));
+        setCardNetworks(networkRows.map((item) => item.name));
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    loadMeta();
+  }, []);
+
+  const handleAdminLogin = async () => {
+    const email = window.prompt('Admin email:');
+    if (!email) return;
+    const password = window.prompt('Admin password:');
+    if (!password) return;
+
+    try {
+      await api.login(email, password);
+      setIsAuthenticated(true);
+      alert('Login successful');
+    } catch (error) {
+      alert((error as Error).message || 'Login failed');
+    }
+  };
+
+  const handleAdminLogout = () => {
+    api.clearToken();
+    setIsAuthenticated(false);
+  };
 
   // Get unique banks for filter
-  const uniqueBanks = ['All Banks', ...Array.from(new Set(extendedCardsData.map(card => card.bank)))];
+  const uniqueBanks = useMemo(
+    () => ['All Banks', ...Array.from(new Set(cards.map((card) => card.bank)))],
+    [cards]
+  );
 
   // Filter cards based on search and filters
-  const filteredCards = extendedCardsData.filter(card => {
+  const filteredCards = cards.filter(card => {
     const matchesSearch = card.cardName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           card.bank.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesBank = filterBank === 'All Banks' || card.bank === filterBank;
@@ -149,8 +246,11 @@ export default function AdminPage() {
             <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
               <Bell className="w-5 h-5 text-gray-600" />
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
-              <span>Admin (waseem)</span>
+            <button
+              onClick={isAuthenticated ? handleAdminLogout : handleAdminLogin}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+            >
+              <span>{isAuthenticated ? 'Logout Admin' : 'Admin Login'}</span>
               <ChevronDown className="w-4 h-4" />
             </button>
           </div>
@@ -170,6 +270,21 @@ export default function AdminPage() {
               setFilterStatus={setFilterStatus}
               setEditingCard={setEditingCard}
               setActiveTab={setActiveTab}
+              onDeleteCard={async (card) => {
+                if (!api.getToken()) {
+                  alert('Please login as admin first.');
+                  return;
+                }
+                if (!window.confirm(`Delete ${card.cardName}?`)) return;
+                try {
+                  await api.deleteCard(card.rawId);
+                  await loadCards();
+                } catch (error) {
+                  alert((error as Error).message || 'Delete failed');
+                }
+              }}
+              totalCards={cards.length}
+              isLoading={isLoading}
             />
           ) : activeTab === 'banks' ? (
             <BanksManagementContent 
@@ -184,6 +299,11 @@ export default function AdminPage() {
               setEditingCard={setEditingCard}
               cardTypes={cardTypes}
               cardNetworks={cardNetworks}
+              banks={banks}
+              onSaved={async () => {
+                await loadCards();
+                setActiveTab('dashboard');
+              }}
             />
           )}
         </main>
@@ -202,9 +322,12 @@ function DashboardContent({
   filterStatus,
   setFilterStatus,
   setEditingCard,
-  setActiveTab
+  setActiveTab,
+  onDeleteCard,
+  totalCards,
+  isLoading,
 }: {
-  filteredCards: typeof extendedCardsData;
+  filteredCards: AdminCardRow[];
   filterBank: string;
   setFilterBank: (value: string) => void;
   filterFee: string;
@@ -212,8 +335,11 @@ function DashboardContent({
   uniqueBanks: string[];
   filterStatus: string;
   setFilterStatus: (value: string) => void;
-  setEditingCard: (value: typeof extendedCardsData[0] | null) => void;
+  setEditingCard: (value: AdminCardRow | null) => void;
   setActiveTab: (value: TabType) => void;
+  onDeleteCard: (card: AdminCardRow) => void;
+  totalCards: number;
+  isLoading: boolean;
 }) {
   return (
     <div className="space-y-6">
@@ -324,7 +450,10 @@ function DashboardContent({
                       <button className="p-2 hover:bg-yellow-50 rounded-lg transition-colors group">
                         <Eye className="w-4 h-4 text-yellow-600" />
                       </button>
-                      <button className="p-2 hover:bg-red-50 rounded-lg transition-colors group">
+                      <button
+                        onClick={() => onDeleteCard(card)}
+                        className="p-2 hover:bg-red-50 rounded-lg transition-colors group"
+                      >
                         <Trash2 className="w-4 h-4 text-red-600" />
                       </button>
                     </div>
@@ -338,7 +467,7 @@ function DashboardContent({
 
       {/* Results count */}
       <div className="text-sm text-gray-600">
-        Showing {filteredCards.length} of {extendedCardsData.length} cards
+        {isLoading ? 'Loading cards...' : `Showing ${filteredCards.length} of ${totalCards} cards`}
       </div>
     </div>
   );
@@ -348,15 +477,20 @@ function AddCardContent({
   editingCard, 
   setEditingCard,
   cardTypes,
-  cardNetworks
+  cardNetworks,
+  banks,
+  onSaved,
 }: { 
-  editingCard: typeof extendedCardsData[0] | null; 
-  setEditingCard: (value: typeof extendedCardsData[0] | null) => void;
+  editingCard: AdminCardRow | null; 
+  setEditingCard: (value: AdminCardRow | null) => void;
   cardTypes: string[];
   cardNetworks: string[];
+  banks: Array<{ id: string; name: string }>;
+  onSaved: () => Promise<void>;
 }) {
   const [openSection, setOpenSection] = useState<string | null>('basic');
   const [showPreview, setShowPreview] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -366,8 +500,71 @@ function AddCardContent({
     renewalFee: editingCard?.renewalFee || '',
     cardImage: editingCard?.image || 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400',
     benefits: editingCard?.benefits || ['Welcome bonus of reward points', 'Complimentary airport lounge access', 'Fuel surcharge waiver'],
-    categories: editingCard?.categories || ['Travel']
+    categories: editingCard?.categories || ['Travel'],
+    cardType: editingCard?.cardType || '',
+    network: '',
+    status: editingCard?.status || 'Draft',
   });
+
+  useEffect(() => {
+    setFormData({
+      cardName: editingCard?.title || '',
+      bank: editingCard?.bank || '',
+      joiningFee: editingCard?.joiningFee || '',
+      renewalFee: editingCard?.renewalFee || '',
+      cardImage: editingCard?.image || 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400',
+      benefits: editingCard?.benefits || ['Welcome bonus of reward points', 'Complimentary airport lounge access', 'Fuel surcharge waiver'],
+      categories: editingCard?.categories || ['Travel'],
+      cardType: editingCard?.cardType || '',
+      network: '',
+      status: editingCard?.status || 'Draft',
+    });
+  }, [editingCard]);
+
+  const handleSave = async (mode: 'publish' | 'draft') => {
+    if (!api.getToken()) {
+      alert('Please login as admin first.');
+      return;
+    }
+
+    if (!formData.cardName.trim() || !formData.bank.trim()) {
+      alert('Card name and bank are required.');
+      return;
+    }
+
+    const selectedBank = banks.find((bank) => bank.name === formData.bank);
+    if (!selectedBank) {
+      alert('Please select a valid bank from the list.');
+      return;
+    }
+
+    const payload = {
+      card_name: formData.cardName,
+      bank_id: selectedBank.id,
+      card_image_url: formData.cardImage,
+      joining_fee: formData.joiningFee,
+      annual_fee: formData.renewalFee,
+      benefits: formData.benefits,
+      categories: formData.categories,
+      status: mode === 'publish' ? 'enabled' : 'draft',
+    } as any;
+
+    setIsSaving(true);
+    try {
+      if (editingCard) {
+        await api.updateCard(editingCard.rawId, payload);
+      } else {
+        await api.createCard(payload);
+      }
+      setEditingCard(null);
+      await onSaved();
+      alert(mode === 'publish' ? 'Card saved and published' : 'Card saved as draft');
+    } catch (error) {
+      alert((error as Error).message || 'Save failed');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const sections = [
     { id: 'basic', title: 'Basic Information' },
@@ -404,7 +601,7 @@ function AddCardContent({
             </button>
             {openSection === section.id && (
               <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                <FormSection sectionId={section.id} cardTypes={cardTypes} cardNetworks={cardNetworks} formData={formData} setFormData={setFormData} />
+                <FormSection sectionId={section.id} cardTypes={cardTypes} cardNetworks={cardNetworks} banks={banks} formData={formData} setFormData={setFormData} />
               </div>
             )}
           </div>
@@ -413,11 +610,19 @@ function AddCardContent({
 
       {/* Action Buttons */}
       <div className="flex items-center gap-3 flex-wrap">
-        <button className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
+        <button
+          onClick={() => handleSave('publish')}
+          disabled={isSaving}
+          className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-60"
+        >
           <Save className="w-4 h-4" />
-          Save & Publish
+          {isSaving ? 'Saving...' : 'Save & Publish'}
         </button>
-        <button className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-yellow-400 text-yellow-700 rounded-lg font-medium hover:bg-yellow-50 transition-colors">
+        <button
+          onClick={() => handleSave('draft')}
+          disabled={isSaving}
+          className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-yellow-400 text-yellow-700 rounded-lg font-medium hover:bg-yellow-50 transition-colors disabled:opacity-60"
+        >
           <FileText className="w-4 h-4" />
           Save as Draft
         </button>
@@ -428,7 +633,24 @@ function AddCardContent({
           <Eye className="w-4 h-4" />
           Preview Card
         </button>
-        <button className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+        <button
+          onClick={() => {
+            setEditingCard(null);
+            setFormData({
+              cardName: '',
+              bank: '',
+              joiningFee: '',
+              renewalFee: '',
+              cardImage: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400',
+              benefits: [],
+              categories: ['General'],
+              cardType: '',
+              network: '',
+              status: 'Draft',
+            });
+          }}
+          className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+        >
           <RotateCcw className="w-4 h-4" />
           Reset
         </button>
@@ -483,10 +705,11 @@ function AddCardContent({
   );
 }
 
-function FormSection({ sectionId, cardTypes, cardNetworks, formData, setFormData }: { 
+function FormSection({ sectionId, cardTypes, cardNetworks, banks, formData, setFormData }: { 
   sectionId: string; 
   cardTypes: string[]; 
   cardNetworks: string[];
+  banks: Array<{ id: string; name: string }>;
   formData: any;
   setFormData: (data: any) => void;
 }) {
@@ -511,11 +734,10 @@ function FormSection({ sectionId, cardTypes, cardNetworks, formData, setFormData
               onChange={(e) => setFormData({ ...formData, bank: e.target.value })}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option>Select Bank</option>
-              <option>HDFC Bank</option>
-              <option>ICICI Bank</option>
-              <option>SBI</option>
-              <option>Axis Bank</option>
+              <option value="">Select Bank</option>
+              {banks.map((bank) => (
+                <option key={bank.id} value={bank.name}>{bank.name}</option>
+              ))}
             </select>
           </div>
         </div>
@@ -538,8 +760,12 @@ function FormSection({ sectionId, cardTypes, cardNetworks, formData, setFormData
         <div className="grid grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Card Type *</label>
-            <select className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option>Select Type</option>
+            <select
+              value={formData.cardType}
+              onChange={(e) => setFormData({ ...formData, cardType: e.target.value })}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select Type</option>
               {cardTypes.map((type) => (
                 <option key={type} value={type}>{type}</option>
               ))}
@@ -547,8 +773,12 @@ function FormSection({ sectionId, cardTypes, cardNetworks, formData, setFormData
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Network *</label>
-            <select className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option>Select Network</option>
+            <select
+              value={formData.network}
+              onChange={(e) => setFormData({ ...formData, network: e.target.value })}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select Network</option>
               {cardNetworks.map((network) => (
                 <option key={network} value={network}>{network}</option>
               ))}
@@ -556,9 +786,14 @@ function FormSection({ sectionId, cardTypes, cardNetworks, formData, setFormData
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Status *</label>
-            <select className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <select
+              value={formData.status}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
               <option>Enabled</option>
               <option>Disabled</option>
+              <option>Draft</option>
             </select>
           </div>
         </div>

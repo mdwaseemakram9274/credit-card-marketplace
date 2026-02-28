@@ -2,7 +2,7 @@ import { useParams, Link } from 'react-router';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { motion } from 'motion/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import SpecialPerksSection from '../components/SpecialPerksSection';
 import CardDetailsSection from '../components/CardDetailsSection';
@@ -11,9 +11,12 @@ import { FAQSection } from '../components/FAQSection';
 // This will be imported from a shared location
 import { creditCardsData } from '../data/creditCardsData';
 import { categoryStyles } from '../components/CreditCardSection';
+import { api, mapApiCardToUi } from '../lib/api';
 
 export default function CreditCardDetailPage() {
   const { cardId } = useParams<{ cardId: string }>();
+  const [isLoading, setIsLoading] = useState(true);
+  const [card, setCard] = useState<any | null>(null);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     overview: true,
   });
@@ -25,8 +28,44 @@ export default function CreditCardDetailPage() {
     }));
   };
   
-  // Find the specific card
-  const card = creditCardsData.find(c => c.id === cardId);
+  useEffect(() => {
+    let active = true;
+
+    const loadCard = async () => {
+      if (!cardId) {
+        setCard(null);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const apiCard = await api.getCardByIdOrSlug(cardId);
+        if (!active) return;
+        const uiCard = mapApiCardToUi(apiCard);
+        setCard(uiCard);
+      } catch {
+        const fallbackCard = creditCardsData.find((entry) => entry.id === cardId);
+        setCard(fallbackCard || null);
+      } finally {
+        if (active) setIsLoading(false);
+      }
+    };
+
+    loadCard();
+    return () => {
+      active = false;
+    };
+  }, [cardId]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center text-gray-600">Loading card details...</div>
+        <Footer />
+      </div>
+    );
+  }
 
   if (!card) {
     return (
@@ -117,7 +156,7 @@ export default function CreditCardDetailPage() {
               {/* Title & Description */}
               <div className="mb-6 sm:mb-8">
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-black mb-3 sm:mb-4 leading-tight">
-                  {card.title}
+                  {card.title || card.cardName}
                 </h1>
                 <p className="text-sm sm:text-base md:text-lg text-gray-600 leading-relaxed">
                   {card.description || "Discover the perfect credit card that matches your lifestyle and spending habits."}
@@ -133,7 +172,7 @@ export default function CreditCardDetailPage() {
                     </div>
                     <div>
                       <p className="text-[10px] sm:text-xs text-gray-500 font-medium mb-0.5 sm:mb-1">Joining Fee</p>
-                      <p className="font-semibold text-sm sm:text-base text-black">₹1,200</p>
+                      <p className="font-semibold text-sm sm:text-base text-black">{card.joiningFee || card.joining_fee || 'Not specified'}</p>
                     </div>
                   </div>
                 </div>
@@ -145,7 +184,7 @@ export default function CreditCardDetailPage() {
                     </div>
                     <div>
                       <p className="text-[10px] sm:text-xs text-gray-500 font-medium mb-0.5 sm:mb-1">Annual Fee</p>
-                      <p className="font-semibold text-sm sm:text-base text-black">₹1,200</p>
+                      <p className="font-semibold text-sm sm:text-base text-black">{card.renewalFee || card.annual_fee || 'Not specified'}</p>
                     </div>
                   </div>
                 </div>

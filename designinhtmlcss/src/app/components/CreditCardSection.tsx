@@ -1,6 +1,8 @@
 import svgPaths from "../../imports/svg-20qdiezk2t";
 import { Link } from "react-router";
 import { creditCardsData, CreditCardData } from "../data/creditCardsData";
+import { useEffect, useState } from "react";
+import { api, mapApiCardToUi } from "../lib/api";
 
 // Tab Navigation Component
 function TabButton({ icon, label, isActive }: { icon: React.ReactNode; label: string; isActive?: boolean }) {
@@ -281,7 +283,7 @@ export default function CreditCardSection() {
     { icon: <RewardIcon />, label: 'Reward Points', isActive: false },
   ];
 
-  const cards: CreditCardProps[] = creditCardsData.map((card: CreditCardData) => ({
+  const fallbackCards: CreditCardProps[] = creditCardsData.map((card: CreditCardData) => ({
     id: card.id,
     image: card.image,
     title: card.title,
@@ -290,6 +292,40 @@ export default function CreditCardSection() {
     benefits: card.benefits,
     categories: card.categories,
   }));
+
+  const [cards, setCards] = useState<CreditCardProps[]>(fallbackCards);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadCards = async () => {
+      try {
+        const apiCards = await api.getCards('enabled');
+        if (!active || !apiCards.length) return;
+
+        setCards(
+          apiCards.map((card) => {
+            const uiCard = mapApiCardToUi(card);
+            return {
+              id: uiCard.slug || uiCard.rawId,
+              image: uiCard.image,
+              title: uiCard.title,
+              joiningFee: uiCard.joiningFee,
+              renewalFee: uiCard.renewalFee,
+              benefits: uiCard.benefits,
+              categories: uiCard.categories,
+            };
+          })
+        );
+      } catch {
+      }
+    };
+
+    loadCards();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <section className="bg-gray-50 py-16 md:py-24">

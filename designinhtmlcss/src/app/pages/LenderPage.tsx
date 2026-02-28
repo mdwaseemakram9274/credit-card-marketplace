@@ -3,9 +3,11 @@ import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { motion } from 'motion/react';
 import { ChevronRight } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { FAQSection } from '../components/FAQSection';
 import { creditCardsData } from '../data/creditCardsData';
 import HdfcBankLogo from '../../imports/HdfcBankId6PGbXHe01';
+import { api, mapApiCardToUi } from '../lib/api';
 
 // Import CreditCard component
 function CreditCard({ id, image, title, joiningFee, renewalFee, benefits, categories }: {
@@ -243,6 +245,51 @@ const allLenders = [
 export default function LenderPage() {
   const { lenderId } = useParams<{ lenderId: string }>();
   const lender = lenderId ? lenderData[lenderId] : null;
+  const [cards, setCards] = useState(creditCardsData);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadCards = async () => {
+      try {
+        const apiCards = await api.getCards('enabled');
+        if (!active || !apiCards.length) return;
+
+        setCards(
+          apiCards.map((card) => {
+            const uiCard = mapApiCardToUi(card);
+            return {
+              id: uiCard.slug || uiCard.rawId,
+              image: uiCard.image,
+              title: uiCard.title,
+              joiningFee: uiCard.joiningFee,
+              renewalFee: uiCard.renewalFee,
+              benefits: uiCard.benefits,
+              categories: uiCard.categories,
+              description: uiCard.description,
+              bankName: uiCard.bankName,
+            };
+          }) as any
+        );
+      } catch {
+      }
+    };
+
+    loadCards();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const filteredCards = useMemo(() => {
+    if (!lender) return cards;
+    return cards.filter((card: any) => {
+      const cardTitle = (card.title || '').toLowerCase();
+      const bankName = (card.bankName || '').toLowerCase();
+      const lenderName = lender.name.toLowerCase();
+      return cardTitle.includes(lenderName) || bankName.includes(lenderName);
+    });
+  }, [cards, lender]);
 
   if (!lender) {
     return (
@@ -300,7 +347,7 @@ export default function LenderPage() {
               </h1>
               <div className="bg-[#dff0ff] border border-[#95b1ca] rounded-full px-4 py-1.5">
                 <span className="text-xs font-semibold text-[#004c8f]">
-                  {lender.totalCards} CC Available
+                  {filteredCards.length || lender.totalCards} CC Available
                 </span>
               </div>
             </div>
@@ -324,7 +371,7 @@ export default function LenderPage() {
               </h1>
               <div className="bg-[#dff0ff] border border-[#95b1ca] rounded-full px-4 py-1.5">
                 <span className="text-sm font-semibold text-[#004c8f]">
-                  {lender.totalCards} Credit Cards Available
+                  {filteredCards.length || lender.totalCards} Credit Cards Available
                 </span>
               </div>
             </div>
@@ -347,7 +394,7 @@ export default function LenderPage() {
             Popular {lender.name} Credit Cards
           </h2>
           <div className="space-y-4 sm:space-y-6">
-            {creditCardsData.map((card, index) => (
+            {filteredCards.map((card: any, index) => (
               <CreditCard key={card.id} id={card.id} image={card.image} title={card.title} joiningFee={card.joiningFee} renewalFee={card.renewalFee} benefits={card.benefits} categories={card.categories} />
             ))}
           </div>
