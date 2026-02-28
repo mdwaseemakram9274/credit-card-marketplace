@@ -673,6 +673,7 @@ function AddCardContent({
     interestRate: '',
     cardImage: editingCard?.image || 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400',
     cardImageUrl: editingCard?.image || '',
+    cardImageStoragePath: '',
     benefits: editingCard?.benefits || ['Welcome bonus of reward points', 'Complimentary airport lounge access', 'Fuel surcharge waiver'],
     categories: editingCard?.categories || ['Travel'],
     cardType: editingCard?.cardType || '',
@@ -711,6 +712,7 @@ function AddCardContent({
       interestRate: '',
       cardImage: editingCard?.image || 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400',
       cardImageUrl: editingCard?.image || '',
+      cardImageStoragePath: '',
       benefits: editingCard?.benefits || ['Welcome bonus of reward points', 'Complimentary airport lounge access', 'Fuel surcharge waiver'],
       categories: editingCard?.categories || ['Travel'],
       cardType: editingCard?.cardType || '',
@@ -847,11 +849,13 @@ function AddCardContent({
 
     setIsUploadingImage(true);
     try {
-      const uploaded = await api.uploadCardImage(file);
+      const currentStoredPath = formData.cardImageStoragePath || api.extractStoragePathFromPublicUrl(formData.cardImageUrl);
+      const uploaded = await api.uploadCardImage(file, currentStoredPath || undefined);
       setFormData({
         ...formData,
         cardImageUrl: uploaded.publicUrl,
         cardImage: uploaded.publicUrl,
+        cardImageStoragePath: uploaded.path,
       });
     } catch (error) {
       alert((error as Error).message || 'Image upload failed');
@@ -960,6 +964,7 @@ function AddCardContent({
               interestRate: '',
               cardImage: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400',
               cardImageUrl: '',
+              cardImageStoragePath: '',
               benefits: [],
               categories: ['General'],
               cardType: '',

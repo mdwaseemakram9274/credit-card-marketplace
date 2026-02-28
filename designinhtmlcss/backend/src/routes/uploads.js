@@ -22,6 +22,10 @@ function fileExtensionFromMime(mimeType) {
 
 export const uploadsRouter = express.Router();
 
+function canDeletePath(path) {
+  return typeof path === 'string' && path.startsWith('cards/') && !path.includes('..');
+}
+
 uploadsRouter.post('/card-image', requireAuth, upload.single('file'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ success: false, message: 'Image file is required' });
@@ -34,6 +38,7 @@ uploadsRouter.post('/card-image', requireAuth, upload.single('file'), async (req
   const extension = fileExtensionFromMime(req.file.mimetype);
   const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${extension}`;
   const filePath = `cards/${fileName}`;
+  const oldPath = req.body?.oldPath;
 
   const { error } = await supabase.storage
     .from(env.storageBucket)
@@ -47,6 +52,10 @@ uploadsRouter.post('/card-image', requireAuth, upload.single('file'), async (req
   }
 
   const { data } = supabase.storage.from(env.storageBucket).getPublicUrl(filePath);
+
+  if (canDeletePath(oldPath) && oldPath !== filePath) {
+    await supabase.storage.from(env.storageBucket).remove([oldPath]);
+  }
 
   return res.status(201).json({
     success: true,

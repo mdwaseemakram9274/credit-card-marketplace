@@ -84,6 +84,17 @@ function isTokenValid() {
   return Date.now() < payload.exp * 1000;
 }
 
+function extractStoragePathFromPublicUrl(url: string) {
+  if (!url) return '';
+  try {
+    const parsed = new URL(url);
+    const match = parsed.pathname.match(/\/object\/public\/[^/]+\/(.+)$/);
+    return match?.[1] ? decodeURIComponent(match[1]) : '';
+  } catch {
+    return '';
+  }
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = getToken();
 
@@ -123,6 +134,7 @@ export const api = {
   clearToken,
   isTokenValid,
   isRemembered,
+  extractStoragePathFromPublicUrl,
 
   async login(email: string, password: string, rememberMe = true) {
     const payload = await request<{ data: { token: string } }>('/api/auth/login', {
@@ -181,9 +193,10 @@ export const api = {
     });
   },
 
-  async uploadCardImage(file: File) {
+  async uploadCardImage(file: File, oldPath?: string) {
     const formData = new FormData();
     formData.append('file', file);
+    if (oldPath) formData.append('oldPath', oldPath);
 
     const payload = await request<{ data: { publicUrl: string; path: string; bucket: string } }>('/api/uploads/card-image', {
       method: 'POST',
