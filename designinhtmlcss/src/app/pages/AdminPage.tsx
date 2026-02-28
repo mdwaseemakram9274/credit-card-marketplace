@@ -1989,18 +1989,12 @@ function BanksManagementContent({
   
   // Card Type management state
   const [newCardType, setNewCardType] = useState('');
-  const [newCardTypeDescription, setNewCardTypeDescription] = useState('');
-  const [newCardTypeLogo, setNewCardTypeLogo] = useState('');
-  const [cardTypeLogoFileName, setCardTypeLogoFileName] = useState('');
   const [showAddTypeModal, setShowAddTypeModal] = useState(false);
   const [editingCardType, setEditingCardType] = useState<ApiMetaItem | null>(null);
   const [deleteConfirmType, setDeleteConfirmType] = useState<string | null>(null);
   
   // Card Network management state
   const [newCardNetwork, setNewCardNetwork] = useState('');
-  const [newCardNetworkDescription, setNewCardNetworkDescription] = useState('');
-  const [newCardNetworkLogo, setNewCardNetworkLogo] = useState('');
-  const [cardNetworkLogoFileName, setCardNetworkLogoFileName] = useState('');
   const [showAddNetworkModal, setShowAddNetworkModal] = useState(false);
   const [editingCardNetwork, setEditingCardNetwork] = useState<ApiMetaItem | null>(null);
   const [deleteConfirmNetwork, setDeleteConfirmNetwork] = useState<string | null>(null);
@@ -2090,30 +2084,6 @@ function BanksManagementContent({
     }
   };
 
-  const handleCardTypeLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setNewCardTypeLogo(reader.result as string);
-        setCardTypeLogoFileName(file.name);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleCardNetworkLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setNewCardNetworkLogo(reader.result as string);
-        setCardNetworkLogoFileName(file.name);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-  
   // Card Type handlers
   const handleAddCardType = async () => {
     const value = newCardType.trim();
@@ -2125,21 +2095,14 @@ function BanksManagementContent({
         if (editingCardType) {
           await api.updateCardType(editingCardType.id, {
             name: value,
-            description: newCardTypeDescription.trim(),
-            logo_url: newCardTypeLogo.trim(),
           });
         } else {
           await api.createCardType({
             name: value,
-            description: newCardTypeDescription.trim(),
-            logo_url: newCardTypeLogo.trim(),
           });
         }
         await refreshMeta();
         setNewCardType('');
-        setNewCardTypeDescription('');
-        setNewCardTypeLogo('');
-        setCardTypeLogoFileName('');
         setEditingCardType(null);
         setShowAddTypeModal(false);
       } catch (error) {
@@ -2171,21 +2134,14 @@ function BanksManagementContent({
         if (editingCardNetwork) {
           await api.updateCardNetwork(editingCardNetwork.id, {
             name: value,
-            description: newCardNetworkDescription.trim(),
-            logo_url: newCardNetworkLogo.trim(),
           });
         } else {
           await api.createCardNetwork({
             name: value,
-            description: newCardNetworkDescription.trim(),
-            logo_url: newCardNetworkLogo.trim(),
           });
         }
         await refreshMeta();
         setNewCardNetwork('');
-        setNewCardNetworkDescription('');
-        setNewCardNetworkLogo('');
-        setCardNetworkLogoFileName('');
         setEditingCardNetwork(null);
         setShowAddNetworkModal(false);
       } catch (error) {
@@ -2287,9 +2243,6 @@ function BanksManagementContent({
             onClick={() => {
               setEditingCardType(null);
               setNewCardType('');
-              setNewCardTypeDescription('');
-              setNewCardTypeLogo('');
-              setCardTypeLogoFileName('');
               setShowAddTypeModal(true);
             }}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
@@ -2306,14 +2259,6 @@ function BanksManagementContent({
                 onClick={() => {
                   setEditingCardType(type);
                   setNewCardType(type.name);
-                  setNewCardTypeDescription(type.description || '');
-                  setNewCardTypeLogo(type.logo_url || '');
-                  if (type.logo_url) {
-                    const logoSegments = type.logo_url.split('/').filter(Boolean);
-                    setCardTypeLogoFileName(logoSegments[logoSegments.length - 1] || 'Current logo');
-                  } else {
-                    setCardTypeLogoFileName('');
-                  }
                   setShowAddTypeModal(true);
                 }}
                 className="p-0.5 hover:bg-blue-100 rounded transition-colors"
@@ -2344,9 +2289,6 @@ function BanksManagementContent({
             onClick={() => {
               setEditingCardNetwork(null);
               setNewCardNetwork('');
-              setNewCardNetworkDescription('');
-              setNewCardNetworkLogo('');
-              setCardNetworkLogoFileName('');
               setShowAddNetworkModal(true);
             }}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
@@ -2363,14 +2305,6 @@ function BanksManagementContent({
                 onClick={() => {
                   setEditingCardNetwork(network);
                   setNewCardNetwork(network.name);
-                  setNewCardNetworkDescription(network.description || '');
-                  setNewCardNetworkLogo(network.logo_url || '');
-                  if (network.logo_url) {
-                    const logoSegments = network.logo_url.split('/').filter(Boolean);
-                    setCardNetworkLogoFileName(logoSegments[logoSegments.length - 1] || 'Current logo');
-                  } else {
-                    setCardNetworkLogoFileName('');
-                  }
                   setShowAddNetworkModal(true);
                 }}
                 className="p-0.5 hover:bg-blue-100 rounded transition-colors"
@@ -2531,9 +2465,6 @@ function BanksManagementContent({
                     setShowAddTypeModal(false);
                     setEditingCardType(null);
                     setNewCardType('');
-                    setNewCardTypeDescription('');
-                    setNewCardTypeLogo('');
-                    setCardTypeLogoFileName('');
                   }}
                   className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
                 >
@@ -2560,29 +2491,6 @@ function BanksManagementContent({
                 }}
               />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Type Description</label>
-                <textarea
-                  rows={3}
-                  value={newCardTypeDescription}
-                  onChange={(e) => setNewCardTypeDescription(e.target.value)}
-                  placeholder="Enter type description..."
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Type Logo (optional)</label>
-                <input
-                  type="file"
-                  accept=".png,.svg,image/png,image/svg+xml"
-                  onChange={handleCardTypeLogoUpload}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                {cardTypeLogoFileName ? (
-                  <p className="text-xs text-blue-600 mt-1">{cardTypeLogoFileName}</p>
-                ) : null}
-              </div>
             </div>
             <div className="p-6 border-t border-gray-200 flex items-center justify-end gap-3">
               <button
@@ -2590,9 +2498,6 @@ function BanksManagementContent({
                   setShowAddTypeModal(false);
                   setEditingCardType(null);
                   setNewCardType('');
-                  setNewCardTypeDescription('');
-                  setNewCardTypeLogo('');
-                  setCardTypeLogoFileName('');
                 }}
                 className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
               >
@@ -2622,9 +2527,6 @@ function BanksManagementContent({
                     setShowAddNetworkModal(false);
                     setEditingCardNetwork(null);
                     setNewCardNetwork('');
-                    setNewCardNetworkDescription('');
-                    setNewCardNetworkLogo('');
-                    setCardNetworkLogoFileName('');
                   }}
                   className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
                 >
@@ -2651,29 +2553,6 @@ function BanksManagementContent({
                 }}
               />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Network Description</label>
-                <textarea
-                  rows={3}
-                  value={newCardNetworkDescription}
-                  onChange={(e) => setNewCardNetworkDescription(e.target.value)}
-                  placeholder="Enter network description..."
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Network Logo (optional)</label>
-                <input
-                  type="file"
-                  accept=".png,.svg,image/png,image/svg+xml"
-                  onChange={handleCardNetworkLogoUpload}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                {cardNetworkLogoFileName ? (
-                  <p className="text-xs text-blue-600 mt-1">{cardNetworkLogoFileName}</p>
-                ) : null}
-              </div>
             </div>
             <div className="p-6 border-t border-gray-200 flex items-center justify-end gap-3">
               <button
@@ -2681,9 +2560,6 @@ function BanksManagementContent({
                   setShowAddNetworkModal(false);
                   setEditingCardNetwork(null);
                   setNewCardNetwork('');
-                  setNewCardNetworkDescription('');
-                  setNewCardNetworkLogo('');
-                  setCardNetworkLogoFileName('');
                 }}
                 className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
               >

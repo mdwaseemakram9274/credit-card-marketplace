@@ -29,19 +29,11 @@ create table if not exists public.card_types (
   created_at timestamptz not null default now()
 );
 
-alter table if exists public.card_types
-  add column if not exists description text,
-  add column if not exists logo_url text;
-
 create table if not exists public.card_networks (
   id uuid primary key default gen_random_uuid(),
   name text unique not null,
   created_at timestamptz not null default now()
 );
-
-alter table if exists public.card_networks
-  add column if not exists description text,
-  add column if not exists logo_url text;
 
 alter table if exists public.cards
   add column if not exists created_by uuid references public.admins(id),
