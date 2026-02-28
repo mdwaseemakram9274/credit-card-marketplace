@@ -2,6 +2,7 @@ import express from 'express';
 import { z } from 'zod';
 import { supabase } from '../lib/supabase.js';
 import { requireAuth } from '../middleware/auth.js';
+import { env } from '../lib/env.js';
 
 const cardSchema = z.object({
   card_name: z.string().min(2),
@@ -36,6 +37,21 @@ function toSlug(name) {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .replace(/-{2,}/g, '-');
+}
+
+function extractStoragePathFromPublicUrl(url) {
+  if (!url) return '';
+  try {
+    const parsed = new URL(url);
+    const match = parsed.pathname.match(/\/object\/public\/[^/]+\/(.+)$/);
+    return match?.[1] ? decodeURIComponent(match[1]) : '';
+  } catch {
+    return '';
+  }
+}
+
+function isManagedCardImagePath(path) {
+  return typeof path === 'string' && path.startsWith('cards/') && !path.includes('..');
 }
 
 export const cardsRouter = express.Router();
@@ -119,7 +135,22 @@ cardsRouter.put('/cards/:id', requireAuth, async (req, res) => {
 });
 
 cardsRouter.delete('/cards/:id', requireAuth, async (req, res) => {
+  const { data: existingCard, error: lookupError } = await supabase
+    .from('cards')
+    .select('id, card_image_url')
+    .eq('id', req.params.id)
+    .single();
+
+  if (lookupError) return res.status(500).json({ success: false, message: lookupError.message });
+  if (!existingCard) return res.status(404).json({ success: false, message: 'Card not found' });
+
   const { error } = await supabase.from('cards').delete().eq('id', req.params.id);
   if (error) return res.status(500).json({ success: false, message: error.message });
+
+  const imagePath = extractStoragePathFromPublicUrl(existingCard.card_image_url || '');
+  if (isManagedCardImagePath(imagePath)) {
+    await supabase.storage.from(env.storageBucket).remove([imagePath]);
+  }
+
   return res.json({ success: true, message: 'Card deleted successfully' });
 });
