@@ -34,6 +34,18 @@ export interface ApiCard {
 const API_BASE_URL = ((globalThis as any).__API_BASE_URL__ as string | undefined) || 'http://localhost:4000';
 const TOKEN_KEY = 'admin_token';
 
+function decodeTokenPayload(token: string): { exp?: number } | null {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const json = atob(base64);
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}
+
 function getToken() {
   if (typeof window === 'undefined') return '';
   return localStorage.getItem(TOKEN_KEY) || '';
@@ -49,8 +61,22 @@ function clearToken() {
   localStorage.removeItem(TOKEN_KEY);
 }
 
+function isTokenValid() {
+  const token = getToken();
+  if (!token) return false;
+  const payload = decodeTokenPayload(token);
+  if (!payload?.exp) return true;
+  return Date.now() < payload.exp * 1000;
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = getToken();
+
+  if (token && !isTokenValid()) {
+    clearToken();
+    throw new Error('Session expired. Please login again.');
+  }
+
   const headers = new Headers(options.headers || {});
   headers.set('Content-Type', 'application/json');
   if (token) headers.set('Authorization', `Bearer ${token}`);
@@ -61,6 +87,10 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   });
 
   const payload = await response.json().catch(() => ({}));
+  if (response.status === 401) {
+    clearToken();
+  }
+
   if (!response.ok || payload?.success === false) {
     const message = payload?.message || 'Request failed';
     throw new Error(message);
@@ -73,6 +103,7 @@ export const api = {
   getToken,
   setToken,
   clearToken,
+  isTokenValid,
 
   async login(email: string, password: string) {
     const payload = await request<{ data: { token: string } }>('/api/auth/login', {
