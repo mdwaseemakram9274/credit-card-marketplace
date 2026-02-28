@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router';
 import { CreditCard as CreditCardPreview } from '../components/CreditCardSection';
-import { api, ApiMetaItem, mapApiCardToUi } from '../lib/api';
+import { api, ApiCard, ApiMetaItem, mapApiCardToUi } from '../lib/api';
 
 type TabType = 'dashboard' | 'add-card' | 'banks';
 
@@ -79,7 +79,7 @@ export default function AdminPage() {
   const [cards, setCards] = useState<AdminCardRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(Boolean(api.getToken()) && api.isTokenValid());
-  const [banks, setBanks] = useState<Array<{ id: string; name: string }>>([]);
+  const [banks, setBanks] = useState<ApiMetaItem[]>([]);
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(api.isRemembered());
@@ -717,52 +717,163 @@ function AddCardContent({
     consText: '',
   });
 
-  useEffect(() => {
-    setFormData({
-      cardName: editingCard?.title || '',
-      bank: editingCard?.bank || '',
-      cardDescription: '',
-      joiningFee: editingCard?.joiningFee || '',
-      renewalFee: editingCard?.renewalFee || '',
-      interestRate: '',
-      latePaymentFee: '',
-      overlimitFee: '',
-      cashAdvanceFee: '',
-      foreignTransactionFee: '',
-      returnedPaymentFee: '',
-      cardReplacementFee: '',
-      cardImage: editingCard?.image || 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400',
-      cardImageUrl: editingCard?.image || '',
-      cardImageStoragePath: '',
-      benefits: editingCard?.benefits || ['Welcome bonus of reward points', 'Complimentary airport lounge access', 'Fuel surcharge waiver'],
-      categories: editingCard?.categories || ['Travel'],
-      cardType: editingCard?.cardType || '',
-      network: '',
-      status: editingCard?.status || 'Draft',
-      feeWaiverConditions: '',
-      customFees: [],
-      rewardProgramName: '',
-      welcomeBonus: '',
-      rewardsRate: '',
-      rewardRedemption: '',
-      internationalLoungeAccess: '',
-      domesticLoungeAccess: '',
-      insuranceBenefits: '',
-      travelBenefits: '',
-      movieDiningBenefits: '',
-      golfBenefits: '',
-      cashbackRate: '',
-      customBenefits: [],
-      productDescription: '',
-      productFeaturesText: '',
-      specialPerksText: '',
+  const toString = (value: unknown) => (typeof value === 'string' ? value : '');
+  const toStringArray = (value: unknown) => (Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []);
+
+  const buildFallbackFormData = (card: AdminCardRow | null) => ({
+    cardName: card?.title || '',
+    bank: card?.bank || '',
+    cardDescription: '',
+    joiningFee: card?.joiningFee || '',
+    renewalFee: card?.renewalFee || '',
+    interestRate: '',
+    latePaymentFee: '',
+    overlimitFee: '',
+    cashAdvanceFee: '',
+    foreignTransactionFee: '',
+    returnedPaymentFee: '',
+    cardReplacementFee: '',
+    cardImage: card?.image || 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400',
+    cardImageUrl: card?.image || '',
+    cardImageStoragePath: '',
+    benefits: card?.benefits || ['Welcome bonus of reward points', 'Complimentary airport lounge access', 'Fuel surcharge waiver'],
+    categories: card?.categories || ['Travel'],
+    cardType: card?.cardType || '',
+    network: '',
+    status: card?.status || 'Draft',
+    feeWaiverConditions: '',
+    customFees: [] as Array<{ feeType: string; amount: string }>,
+    rewardProgramName: '',
+    welcomeBonus: '',
+    rewardsRate: '',
+    rewardRedemption: '',
+    internationalLoungeAccess: '',
+    domesticLoungeAccess: '',
+    insuranceBenefits: '',
+    travelBenefits: '',
+    movieDiningBenefits: '',
+    golfBenefits: '',
+    cashbackRate: '',
+    customBenefits: [] as Array<{ icon: string; category: string; description: string }>,
+    productDescription: '',
+    productFeaturesText: '',
+    specialPerksText: '',
+    offersText: '',
+    eligibilityCriteriaText: '',
+    prosText: '',
+    consText: '',
+  });
+
+  const buildFormDataFromApiCard = (card: ApiCard, fallback: AdminCardRow) => {
+    const rewardsDetails = card.rewards_details && typeof card.rewards_details === 'object' ? (card.rewards_details as Record<string, unknown>) : {};
+    const customFees = card.custom_fees && typeof card.custom_fees === 'object' ? (card.custom_fees as Record<string, unknown>) : {};
+    const customFeeItems = Array.isArray(customFees.items) ? customFees.items as Array<Record<string, unknown>> : [];
+
+    const standardFeeMap: Record<string, string> = {
+      'Late Payment Fee': '',
+      'Overlimit Fee': '',
+      'Cash Advance Fee': '',
+      'Foreign Transaction Fee': '',
+      'Returned Payment Fee': '',
+      'Card Replacement Fee': '',
+    };
+
+    const extraFees: Array<{ feeType: string; amount: string }> = [];
+    for (const feeItem of customFeeItems) {
+      const feeType = toString(feeItem.feeType || feeItem.type).trim();
+      const amount = toString(feeItem.amount || feeItem.value).trim();
+      if (!feeType && !amount) continue;
+      if (feeType in standardFeeMap) {
+        standardFeeMap[feeType] = amount;
+      } else {
+        extraFees.push({ feeType, amount });
+      }
+    }
+
+    const eligibility = card.eligibility_criteria && typeof card.eligibility_criteria === 'object'
+      ? (card.eligibility_criteria as Record<string, unknown>)
+      : {};
+
+    const cardTypeName = cardTypeOptions.find((item) => item.id === card.card_type_id)?.name || fallback.cardType || '';
+    const networkName = cardNetworkOptions.find((item) => item.id === card.network_id)?.name || '';
+    const bankName = banks.find((item) => item.id === card.bank_id)?.name || fallback.bank || '';
+
+    const normalizedStatus = card.status === 'enabled' ? 'Enabled' : card.status === 'disabled' ? 'Disabled' : 'Draft';
+    const productDescription = toString(card.product_description);
+
+    return {
+      cardName: toString(card.card_name) || fallback.title || '',
+      bank: bankName,
+      cardDescription: productDescription,
+      joiningFee: toString(card.joining_fee) || fallback.joiningFee || '',
+      renewalFee: toString(card.annual_fee) || fallback.renewalFee || '',
+      interestRate: toString(card.interest_rate),
+      latePaymentFee: standardFeeMap['Late Payment Fee'],
+      overlimitFee: standardFeeMap['Overlimit Fee'],
+      cashAdvanceFee: standardFeeMap['Cash Advance Fee'],
+      foreignTransactionFee: standardFeeMap['Foreign Transaction Fee'],
+      returnedPaymentFee: standardFeeMap['Returned Payment Fee'],
+      cardReplacementFee: standardFeeMap['Card Replacement Fee'],
+      cardImage: toString(card.card_image_url) || fallback.image || 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400',
+      cardImageUrl: toString(card.card_image_url) || fallback.image || '',
+      cardImageStoragePath: api.extractStoragePathFromPublicUrl(toString(card.card_image_url)),
+      benefits: toStringArray(card.benefits),
+      categories: toStringArray(card.categories),
+      cardType: cardTypeName,
+      network: networkName,
+      status: normalizedStatus,
+      feeWaiverConditions: toString((customFees.fee_waiver_conditions as string) || ''),
+      customFees: extraFees,
+      rewardProgramName: toString(card.reward_program_name),
+      welcomeBonus: toString(card.welcome_bonus),
+      rewardsRate: toString(rewardsDetails.rewards_rate),
+      rewardRedemption: toString(rewardsDetails.reward_redemption),
+      internationalLoungeAccess: toString(rewardsDetails.international_lounge_access),
+      domesticLoungeAccess: toString(rewardsDetails.domestic_lounge_access),
+      insuranceBenefits: toString(rewardsDetails.insurance_benefits),
+      travelBenefits: toString(rewardsDetails.travel_benefits),
+      movieDiningBenefits: toString(rewardsDetails.movie_dining),
+      golfBenefits: toString(rewardsDetails.golf_benefits),
+      cashbackRate: toString(rewardsDetails.cashback_rate),
+      customBenefits: Array.isArray(rewardsDetails.custom_benefits)
+        ? (rewardsDetails.custom_benefits as Array<Record<string, unknown>>).map((item) => ({
+            icon: toString(item.icon) || '🎯',
+            category: toString(item.category),
+            description: toString(item.description),
+          }))
+        : [],
+      productDescription,
+      productFeaturesText: toStringArray(card.product_features).join('\n'),
+      specialPerksText: toStringArray(card.special_perks).join('\n'),
       offersText: '',
-      eligibilityCriteriaText: '',
-      prosText: '',
-      consText: '',
-    });
+      eligibilityCriteriaText: toStringArray(eligibility.items).join('\n'),
+      prosText: toStringArray(card.pros).join('\n'),
+      consText: toStringArray(card.cons).join('\n'),
+    };
+  };
+
+  useEffect(() => {
+    const fallbackFormData = buildFallbackFormData(editingCard);
+    setFormData(fallbackFormData);
     setFormErrors({});
-  }, [editingCard]);
+
+    if (!editingCard) return;
+
+    let isMounted = true;
+    (async () => {
+      try {
+        const card = await api.getCardByIdOrSlug(editingCard.rawId);
+        if (!isMounted) return;
+        setFormData(buildFormDataFromApiCard(card, editingCard));
+      } catch (error) {
+        console.error('Failed to hydrate edit card form:', error);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [editingCard, cardTypeOptions, cardNetworkOptions, banks]);
 
   const handleSave = async (mode: 'publish' | 'draft') => {
     if (!api.getToken()) {
@@ -1870,7 +1981,7 @@ function BanksManagementContent({
 }) {
   const banks = bankOptions.map((item) => ({ ...item, status: 'Enabled' }));
   const [showAddModal, setShowAddModal] = useState(false);
-  const [editingBank, setEditingBank] = useState<{ id: string; name: string; status: string } | null>(null);
+  const [editingBank, setEditingBank] = useState<(ApiMetaItem & { status: string }) | null>(null);
   const [newBankName, setNewBankName] = useState('');
   const [newBankDescription, setNewBankDescription] = useState('');
   const [newBankLogo, setNewBankLogo] = useState('');
@@ -1878,12 +1989,18 @@ function BanksManagementContent({
   
   // Card Type management state
   const [newCardType, setNewCardType] = useState('');
+  const [newCardTypeDescription, setNewCardTypeDescription] = useState('');
+  const [newCardTypeLogo, setNewCardTypeLogo] = useState('');
+  const [cardTypeLogoFileName, setCardTypeLogoFileName] = useState('');
   const [showAddTypeModal, setShowAddTypeModal] = useState(false);
   const [editingCardType, setEditingCardType] = useState<ApiMetaItem | null>(null);
   const [deleteConfirmType, setDeleteConfirmType] = useState<string | null>(null);
   
   // Card Network management state
   const [newCardNetwork, setNewCardNetwork] = useState('');
+  const [newCardNetworkDescription, setNewCardNetworkDescription] = useState('');
+  const [newCardNetworkLogo, setNewCardNetworkLogo] = useState('');
+  const [cardNetworkLogoFileName, setCardNetworkLogoFileName] = useState('');
   const [showAddNetworkModal, setShowAddNetworkModal] = useState(false);
   const [editingCardNetwork, setEditingCardNetwork] = useState<ApiMetaItem | null>(null);
   const [deleteConfirmNetwork, setDeleteConfirmNetwork] = useState<string | null>(null);
@@ -1891,7 +2008,11 @@ function BanksManagementContent({
   const handleAddBank = async () => {
     if (newBankName.trim()) {
       try {
-        await api.createBank(newBankName.trim());
+        await api.createBank({
+          name: newBankName.trim(),
+          description: newBankDescription.trim(),
+          logo_url: newBankLogo.trim(),
+        });
         await refreshMeta();
         setNewBankName('');
         setNewBankDescription('');
@@ -1907,7 +2028,11 @@ function BanksManagementContent({
   const handleEditBank = async () => {
     if (editingBank && newBankName.trim()) {
       try {
-        await api.updateBank(editingBank.id, newBankName.trim());
+        await api.updateBank(editingBank.id, {
+          name: newBankName.trim(),
+          description: newBankDescription.trim(),
+          logo_url: newBankLogo.trim(),
+        });
         await refreshMeta();
         setNewBankName('');
         setNewBankDescription('');
@@ -1931,12 +2056,17 @@ function BanksManagementContent({
     }
   };
 
-  const openEditModal = (bank: { id: string; name: string; status: string }) => {
+  const openEditModal = (bank: ApiMetaItem & { status: string }) => {
     setEditingBank(bank);
     setNewBankName(bank.name);
-    setNewBankDescription('');
-    setNewBankLogo('');
-    setLogoFileName('');
+    setNewBankDescription(bank.description || '');
+    setNewBankLogo(bank.logo_url || '');
+    if (bank.logo_url) {
+      const logoSegments = bank.logo_url.split('/').filter(Boolean);
+      setLogoFileName(logoSegments[logoSegments.length - 1] || 'Current logo');
+    } else {
+      setLogoFileName('');
+    }
   };
 
   const closeModal = () => {
@@ -1959,6 +2089,30 @@ function BanksManagementContent({
       reader.readAsDataURL(file);
     }
   };
+
+  const handleCardTypeLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewCardTypeLogo(reader.result as string);
+        setCardTypeLogoFileName(file.name);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCardNetworkLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewCardNetworkLogo(reader.result as string);
+        setCardNetworkLogoFileName(file.name);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
   
   // Card Type handlers
   const handleAddCardType = async () => {
@@ -1969,12 +2123,23 @@ function BanksManagementContent({
     if (value && !duplicate) {
       try {
         if (editingCardType) {
-          await api.updateCardType(editingCardType.id, value);
+          await api.updateCardType(editingCardType.id, {
+            name: value,
+            description: newCardTypeDescription.trim(),
+            logo_url: newCardTypeLogo.trim(),
+          });
         } else {
-          await api.createCardType(value);
+          await api.createCardType({
+            name: value,
+            description: newCardTypeDescription.trim(),
+            logo_url: newCardTypeLogo.trim(),
+          });
         }
         await refreshMeta();
         setNewCardType('');
+        setNewCardTypeDescription('');
+        setNewCardTypeLogo('');
+        setCardTypeLogoFileName('');
         setEditingCardType(null);
         setShowAddTypeModal(false);
       } catch (error) {
@@ -2004,12 +2169,23 @@ function BanksManagementContent({
     if (value && !duplicate) {
       try {
         if (editingCardNetwork) {
-          await api.updateCardNetwork(editingCardNetwork.id, value);
+          await api.updateCardNetwork(editingCardNetwork.id, {
+            name: value,
+            description: newCardNetworkDescription.trim(),
+            logo_url: newCardNetworkLogo.trim(),
+          });
         } else {
-          await api.createCardNetwork(value);
+          await api.createCardNetwork({
+            name: value,
+            description: newCardNetworkDescription.trim(),
+            logo_url: newCardNetworkLogo.trim(),
+          });
         }
         await refreshMeta();
         setNewCardNetwork('');
+        setNewCardNetworkDescription('');
+        setNewCardNetworkLogo('');
+        setCardNetworkLogoFileName('');
         setEditingCardNetwork(null);
         setShowAddNetworkModal(false);
       } catch (error) {
@@ -2111,6 +2287,9 @@ function BanksManagementContent({
             onClick={() => {
               setEditingCardType(null);
               setNewCardType('');
+              setNewCardTypeDescription('');
+              setNewCardTypeLogo('');
+              setCardTypeLogoFileName('');
               setShowAddTypeModal(true);
             }}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
@@ -2127,6 +2306,14 @@ function BanksManagementContent({
                 onClick={() => {
                   setEditingCardType(type);
                   setNewCardType(type.name);
+                  setNewCardTypeDescription(type.description || '');
+                  setNewCardTypeLogo(type.logo_url || '');
+                  if (type.logo_url) {
+                    const logoSegments = type.logo_url.split('/').filter(Boolean);
+                    setCardTypeLogoFileName(logoSegments[logoSegments.length - 1] || 'Current logo');
+                  } else {
+                    setCardTypeLogoFileName('');
+                  }
                   setShowAddTypeModal(true);
                 }}
                 className="p-0.5 hover:bg-blue-100 rounded transition-colors"
@@ -2157,6 +2344,9 @@ function BanksManagementContent({
             onClick={() => {
               setEditingCardNetwork(null);
               setNewCardNetwork('');
+              setNewCardNetworkDescription('');
+              setNewCardNetworkLogo('');
+              setCardNetworkLogoFileName('');
               setShowAddNetworkModal(true);
             }}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
@@ -2173,6 +2363,14 @@ function BanksManagementContent({
                 onClick={() => {
                   setEditingCardNetwork(network);
                   setNewCardNetwork(network.name);
+                  setNewCardNetworkDescription(network.description || '');
+                  setNewCardNetworkLogo(network.logo_url || '');
+                  if (network.logo_url) {
+                    const logoSegments = network.logo_url.split('/').filter(Boolean);
+                    setCardNetworkLogoFileName(logoSegments[logoSegments.length - 1] || 'Current logo');
+                  } else {
+                    setCardNetworkLogoFileName('');
+                  }
                   setShowAddNetworkModal(true);
                 }}
                 className="p-0.5 hover:bg-blue-100 rounded transition-colors"
@@ -2333,6 +2531,9 @@ function BanksManagementContent({
                     setShowAddTypeModal(false);
                     setEditingCardType(null);
                     setNewCardType('');
+                    setNewCardTypeDescription('');
+                    setNewCardTypeLogo('');
+                    setCardTypeLogoFileName('');
                   }}
                   className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
                 >
@@ -2342,7 +2543,7 @@ function BanksManagementContent({
                 </button>
               </div>
             </div>
-            <div className="p-6">
+            <div className="p-6 space-y-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Type Name *
               </label>
@@ -2358,6 +2559,30 @@ function BanksManagementContent({
                   }
                 }}
               />
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Type Description</label>
+                <textarea
+                  rows={3}
+                  value={newCardTypeDescription}
+                  onChange={(e) => setNewCardTypeDescription(e.target.value)}
+                  placeholder="Enter type description..."
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Type Logo (optional)</label>
+                <input
+                  type="file"
+                  accept=".png,.svg,image/png,image/svg+xml"
+                  onChange={handleCardTypeLogoUpload}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                {cardTypeLogoFileName ? (
+                  <p className="text-xs text-blue-600 mt-1">{cardTypeLogoFileName}</p>
+                ) : null}
+              </div>
             </div>
             <div className="p-6 border-t border-gray-200 flex items-center justify-end gap-3">
               <button
@@ -2365,6 +2590,9 @@ function BanksManagementContent({
                   setShowAddTypeModal(false);
                   setEditingCardType(null);
                   setNewCardType('');
+                  setNewCardTypeDescription('');
+                  setNewCardTypeLogo('');
+                  setCardTypeLogoFileName('');
                 }}
                 className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
               >
@@ -2394,6 +2622,9 @@ function BanksManagementContent({
                     setShowAddNetworkModal(false);
                     setEditingCardNetwork(null);
                     setNewCardNetwork('');
+                    setNewCardNetworkDescription('');
+                    setNewCardNetworkLogo('');
+                    setCardNetworkLogoFileName('');
                   }}
                   className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
                 >
@@ -2403,7 +2634,7 @@ function BanksManagementContent({
                 </button>
               </div>
             </div>
-            <div className="p-6">
+            <div className="p-6 space-y-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Network Name *
               </label>
@@ -2419,6 +2650,30 @@ function BanksManagementContent({
                   }
                 }}
               />
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Network Description</label>
+                <textarea
+                  rows={3}
+                  value={newCardNetworkDescription}
+                  onChange={(e) => setNewCardNetworkDescription(e.target.value)}
+                  placeholder="Enter network description..."
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Network Logo (optional)</label>
+                <input
+                  type="file"
+                  accept=".png,.svg,image/png,image/svg+xml"
+                  onChange={handleCardNetworkLogoUpload}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                {cardNetworkLogoFileName ? (
+                  <p className="text-xs text-blue-600 mt-1">{cardNetworkLogoFileName}</p>
+                ) : null}
+              </div>
             </div>
             <div className="p-6 border-t border-gray-200 flex items-center justify-end gap-3">
               <button
@@ -2426,6 +2681,9 @@ function BanksManagementContent({
                   setShowAddNetworkModal(false);
                   setEditingCardNetwork(null);
                   setNewCardNetwork('');
+                  setNewCardNetworkDescription('');
+                  setNewCardNetworkLogo('');
+                  setCardNetworkLogoFileName('');
                 }}
                 className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
               >

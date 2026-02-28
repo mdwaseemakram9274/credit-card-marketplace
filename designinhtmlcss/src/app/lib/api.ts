@@ -1,6 +1,8 @@
 export interface ApiMetaItem {
   id: string;
   name: string;
+  description?: string;
+  logo_url?: string;
 }
 
 export interface ApiCard {
@@ -19,6 +21,7 @@ export interface ApiCard {
   status: 'draft' | 'enabled' | 'disabled';
   benefits?: string[] | null;
   categories?: string[] | null;
+  rewards_details?: unknown;
   product_description?: string | null;
   product_features?: string[] | null;
   special_perks?: string[] | null;
@@ -186,18 +189,18 @@ export const api = {
     return payload.data;
   },
 
-  async createBank(name: string) {
+  async createBank(input: { name: string; description?: string; logo_url?: string }) {
     const payload = await request<{ data: ApiMetaItem }>('/api/meta/banks', {
       method: 'POST',
-      body: JSON.stringify({ name }),
+      body: JSON.stringify(input),
     });
     return payload.data;
   },
 
-  async updateBank(id: string, name: string) {
+  async updateBank(id: string, input: { name: string; description?: string; logo_url?: string }) {
     const payload = await request<{ data: ApiMetaItem }>(`/api/meta/banks/${id}`, {
       method: 'PUT',
-      body: JSON.stringify({ name }),
+      body: JSON.stringify(input),
     });
     return payload.data;
   },
@@ -213,18 +216,18 @@ export const api = {
     return payload.data;
   },
 
-  async createCardType(name: string) {
+  async createCardType(input: { name: string; description?: string; logo_url?: string }) {
     const payload = await request<{ data: ApiMetaItem }>('/api/meta/card-types', {
       method: 'POST',
-      body: JSON.stringify({ name }),
+      body: JSON.stringify(input),
     });
     return payload.data;
   },
 
-  async updateCardType(id: string, name: string) {
+  async updateCardType(id: string, input: { name: string; description?: string; logo_url?: string }) {
     const payload = await request<{ data: ApiMetaItem }>(`/api/meta/card-types/${id}`, {
       method: 'PUT',
-      body: JSON.stringify({ name }),
+      body: JSON.stringify(input),
     });
     return payload.data;
   },
@@ -240,18 +243,18 @@ export const api = {
     return payload.data;
   },
 
-  async createCardNetwork(name: string) {
+  async createCardNetwork(input: { name: string; description?: string; logo_url?: string }) {
     const payload = await request<{ data: ApiMetaItem }>('/api/meta/card-networks', {
       method: 'POST',
-      body: JSON.stringify({ name }),
+      body: JSON.stringify(input),
     });
     return payload.data;
   },
 
-  async updateCardNetwork(id: string, name: string) {
+  async updateCardNetwork(id: string, input: { name: string; description?: string; logo_url?: string }) {
     const payload = await request<{ data: ApiMetaItem }>(`/api/meta/card-networks/${id}`, {
       method: 'PUT',
-      body: JSON.stringify({ name }),
+      body: JSON.stringify(input),
     });
     return payload.data;
   },

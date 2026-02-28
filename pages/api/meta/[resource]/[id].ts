@@ -22,7 +22,31 @@ function normalizeMetaRow(row: any) {
   return {
     ...row,
     name: row?.name || row?.bank_name || row?.network_name || row?.type_name || '',
+    description: typeof row?.description === 'string' ? row.description : '',
+    logo_url:
+      typeof row?.logo_url === 'string'
+        ? row.logo_url
+        : typeof row?.logo === 'string'
+          ? row.logo
+          : typeof row?.image_url === 'string'
+            ? row.image_url
+            : '',
   };
+}
+
+function sanitizeOptionalText(value: unknown) {
+  if (typeof value !== 'string') return '';
+  return value.trim();
+}
+
+function dedupePayloads(payloads: Array<Record<string, string>>) {
+  return payloads.filter(
+    (payload, index, arr) => index === arr.findIndex((item) => JSON.stringify(item) === JSON.stringify(payload))
+  );
+}
+
+function isMissingColumnError(message: string) {
+  return /column/i.test(message) && /(does not exist|unknown)/i.test(message);
 }
 
 function toSlug(value: string): string {
@@ -85,16 +109,40 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ success: false, message: 'Invalid payload' });
       }
 
-      const payload = resource === 'banks'
-        ? { name, slug: await getAvailableBankSlug(supabase, name, id) }
-        : { name };
+      const description = sanitizeOptionalText(req.body?.description);
+      const logoUrl = sanitizeOptionalText(req.body?.logo_url || req.body?.logoUrl);
 
-      const { data, error } = await supabase.from(table).update(payload).eq('id', id).select('*').single();
-      if (error) {
-        return res.status(500).json({ success: false, message: error.message });
+      const basePayload =
+        resource === 'banks'
+          ? { name, slug: await getAvailableBankSlug(supabase, name, id) }
+          : { name };
+
+      const payloadAttempts = dedupePayloads([
+        { ...basePayload, description, logo_url: logoUrl },
+        { ...basePayload, description },
+        { ...basePayload, logo_url: logoUrl },
+        { ...basePayload },
+      ].map((payload) => Object.fromEntries(Object.entries(payload).filter(([, value]) => value !== ''))));
+
+      let lastError: { message: string } | null = null;
+      for (const payload of payloadAttempts) {
+        const { data, error } = await supabase.from(table).update(payload).eq('id', id).select('*').single();
+        if (!error && data) {
+          return res.status(200).json({ success: true, data: normalizeMetaRow(data) });
+        }
+
+        const message = error?.message || '';
+        if (!isMissingColumnError(message)) {
+          return res.status(500).json({ success: false, message: message || 'Unable to update record' });
+        }
+
+        lastError = error;
       }
 
-      return res.status(200).json({ success: true, data: normalizeMetaRow(data) });
+      return res.status(500).json({
+        success: false,
+        message: lastError?.message || 'Unable to update record',
+      });
     }
 
     if (req.method === 'DELETE') {
