@@ -40,4 +40,22 @@ module.exports = {
 			permanent: false,
 		}))
 	},
+	async headers() {
+		return [
+			{
+				source: '/designinhtmlcss/index.html',
+				headers: [
+					{ key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' },
+					{ key: 'Pragma', value: 'no-cache' },
+					{ key: 'Expires', value: '0' },
+				],
+			},
+			{
+				source: '/designinhtmlcss/assets/:path*',
+				headers: [
+					{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+				],
+			},
+		]
+	},
 }
