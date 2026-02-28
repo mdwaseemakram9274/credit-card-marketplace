@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router';
 import { CreditCard as CreditCardPreview } from '../components/CreditCardSection';
-import { api, mapApiCardToUi } from '../lib/api';
+import { api, ApiMetaItem, mapApiCardToUi } from '../lib/api';
 
 type TabType = 'dashboard' | 'add-card' | 'banks';
 
@@ -91,6 +91,8 @@ export default function AdminPage() {
   // Card Types and Networks state
   const [cardTypes, setCardTypes] = useState<string[]>([]);
   const [cardNetworks, setCardNetworks] = useState<string[]>([]);
+  const [cardTypeOptions, setCardTypeOptions] = useState<ApiMetaItem[]>([]);
+  const [cardNetworkOptions, setCardNetworkOptions] = useState<ApiMetaItem[]>([]);
 
   const loadCards = async () => {
     if (!isAuthenticated) return;
@@ -125,6 +127,8 @@ export default function AdminPage() {
           api.getCardNetworks(),
         ]);
         setBanks(bankRows);
+        setCardTypeOptions(typeRows);
+        setCardNetworkOptions(networkRows);
         setCardTypes(typeRows.map((item) => item.name));
         setCardNetworks(networkRows.map((item) => item.name));
       } catch (error) {
@@ -377,6 +381,8 @@ export default function AdminPage() {
               setEditingCard={setEditingCard}
               cardTypes={cardTypes}
               cardNetworks={cardNetworks}
+              cardTypeOptions={cardTypeOptions}
+              cardNetworkOptions={cardNetworkOptions}
               banks={banks}
               onSaved={async () => {
                 await loadCards();
@@ -637,6 +643,8 @@ function AddCardContent({
   setEditingCard,
   cardTypes,
   cardNetworks,
+  cardTypeOptions,
+  cardNetworkOptions,
   banks,
   onSaved,
 }: { 
@@ -644,6 +652,8 @@ function AddCardContent({
   setEditingCard: (value: AdminCardRow | null) => void;
   cardTypes: string[];
   cardNetworks: string[];
+  cardTypeOptions: ApiMetaItem[];
+  cardNetworkOptions: ApiMetaItem[];
   banks: Array<{ id: string; name: string }>;
   onSaved: () => Promise<void>;
 }) {
@@ -656,28 +666,76 @@ function AddCardContent({
   const [formData, setFormData] = useState({
     cardName: editingCard?.title || '',
     bank: editingCard?.bank || '',
+    cardDescription: '',
     joiningFee: editingCard?.joiningFee || '',
     renewalFee: editingCard?.renewalFee || '',
+    interestRate: '',
     cardImage: editingCard?.image || 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400',
+    cardImageUrl: editingCard?.image || '',
     benefits: editingCard?.benefits || ['Welcome bonus of reward points', 'Complimentary airport lounge access', 'Fuel surcharge waiver'],
     categories: editingCard?.categories || ['Travel'],
     cardType: editingCard?.cardType || '',
     network: '',
     status: editingCard?.status || 'Draft',
+    feeWaiverConditions: '',
+    customFees: [] as Array<{ feeType: string; amount: string }>,
+    rewardProgramName: '',
+    welcomeBonus: '',
+    rewardsRate: '',
+    rewardRedemption: '',
+    internationalLoungeAccess: '',
+    domesticLoungeAccess: '',
+    insuranceBenefits: '',
+    travelBenefits: '',
+    movieDiningBenefits: '',
+    golfBenefits: '',
+    cashbackRate: '',
+    customBenefits: [] as Array<{ icon: string; category: string; description: string }>,
+    productDescription: '',
+    productFeaturesText: '',
+    specialPerksText: '',
+    offersText: '',
+    eligibilityCriteriaText: '',
+    prosText: '',
+    consText: '',
   });
 
   useEffect(() => {
     setFormData({
       cardName: editingCard?.title || '',
       bank: editingCard?.bank || '',
+      cardDescription: '',
       joiningFee: editingCard?.joiningFee || '',
       renewalFee: editingCard?.renewalFee || '',
+      interestRate: '',
       cardImage: editingCard?.image || 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400',
+      cardImageUrl: editingCard?.image || '',
       benefits: editingCard?.benefits || ['Welcome bonus of reward points', 'Complimentary airport lounge access', 'Fuel surcharge waiver'],
       categories: editingCard?.categories || ['Travel'],
       cardType: editingCard?.cardType || '',
       network: '',
       status: editingCard?.status || 'Draft',
+      feeWaiverConditions: '',
+      customFees: [],
+      rewardProgramName: '',
+      welcomeBonus: '',
+      rewardsRate: '',
+      rewardRedemption: '',
+      internationalLoungeAccess: '',
+      domesticLoungeAccess: '',
+      insuranceBenefits: '',
+      travelBenefits: '',
+      movieDiningBenefits: '',
+      golfBenefits: '',
+      cashbackRate: '',
+      customBenefits: [],
+      productDescription: '',
+      productFeaturesText: '',
+      specialPerksText: '',
+      offersText: '',
+      eligibilityCriteriaText: '',
+      prosText: '',
+      consText: '',
     });
     setFormErrors({});
   }, [editingCard]);
@@ -712,15 +770,55 @@ function AddCardContent({
       return;
     }
 
+    const selectedCardType = cardTypeOptions.find((item) => item.name === formData.cardType);
+    const selectedNetwork = cardNetworkOptions.find((item) => item.name === formData.network);
+    const statusMap: Record<string, 'enabled' | 'disabled' | 'draft'> = {
+      Enabled: 'enabled',
+      Disabled: 'disabled',
+      Draft: 'draft',
+    };
+
     const payload = {
       card_name: formData.cardName,
       bank_id: selectedBank.id,
-      card_image_url: formData.cardImage,
+      card_image_url: formData.cardImageUrl || formData.cardImage,
       joining_fee: formData.joiningFee,
       annual_fee: formData.renewalFee,
+      interest_rate: formData.interestRate || null,
+      reward_program_name: formData.rewardProgramName || null,
+      welcome_bonus: formData.welcomeBonus || null,
+      card_type_id: selectedCardType?.id || null,
+      network_id: selectedNetwork?.id || null,
       benefits: formData.benefits,
-      categories: formData.categories,
-      status: mode === 'publish' ? 'enabled' : 'draft',
+      categories: formData.categories.length ? formData.categories : (formData.cardType ? [formData.cardType] : []),
+      rewards_details: {
+        rewards_rate: formData.rewardsRate,
+        reward_redemption: formData.rewardRedemption,
+        international_lounge_access: formData.internationalLoungeAccess,
+        domestic_lounge_access: formData.domesticLoungeAccess,
+        insurance_benefits: formData.insuranceBenefits,
+        travel_benefits: formData.travelBenefits,
+        movie_dining: formData.movieDiningBenefits,
+        golf_benefits: formData.golfBenefits,
+        cashback_rate: formData.cashbackRate,
+        custom_benefits: formData.customBenefits,
+      },
+      product_description: formData.productDescription || formData.cardDescription || null,
+      product_features: formData.productFeaturesText.split('\n').map((item) => item.trim()).filter(Boolean),
+      special_perks: [
+        ...formData.specialPerksText.split('\n').map((item) => item.trim()).filter(Boolean),
+        ...formData.offersText.split('\n').map((item) => item.trim()).filter(Boolean),
+      ],
+      eligibility_criteria: {
+        items: formData.eligibilityCriteriaText.split('\n').map((item) => item.trim()).filter(Boolean),
+      },
+      pros: formData.prosText.split('\n').map((item) => item.trim()).filter(Boolean),
+      cons: formData.consText.split('\n').map((item) => item.trim()).filter(Boolean),
+      custom_fees: {
+        items: formData.customFees,
+        fee_waiver_conditions: formData.feeWaiverConditions,
+      },
+      status: mode === 'draft' ? 'draft' : (statusMap[formData.status] || 'enabled'),
     } as any;
 
     setIsSaving(true);
@@ -832,14 +930,38 @@ function AddCardContent({
             setFormData({
               cardName: '',
               bank: '',
+              cardDescription: '',
               joiningFee: '',
               renewalFee: '',
+              interestRate: '',
               cardImage: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400',
+              cardImageUrl: '',
               benefits: [],
               categories: ['General'],
               cardType: '',
               network: '',
               status: 'Draft',
+              feeWaiverConditions: '',
+              customFees: [],
+              rewardProgramName: '',
+              welcomeBonus: '',
+              rewardsRate: '',
+              rewardRedemption: '',
+              internationalLoungeAccess: '',
+              domesticLoungeAccess: '',
+              insuranceBenefits: '',
+              travelBenefits: '',
+              movieDiningBenefits: '',
+              golfBenefits: '',
+              cashbackRate: '',
+              customBenefits: [],
+              productDescription: '',
+              productFeaturesText: '',
+              specialPerksText: '',
+              offersText: '',
+              eligibilityCriteriaText: '',
+              prosText: '',
+              consText: '',
             });
             setFormErrors({});
           }}
@@ -950,11 +1072,23 @@ function FormSection({ sectionId, cardTypes, cardNetworks, banks, formData, setF
           <textarea
             rows={4}
             placeholder="Describe the card's main features and benefits..."
+            value={formData.cardDescription}
+            onChange={(e) => setFormData({ ...formData, cardDescription: e.target.value })}
             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Card Image</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Card Image URL</label>
+          <input
+            type="text"
+            placeholder="https://..."
+            value={formData.cardImageUrl}
+            onChange={(e) => {
+              setFormData({ ...formData, cardImageUrl: e.target.value, cardImage: e.target.value || formData.cardImage });
+            }}
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3"
+          />
+          <label className="block text-sm font-medium text-gray-700 mb-2">Card Image Upload (optional, not persisted yet)</label>
           <input
             type="file"
             accept="image/*"
@@ -1033,6 +1167,8 @@ function FormSection({ sectionId, cardTypes, cardNetworks, banks, formData, setF
           <textarea
             rows={5}
             placeholder="Enter a detailed description of the product..."
+            value={formData.productDescription}
+            onChange={(e) => setFormData({ ...formData, productDescription: e.target.value })}
             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -1041,6 +1177,8 @@ function FormSection({ sectionId, cardTypes, cardNetworks, banks, formData, setF
           <textarea
             rows={5}
             placeholder="Enter each feature on a new line..."
+            value={formData.productFeaturesText}
+            onChange={(e) => setFormData({ ...formData, productFeaturesText: e.target.value })}
             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -1056,6 +1194,8 @@ function FormSection({ sectionId, cardTypes, cardNetworks, banks, formData, setF
           <textarea
             rows={5}
             placeholder="Enter each perk on a new line..."
+            value={formData.specialPerksText}
+            onChange={(e) => setFormData({ ...formData, specialPerksText: e.target.value })}
             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -1064,6 +1204,8 @@ function FormSection({ sectionId, cardTypes, cardNetworks, banks, formData, setF
           <textarea
             rows={5}
             placeholder="Enter each offer on a new line..."
+            value={formData.offersText}
+            onChange={(e) => setFormData({ ...formData, offersText: e.target.value })}
             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -1079,6 +1221,8 @@ function FormSection({ sectionId, cardTypes, cardNetworks, banks, formData, setF
           <textarea
             rows={5}
             placeholder="Enter each criterion on a new line..."
+            value={formData.eligibilityCriteriaText}
+            onChange={(e) => setFormData({ ...formData, eligibilityCriteriaText: e.target.value })}
             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -1094,6 +1238,8 @@ function FormSection({ sectionId, cardTypes, cardNetworks, banks, formData, setF
           <textarea
             rows={5}
             placeholder="Enter each pro on a new line..."
+            value={formData.prosText}
+            onChange={(e) => setFormData({ ...formData, prosText: e.target.value })}
             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -1102,6 +1248,8 @@ function FormSection({ sectionId, cardTypes, cardNetworks, banks, formData, setF
           <textarea
             rows={5}
             placeholder="Enter each con on a new line..."
+            value={formData.consText}
+            onChange={(e) => setFormData({ ...formData, consText: e.target.value })}
             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -1113,8 +1261,19 @@ function FormSection({ sectionId, cardTypes, cardNetworks, banks, formData, setF
 }
 
 function FeesSection({ formData, setFormData, formErrors, setFormErrors }: { formData: any; setFormData: (data: any) => void; formErrors: Record<string, string>; setFormErrors: (data: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => void; }) {
-  const [customFees, setCustomFees] = useState<Array<{ id: number; feeType: string; amount: string }>>([]);
+  const [customFees, setCustomFees] = useState<Array<{ id: number; feeType: string; amount: string }>>(
+    (formData.customFees || []).map((fee: any, index: number) => ({ id: index + 1, feeType: fee.feeType || '', amount: fee.amount || '' }))
+  );
   const [nextId, setNextId] = useState(1);
+
+  useEffect(() => {
+    setFormData({
+      ...formData,
+      customFees: customFees
+        .filter((fee) => fee.feeType.trim() || fee.amount.trim())
+        .map((fee) => ({ feeType: fee.feeType.trim(), amount: fee.amount.trim() })),
+    });
+  }, [customFees]);
 
   const addCustomFee = () => {
     setCustomFees([...customFees, { id: nextId, feeType: '', amount: '' }]);
@@ -1185,6 +1344,8 @@ function FeesSection({ formData, setFormData, formErrors, setFormErrors }: { for
                   <input
                     type="text"
                     placeholder="e.g., 3.5% per month"
+                    value={formData.interestRate}
+                    onChange={(e) => setFormData({ ...formData, interestRate: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </td>
@@ -1311,6 +1472,8 @@ function FeesSection({ formData, setFormData, formErrors, setFormErrors }: { for
         <textarea
           rows={3}
           placeholder="Describe conditions to waive joining/annual fees..."
+          value={formData.feeWaiverConditions}
+          onChange={(e) => setFormData({ ...formData, feeWaiverConditions: e.target.value })}
           className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
@@ -1319,8 +1482,28 @@ function FeesSection({ formData, setFormData, formErrors, setFormErrors }: { for
 }
 
 function RewardsSection({ formData, setFormData }: { formData: any; setFormData: (data: any) => void }) {
-  const [customBenefits, setCustomBenefits] = useState<Array<{ id: number; category: string; description: string; icon: string }>>([]);
+  const [customBenefits, setCustomBenefits] = useState<Array<{ id: number; category: string; description: string; icon: string }>>(
+    (formData.customBenefits || []).map((benefit: any, index: number) => ({
+      id: index + 1,
+      category: benefit.category || '',
+      description: benefit.description || '',
+      icon: benefit.icon || '🎯',
+    }))
+  );
   const [nextId, setNextId] = useState(1);
+
+  useEffect(() => {
+    setFormData({
+      ...formData,
+      customBenefits: customBenefits
+        .filter((benefit) => benefit.category.trim() || benefit.description.trim())
+        .map((benefit) => ({
+          icon: benefit.icon,
+          category: benefit.category.trim(),
+          description: benefit.description.trim(),
+        })),
+    });
+  }, [customBenefits]);
 
   const addCustomBenefit = () => {
     setCustomBenefits([...customBenefits, { id: nextId, category: '', description: '', icon: '🎯' }]);
@@ -1363,6 +1546,8 @@ function RewardsSection({ formData, setFormData }: { formData: any; setFormData:
             <input
               type="text"
               placeholder="e.g., HDFC RewardZ Points"
+              value={formData.rewardProgramName}
+              onChange={(e) => setFormData({ ...formData, rewardProgramName: e.target.value })}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -1371,6 +1556,8 @@ function RewardsSection({ formData, setFormData }: { formData: any; setFormData:
             <input
               type="text"
               placeholder="e.g., 5,000 bonus points on first purchase"
+              value={formData.welcomeBonus}
+              onChange={(e) => setFormData({ ...formData, welcomeBonus: e.target.value })}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -1403,6 +1590,8 @@ function RewardsSection({ formData, setFormData }: { formData: any; setFormData:
             <input
               type="text"
               placeholder="e.g., 4 points per ₹150 spent — save up to 1.3% on every transaction"
+              value={formData.rewardsRate}
+              onChange={(e) => setFormData({ ...formData, rewardsRate: e.target.value })}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -1416,6 +1605,8 @@ function RewardsSection({ formData, setFormData }: { formData: any; setFormData:
             <textarea
               rows={3}
               placeholder="e.g., You can redeem reward points for air tickets and AirMiles (1 RP = 0.50 Air Mile) on select airlines..."
+              value={formData.rewardRedemption}
+              onChange={(e) => setFormData({ ...formData, rewardRedemption: e.target.value })}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -1429,6 +1620,8 @@ function RewardsSection({ formData, setFormData }: { formData: any; setFormData:
             <input
               type="text"
               placeholder="e.g., 6 complimentary visits per year or N/A"
+              value={formData.internationalLoungeAccess}
+              onChange={(e) => setFormData({ ...formData, internationalLoungeAccess: e.target.value })}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -1442,6 +1635,8 @@ function RewardsSection({ formData, setFormData }: { formData: any; setFormData:
             <input
               type="text"
               placeholder="e.g., 6 complimentary visits per year or N/A"
+              value={formData.domesticLoungeAccess}
+              onChange={(e) => setFormData({ ...formData, domesticLoungeAccess: e.target.value })}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -1455,6 +1650,8 @@ function RewardsSection({ formData, setFormData }: { formData: any; setFormData:
             <textarea
               rows={2}
               placeholder="e.g., Air accident cover of ₹1 Cr + medical and baggage insurance"
+              value={formData.insuranceBenefits}
+              onChange={(e) => setFormData({ ...formData, insuranceBenefits: e.target.value })}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -1468,6 +1665,8 @@ function RewardsSection({ formData, setFormData }: { formData: any; setFormData:
             <textarea
               rows={2}
               placeholder="e.g., Access to 1,000+ global lounges + bonus points on bookings"
+              value={formData.travelBenefits}
+              onChange={(e) => setFormData({ ...formData, travelBenefits: e.target.value })}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -1481,6 +1680,8 @@ function RewardsSection({ formData, setFormData }: { formData: any; setFormData:
             <input
               type="text"
               placeholder="e.g., Buy 1 Get 1 free on movie tickets or N/A"
+              value={formData.movieDiningBenefits}
+              onChange={(e) => setFormData({ ...formData, movieDiningBenefits: e.target.value })}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -1494,6 +1695,8 @@ function RewardsSection({ formData, setFormData }: { formData: any; setFormData:
             <input
               type="text"
               placeholder="e.g., Complimentary golf sessions at select courses or N/A"
+              value={formData.golfBenefits}
+              onChange={(e) => setFormData({ ...formData, golfBenefits: e.target.value })}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -1557,6 +1760,8 @@ function RewardsSection({ formData, setFormData }: { formData: any; setFormData:
           <input
             type="text"
             placeholder="e.g., 5% on online purchases, 2% on offline"
+            value={formData.cashbackRate}
+            onChange={(e) => setFormData({ ...formData, cashbackRate: e.target.value })}
             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
