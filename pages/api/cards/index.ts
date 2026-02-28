@@ -19,6 +19,11 @@ function asStringArray(value: unknown): string[] {
   return value.map((item) => asString(item)).filter(Boolean);
 }
 
+function asObject(value: unknown): Record<string, any> | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  return value as Record<string, any>;
+}
+
 function extractAdminData(raw: unknown): Record<string, any> {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
   const maybeMeta = raw as { __adminData?: unknown };
@@ -70,6 +75,17 @@ function normalizeCardRow(row: any) {
     ? asStringArray(row.key_benefits)
     : asStringArray(row?.key_benefits?.items);
   const categories = asStringArray(row?.categories);
+  const legacyCategoriesFromAdmin = asStringArray(adminData?.categories);
+  const normalizedCategories = categories.length
+    ? categories
+    : legacyCategoriesFromAdmin.length
+      ? legacyCategoriesFromAdmin
+      : (asString(adminData.cardType) ? [asString(adminData.cardType)] : []);
+
+  const normalizedStatus =
+    asString(row?.status) ||
+    asString(adminData.status) ||
+    (adminData.isEnabled === false ? 'disabled' : 'enabled');
 
   const normalizedBenefits = benefits.length
     ? benefits
@@ -90,9 +106,10 @@ function normalizeCardRow(row: any) {
     welcome_bonus: asString(row?.welcome_bonus) || asString(adminData.welcomeBonus) || null,
     card_type_id: row?.card_type_id || null,
     network_id: row?.network_id || null,
-    status: asString(row?.status) || (adminData.isEnabled === false ? 'disabled' : 'enabled'),
+    status: normalizedStatus,
     benefits: normalizedBenefits,
-    categories: categories.length ? categories : (asString(adminData.cardType) ? [asString(adminData.cardType)] : []),
+    categories: normalizedCategories,
+    network: asString(row?.network) || asString(adminData.network) || null,
     product_description: asString(row?.product_description) || asString(row?.description) || asString(adminData.description) || null,
     product_features: asStringArray(row?.product_features),
     special_perks: asStringArray(row?.special_perks),
@@ -118,6 +135,13 @@ function buildLegacyCardRow(input: Record<string, any>, adminId: string) {
   const categories = asStringArray(input.categories);
   const benefits = asStringArray(input.benefits);
   const status = asString(input.status) || 'enabled';
+  const productFeatures = asStringArray(input.product_features);
+  const specialPerks = asStringArray(input.special_perks);
+  const pros = asStringArray(input.pros);
+  const cons = asStringArray(input.cons);
+  const rewardsDetails = asObject(input.rewards_details);
+  const eligibilityCriteria = asObject(input.eligibility_criteria);
+  const customFees = asObject(input.custom_fees);
 
   const adminData = {
     bank: asString(input.bank) || '',
@@ -130,18 +154,40 @@ function buildLegacyCardRow(input: Record<string, any>, adminId: string) {
     financeCharges: asString(input.interest_rate),
     welcomeBonus: asString(input.welcome_bonus),
     cardType: categories[0] || '',
+    categories,
+    status,
+    networkId: asString(input.network_id),
     keyBenefits: benefits,
-    pros: asStringArray(input.pros).join('\n'),
-    cons: asStringArray(input.cons).join('\n'),
+    pros: pros.join('\n'),
+    cons: cons.join('\n'),
     isEnabled: status !== 'disabled',
   };
 
   return {
     bank_id: asString(input.bank_id),
     slug,
+    card_name: cardName,
+    card_image_url: cardImageUrl || null,
+    joining_fee: asString(input.joining_fee) || null,
+    annual_fee: annualFee || null,
+    interest_rate: asString(input.interest_rate) || null,
+    reward_program_name: asString(input.reward_program_name) || null,
+    welcome_bonus: asString(input.welcome_bonus) || null,
+    card_type_id: asString(input.card_type_id) || null,
+    network_id: asString(input.network_id) || null,
+    status,
+    benefits,
+    categories,
+    rewards_details: rewardsDetails,
+    product_description: description || null,
+    product_features: productFeatures,
+    special_perks: specialPerks,
+    eligibility_criteria: eligibilityCriteria,
+    pros,
+    cons,
+    custom_fees: customFees,
     title: cardName,
     image_url: cardImageUrl || null,
-    annual_fee: annualFee || null,
     description: description || null,
     source_url: null,
     key_benefits: {
@@ -150,6 +196,38 @@ function buildLegacyCardRow(input: Record<string, any>, adminId: string) {
     },
     updated_by: adminId,
   };
+}
+
+function getMissingColumnName(error: any): string {
+  const message =
+    (error && typeof error.message === 'string' ? error.message : '') ||
+    (error && typeof error.details === 'string' ? error.details : '');
+  const schemaCacheMatch = message.match(/Could not find the '([^']+)' column/i);
+  if (schemaCacheMatch?.[1]) return schemaCacheMatch[1];
+  const postgresMatch = message.match(/column\s+"([^"]+)"\s+does not exist/i);
+  if (postgresMatch?.[1]) return postgresMatch[1];
+  return '';
+}
+
+async function insertCardRowWithFallback(
+  supabase: ReturnType<typeof getSupabaseServerClient>,
+  row: Record<string, any>
+) {
+  const workingRow: Record<string, any> = { ...row };
+
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const { data, error } = await supabase.from('cards').insert(workingRow).select('*, banks(*)').single();
+    if (!error) return { data, error: null };
+
+    const missingColumn = getMissingColumnName(error);
+    if (!missingColumn || !(missingColumn in workingRow)) {
+      return { data: null, error };
+    }
+
+    delete workingRow[missingColumn];
+  }
+
+  return { data: null, error: new Error('Failed to insert card after resolving schema fallback.') };
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -206,7 +284,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         created_by: adminId,
       };
 
-      const { data, error } = await supabase.from('cards').insert(row).select('*, banks(*)').single();
+      const { data, error } = await insertCardRowWithFallback(supabase, row);
       if (error) {
         return res.status(500).json({ success: false, message: error.message });
       }
