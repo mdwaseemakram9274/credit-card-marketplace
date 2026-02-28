@@ -2,6 +2,7 @@ export interface ApiMetaItem {
   id: string;
   slug?: string;
   name: string;
+  icon?: string;
   description?: string;
   logo_url?: string;
 }
@@ -217,7 +218,7 @@ export const api = {
     return payload.data;
   },
 
-  async createCardType(input: { name: string }) {
+  async createCardType(input: { name: string; icon?: string }) {
     const payload = await request<{ data: ApiMetaItem }>('/api/meta/card-types', {
       method: 'POST',
       body: JSON.stringify(input),
@@ -225,7 +226,7 @@ export const api = {
     return payload.data;
   },
 
-  async updateCardType(id: string, input: { name: string }) {
+  async updateCardType(id: string, input: { name: string; icon?: string }) {
     const payload = await request<{ data: ApiMetaItem }>(`/api/meta/card-types/${id}`, {
       method: 'PUT',
       body: JSON.stringify(input),

@@ -22,6 +22,7 @@ function normalizeMetaRow(row: any) {
   return {
     ...row,
     name: row?.name || row?.bank_name || row?.network_name || row?.type_name || '',
+    icon: typeof row?.icon === 'string' ? row.icon : '',
     description: typeof row?.description === 'string' ? row.description : '',
     logo_url:
       typeof row?.logo_url === 'string'
@@ -111,10 +112,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       const description = sanitizeOptionalText(req.body?.description);
       const logoUrl = sanitizeOptionalText(req.body?.logo_url || req.body?.logoUrl);
+      const icon = sanitizeOptionalText(req.body?.icon);
 
       const basePayload =
         resource === 'banks'
           ? { name, slug: await getAvailableBankSlug(supabase, name, id) }
+          : resource === 'card-types'
+            ? { name, icon }
           : { name };
 
       const payloadAttempts = dedupePayloads([

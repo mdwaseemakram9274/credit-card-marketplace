@@ -1989,6 +1989,7 @@ function BanksManagementContent({
   
   // Card Type management state
   const [newCardType, setNewCardType] = useState('');
+  const [newCardTypeIcon, setNewCardTypeIcon] = useState('💳');
   const [showAddTypeModal, setShowAddTypeModal] = useState(false);
   const [editingCardType, setEditingCardType] = useState<ApiMetaItem | null>(null);
   const [deleteConfirmType, setDeleteConfirmType] = useState<string | null>(null);
@@ -1998,6 +1999,8 @@ function BanksManagementContent({
   const [showAddNetworkModal, setShowAddNetworkModal] = useState(false);
   const [editingCardNetwork, setEditingCardNetwork] = useState<ApiMetaItem | null>(null);
   const [deleteConfirmNetwork, setDeleteConfirmNetwork] = useState<string | null>(null);
+
+  const cardTypeIconOptions = ['✈️', '🛍️', '🍽️', '💰', '🎁', '⛽', '💼', '🎬', '🏨', '🛡️', '🚗', '🧳', '🛒', '📱', '🏥', '⚡', '🏦', '💳'];
 
   const handleAddBank = async () => {
     if (newBankName.trim()) {
@@ -2095,14 +2098,17 @@ function BanksManagementContent({
         if (editingCardType) {
           await api.updateCardType(editingCardType.id, {
             name: value,
+            icon: newCardTypeIcon,
           });
         } else {
           await api.createCardType({
             name: value,
+            icon: newCardTypeIcon,
           });
         }
         await refreshMeta();
         setNewCardType('');
+        setNewCardTypeIcon('💳');
         setEditingCardType(null);
         setShowAddTypeModal(false);
       } catch (error) {
@@ -2243,6 +2249,7 @@ function BanksManagementContent({
             onClick={() => {
               setEditingCardType(null);
               setNewCardType('');
+              setNewCardTypeIcon('💳');
               setShowAddTypeModal(true);
             }}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
@@ -2254,11 +2261,13 @@ function BanksManagementContent({
         <div className="flex flex-wrap gap-2">
           {cardTypeOptions.map((type) => (
             <div key={type.id} className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg">
+              <span className="text-base">{type.icon || '💳'}</span>
               <span className="text-sm font-medium text-gray-700">{type.name}</span>
               <button
                 onClick={() => {
                   setEditingCardType(type);
                   setNewCardType(type.name);
+                  setNewCardTypeIcon(type.icon || '💳');
                   setShowAddTypeModal(true);
                 }}
                 className="p-0.5 hover:bg-blue-100 rounded transition-colors"
@@ -2465,6 +2474,7 @@ function BanksManagementContent({
                     setShowAddTypeModal(false);
                     setEditingCardType(null);
                     setNewCardType('');
+                    setNewCardTypeIcon('💳');
                   }}
                   className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
                 >
@@ -2491,6 +2501,25 @@ function BanksManagementContent({
                 }}
               />
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Type Icon</label>
+                <div className="grid grid-cols-9 gap-2 max-h-32 overflow-y-auto rounded-lg border border-gray-200 p-3">
+                  {cardTypeIconOptions.map((icon) => (
+                    <button
+                      key={icon}
+                      type="button"
+                      onClick={() => setNewCardTypeIcon(icon)}
+                      className={`h-8 w-8 rounded-md text-lg flex items-center justify-center transition-colors ${
+                        newCardTypeIcon === icon ? 'bg-blue-100 ring-2 ring-blue-500' : 'hover:bg-gray-100'
+                      }`}
+                      title={icon}
+                    >
+                      {icon}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
             </div>
             <div className="p-6 border-t border-gray-200 flex items-center justify-end gap-3">
               <button
@@ -2498,6 +2527,7 @@ function BanksManagementContent({
                   setShowAddTypeModal(false);
                   setEditingCardType(null);
                   setNewCardType('');
+                  setNewCardTypeIcon('💳');
                 }}
                 className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
               >
