@@ -176,7 +176,7 @@ export const api = {
   },
 
   async getCards(status: 'all' | 'enabled' | 'disabled' | 'draft' = 'enabled') {
-    const query = status === 'all' ? '' : `?status=${status}`;
+    const query = `?status=${status}`;
     const payload = await request<{ data: { cards: ApiCard[] } }>(`/api/cards${query}`);
     return payload.data.cards;
   },
