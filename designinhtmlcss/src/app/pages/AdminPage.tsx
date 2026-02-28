@@ -1304,63 +1304,61 @@ function FormSection({ sectionId, cardTypes, cardTypeOptions, cardNetworks, bank
           />
           {isUploadingImage ? <p className="text-xs text-blue-600 mt-1">Uploading image...</p> : null}
         </div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Card Type *</label>
-            <div className={`rounded-lg p-2 ${formErrors.cardType ? 'ring-1 ring-red-300' : ''}`}>
-              <div className="flex flex-wrap gap-2">
-                {cardTypeEntries.map((type) => {
-                  const isSelected = formData.categories.includes(type.name);
+            <label className="block text-sm font-medium text-gray-700 mb-3">Card Type *</label>
+            <div className="flex flex-wrap gap-2">
+              {cardTypeEntries.map((type) => {
+                const isSelected = formData.categories.includes(type.name);
 
-                  return (
-                    <button
-                      key={type.name}
-                      type="button"
-                      onClick={() => toggleCardType(type.name, !isSelected)}
-                      className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                        isSelected
-                          ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
-                      }`}
-                    >
-                      <span className="text-base">{type.icon}</span>
-                      <span>{type.name}</span>
-                    </button>
-                  );
-                })}
-              </div>
+                return (
+                  <button
+                    key={type.name}
+                    type="button"
+                    onClick={() => toggleCardType(type.name, !isSelected)}
+                    className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                      isSelected
+                        ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
+                    }`}
+                  >
+                    <span className="text-base">{type.icon}</span>
+                    <span>{type.name}</span>
+                  </button>
+                );
+              })}
             </div>
             {formErrors.cardType ? <p className="text-xs text-red-600 mt-1">{formErrors.cardType}</p> : null}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Network *</label>
-            <div className={`rounded-lg p-2 ${formErrors.network ? 'ring-1 ring-red-300' : ''}`}>
-              <div className="flex flex-wrap gap-2">
-                {cardNetworks.map((network) => {
-                  const isSelected = formData.network === network;
 
-                  return (
-                    <button
-                      key={network}
-                      type="button"
-                      onClick={() => {
-                        setFormData({ ...formData, network });
-                        if (formErrors.network) setFormErrors((prev) => ({ ...prev, network: '' }));
-                      }}
-                      className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                        isSelected
-                          ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
-                      }`}
-                    >
-                      <span>{network}</span>
-                    </button>
-                  );
-                })}
-              </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">Network *</label>
+            <div className="flex flex-wrap gap-2">
+              {cardNetworks.map((network) => {
+                const isSelected = formData.network === network;
+
+                return (
+                  <button
+                    key={network}
+                    type="button"
+                    onClick={() => {
+                      setFormData({ ...formData, network });
+                      if (formErrors.network) setFormErrors((prev) => ({ ...prev, network: '' }));
+                    }}
+                    className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                      isSelected
+                        ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
+                    }`}
+                  >
+                    <span>{network}</span>
+                  </button>
+                );
+              })}
             </div>
             {formErrors.network ? <p className="text-xs text-red-600 mt-1">{formErrors.network}</p> : null}
           </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Status *</label>
             <select
