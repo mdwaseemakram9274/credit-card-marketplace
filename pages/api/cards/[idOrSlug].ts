@@ -70,7 +70,17 @@ function getAdminIdFromRequest(req: NextApiRequest): string {
 function normalizeCardRow(row: any) {
   const adminData = extractAdminData(row?.key_benefits);
   const benefits = asStringArray(row?.benefits);
+  const legacyBenefitsFromAdmin = asStringArray(adminData?.keyBenefits);
+  const legacyBenefitsFromKeyBenefits = Array.isArray(row?.key_benefits)
+    ? asStringArray(row.key_benefits)
+    : asStringArray(row?.key_benefits?.items);
   const categories = asStringArray(row?.categories);
+
+  const normalizedBenefits = benefits.length
+    ? benefits
+    : legacyBenefitsFromAdmin.length
+      ? legacyBenefitsFromAdmin
+      : legacyBenefitsFromKeyBenefits;
 
   return {
     id: row?.id,
@@ -86,7 +96,7 @@ function normalizeCardRow(row: any) {
     card_type_id: row?.card_type_id || null,
     network_id: row?.network_id || null,
     status: asString(row?.status) || (adminData.isEnabled === false ? 'disabled' : 'enabled'),
-    benefits,
+    benefits: normalizedBenefits,
     categories: categories.length ? categories : (asString(adminData.cardType) ? [asString(adminData.cardType)] : []),
     product_description: asString(row?.product_description) || asString(row?.description) || asString(adminData.description) || null,
     product_features: asStringArray(row?.product_features),
@@ -111,6 +121,7 @@ function buildLegacyCardRow(input: Record<string, any>, adminId: string) {
   const annualFee = asString(input.annual_fee);
   const description = asString(input.product_description);
   const categories = asStringArray(input.categories);
+  const benefits = asStringArray(input.benefits);
   const status = asString(input.status) || 'enabled';
 
   const adminData = {
@@ -124,6 +135,7 @@ function buildLegacyCardRow(input: Record<string, any>, adminId: string) {
     financeCharges: asString(input.interest_rate),
     welcomeBonus: asString(input.welcome_bonus),
     cardType: categories[0] || '',
+    keyBenefits: benefits,
     pros: asStringArray(input.pros).join('\n'),
     cons: asStringArray(input.cons).join('\n'),
     isEnabled: status !== 'disabled',
@@ -142,6 +154,7 @@ function buildLegacyCardRow(input: Record<string, any>, adminId: string) {
 
   row.key_benefits = {
     __adminData: adminData,
+    items: benefits,
   };
 
   return row;
