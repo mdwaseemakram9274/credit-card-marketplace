@@ -1307,39 +1307,58 @@ function FormSection({ sectionId, cardTypes, cardTypeOptions, cardNetworks, bank
         <div className="grid grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Card Type *</label>
-            <div className={`rounded-lg border p-2 max-h-36 overflow-y-auto ${formErrors.cardType ? 'border-red-400' : 'border-gray-300'}`}>
-              <div className="space-y-1">
-                {cardTypeEntries.map((type) => (
-                  <label key={type.name} className="flex items-center gap-2 px-2 py-1 rounded hover:bg-gray-50 cursor-pointer text-sm text-gray-700">
-                    <input
-                      type="checkbox"
-                      checked={formData.categories.includes(type.name)}
-                      onChange={(event) => toggleCardType(type.name, event.target.checked)}
-                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <span>{type.icon}</span>
-                    <span>{type.name}</span>
-                  </label>
-                ))}
+            <div className={`rounded-lg p-2 ${formErrors.cardType ? 'ring-1 ring-red-300' : ''}`}>
+              <div className="flex flex-wrap gap-2">
+                {cardTypeEntries.map((type) => {
+                  const isSelected = formData.categories.includes(type.name);
+
+                  return (
+                    <button
+                      key={type.name}
+                      type="button"
+                      onClick={() => toggleCardType(type.name, !isSelected)}
+                      className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                        isSelected
+                          ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
+                      }`}
+                    >
+                      <span className="text-base">{type.icon}</span>
+                      <span>{type.name}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
             {formErrors.cardType ? <p className="text-xs text-red-600 mt-1">{formErrors.cardType}</p> : null}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Network *</label>
-            <select
-              value={formData.network}
-              onChange={(e) => {
-                setFormData({ ...formData, network: e.target.value });
-                if (formErrors.network) setFormErrors((prev) => ({ ...prev, network: '' }));
-              }}
-              className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.network ? 'border-red-400' : 'border-gray-300'}`}
-            >
-              <option value="">Select Network</option>
-              {cardNetworks.map((network) => (
-                <option key={network} value={network}>{network}</option>
-              ))}
-            </select>
+            <div className={`rounded-lg p-2 ${formErrors.network ? 'ring-1 ring-red-300' : ''}`}>
+              <div className="flex flex-wrap gap-2">
+                {cardNetworks.map((network) => {
+                  const isSelected = formData.network === network;
+
+                  return (
+                    <button
+                      key={network}
+                      type="button"
+                      onClick={() => {
+                        setFormData({ ...formData, network });
+                        if (formErrors.network) setFormErrors((prev) => ({ ...prev, network: '' }));
+                      }}
+                      className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                        isSelected
+                          ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
+                      }`}
+                    >
+                      <span>{network}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
             {formErrors.network ? <p className="text-xs text-red-600 mt-1">{formErrors.network}</p> : null}
           </div>
           <div>
@@ -2016,6 +2035,7 @@ function BanksManagementContent({
   // Card Type management state
   const [newCardType, setNewCardType] = useState('');
   const [newCardTypeIcon, setNewCardTypeIcon] = useState('💳');
+  const [showIconPicker, setShowIconPicker] = useState(false);
   const [showAddTypeModal, setShowAddTypeModal] = useState(false);
   const [editingCardType, setEditingCardType] = useState<ApiMetaItem | null>(null);
   const [deleteConfirmType, setDeleteConfirmType] = useState<string | null>(null);
@@ -2135,6 +2155,7 @@ function BanksManagementContent({
         await refreshMeta();
         setNewCardType('');
         setNewCardTypeIcon('💳');
+        setShowIconPicker(false);
         setEditingCardType(null);
         setShowAddTypeModal(false);
       } catch (error) {
@@ -2276,6 +2297,7 @@ function BanksManagementContent({
               setEditingCardType(null);
               setNewCardType('');
               setNewCardTypeIcon('💳');
+              setShowIconPicker(false);
               setShowAddTypeModal(true);
             }}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
@@ -2294,6 +2316,7 @@ function BanksManagementContent({
                   setEditingCardType(type);
                   setNewCardType(type.name);
                   setNewCardTypeIcon(type.icon || '💳');
+                  setShowIconPicker(false);
                   setShowAddTypeModal(true);
                 }}
                 className="p-0.5 hover:bg-blue-100 rounded transition-colors"
@@ -2501,6 +2524,7 @@ function BanksManagementContent({
                     setEditingCardType(null);
                     setNewCardType('');
                     setNewCardTypeIcon('💳');
+                    setShowIconPicker(false);
                   }}
                   className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
                 >
@@ -2521,7 +2545,7 @@ function BanksManagementContent({
                 placeholder="e.g., Fuel, Business, Premium"
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
+                  if (e.key === 'Enter' && !showIconPicker) {
                     handleAddCardType();
                   }
                 }}
@@ -2529,21 +2553,40 @@ function BanksManagementContent({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Type Icon</label>
-                <div className="grid grid-cols-9 gap-2 max-h-32 overflow-y-auto rounded-lg border border-gray-200 p-3">
-                  {cardTypeIconOptions.map((icon) => (
-                    <button
-                      key={icon}
-                      type="button"
-                      onClick={() => setNewCardTypeIcon(icon)}
-                      className={`h-8 w-8 rounded-md text-lg flex items-center justify-center transition-colors ${
-                        newCardTypeIcon === icon ? 'bg-blue-100 ring-2 ring-blue-500' : 'hover:bg-gray-100'
-                      }`}
-                      title={icon}
-                    >
-                      {icon}
-                    </button>
-                  ))}
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowIconPicker(!showIconPicker)}
+                  className="w-full flex items-center justify-between px-4 py-2.5 border border-gray-300 rounded-lg text-sm hover:border-blue-500 transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">{newCardTypeIcon}</span>
+                    <span className="text-gray-700">Click to choose icon</span>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${showIconPicker ? 'rotate-180' : ''}`} />
+                </button>
+
+                {showIconPicker && (
+                  <div className="mt-2 p-3 border border-gray-200 rounded-lg bg-gray-50 max-h-80 overflow-y-auto">
+                    <div className="grid grid-cols-8 gap-2">
+                      {cardTypeIconOptions.map((icon) => (
+                        <button
+                          key={icon}
+                          type="button"
+                          onClick={() => {
+                            setNewCardTypeIcon(icon);
+                            setShowIconPicker(false);
+                          }}
+                          className={`text-2xl p-2 rounded-lg hover:bg-blue-100 transition-colors ${
+                            newCardTypeIcon === icon ? 'bg-blue-100 ring-2 ring-blue-500' : 'bg-white'
+                          }`}
+                          title={icon}
+                        >
+                          {icon}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
             </div>
@@ -2554,6 +2597,7 @@ function BanksManagementContent({
                   setEditingCardType(null);
                   setNewCardType('');
                   setNewCardTypeIcon('💳');
+                  setShowIconPicker(false);
                 }}
                 className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
               >
