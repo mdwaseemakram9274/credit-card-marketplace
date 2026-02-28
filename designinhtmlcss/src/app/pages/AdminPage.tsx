@@ -650,6 +650,7 @@ function AddCardContent({
   const [openSection, setOpenSection] = useState<string | null>('basic');
   const [showPreview, setShowPreview] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   
   // Form state
   const [formData, setFormData] = useState({
@@ -678,6 +679,7 @@ function AddCardContent({
       network: '',
       status: editingCard?.status || 'Draft',
     });
+    setFormErrors({});
   }, [editingCard]);
 
   const handleSave = async (mode: 'publish' | 'draft') => {
@@ -686,14 +688,27 @@ function AddCardContent({
       return;
     }
 
-    if (!formData.cardName.trim() || !formData.bank.trim()) {
-      alert('Card name and bank are required.');
+    const nextErrors: Record<string, string> = {};
+
+    if (!formData.cardName.trim()) nextErrors.cardName = 'Card name is required.';
+    if (!formData.bank.trim()) nextErrors.bank = 'Bank is required.';
+    if (mode === 'publish') {
+      if (!formData.joiningFee.trim()) nextErrors.joiningFee = 'Joining fee is required for publish.';
+      if (!formData.renewalFee.trim()) nextErrors.renewalFee = 'Annual fee is required for publish.';
+      if (!formData.cardType.trim()) nextErrors.cardType = 'Card type is required for publish.';
+      if (!formData.network.trim()) nextErrors.network = 'Network is required for publish.';
+    }
+
+    setFormErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) {
+      setOpenSection('basic');
       return;
     }
 
     const selectedBank = banks.find((bank) => bank.name === formData.bank);
     if (!selectedBank) {
-      alert('Please select a valid bank from the list.');
+      setFormErrors((previous) => ({ ...previous, bank: 'Please select a valid bank from the list.' }));
+      setOpenSection('basic');
       return;
     }
 
@@ -760,7 +775,16 @@ function AddCardContent({
             </button>
             {openSection === section.id && (
               <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                <FormSection sectionId={section.id} cardTypes={cardTypes} cardNetworks={cardNetworks} banks={banks} formData={formData} setFormData={setFormData} />
+                <FormSection
+                  sectionId={section.id}
+                  cardTypes={cardTypes}
+                  cardNetworks={cardNetworks}
+                  banks={banks}
+                  formData={formData}
+                  setFormData={setFormData}
+                  formErrors={formErrors}
+                  setFormErrors={setFormErrors}
+                />
               </div>
             )}
           </div>
@@ -807,6 +831,7 @@ function AddCardContent({
               network: '',
               status: 'Draft',
             });
+            setFormErrors({});
           }}
           className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
         >
@@ -864,13 +889,15 @@ function AddCardContent({
   );
 }
 
-function FormSection({ sectionId, cardTypes, cardNetworks, banks, formData, setFormData }: { 
+function FormSection({ sectionId, cardTypes, cardNetworks, banks, formData, setFormData, formErrors, setFormErrors }: { 
   sectionId: string; 
   cardTypes: string[]; 
   cardNetworks: string[];
   banks: Array<{ id: string; name: string }>;
   formData: any;
   setFormData: (data: any) => void;
+  formErrors: Record<string, string>;
+  setFormErrors: (data: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => void;
 }) {
   if (sectionId === 'basic') {
     return (
@@ -882,22 +909,30 @@ function FormSection({ sectionId, cardTypes, cardNetworks, banks, formData, setF
               type="text"
               placeholder="e.g., HDFC Regalia Credit Card"
               value={formData.cardName}
-              onChange={(e) => setFormData({ ...formData, cardName: e.target.value })}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => {
+                setFormData({ ...formData, cardName: e.target.value });
+                if (formErrors.cardName) setFormErrors((prev) => ({ ...prev, cardName: '' }));
+              }}
+              className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.cardName ? 'border-red-400' : 'border-gray-300'}`}
             />
+            {formErrors.cardName ? <p className="text-xs text-red-600 mt-1">{formErrors.cardName}</p> : null}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Bank / Issuer *</label>
             <select 
               value={formData.bank}
-              onChange={(e) => setFormData({ ...formData, bank: e.target.value })}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => {
+                setFormData({ ...formData, bank: e.target.value });
+                if (formErrors.bank) setFormErrors((prev) => ({ ...prev, bank: '' }));
+              }}
+              className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.bank ? 'border-red-400' : 'border-gray-300'}`}
             >
               <option value="">Select Bank</option>
               {banks.map((bank) => (
                 <option key={bank.id} value={bank.name}>{bank.name}</option>
               ))}
             </select>
+            {formErrors.bank ? <p className="text-xs text-red-600 mt-1">{formErrors.bank}</p> : null}
           </div>
         </div>
         <div>
@@ -921,27 +956,35 @@ function FormSection({ sectionId, cardTypes, cardNetworks, banks, formData, setF
             <label className="block text-sm font-medium text-gray-700 mb-2">Card Type *</label>
             <select
               value={formData.cardType}
-              onChange={(e) => setFormData({ ...formData, cardType: e.target.value })}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => {
+                setFormData({ ...formData, cardType: e.target.value });
+                if (formErrors.cardType) setFormErrors((prev) => ({ ...prev, cardType: '' }));
+              }}
+              className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.cardType ? 'border-red-400' : 'border-gray-300'}`}
             >
               <option value="">Select Type</option>
               {cardTypes.map((type) => (
                 <option key={type} value={type}>{type}</option>
               ))}
             </select>
+            {formErrors.cardType ? <p className="text-xs text-red-600 mt-1">{formErrors.cardType}</p> : null}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Network *</label>
             <select
               value={formData.network}
-              onChange={(e) => setFormData({ ...formData, network: e.target.value })}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => {
+                setFormData({ ...formData, network: e.target.value });
+                if (formErrors.network) setFormErrors((prev) => ({ ...prev, network: '' }));
+              }}
+              className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.network ? 'border-red-400' : 'border-gray-300'}`}
             >
               <option value="">Select Network</option>
               {cardNetworks.map((network) => (
                 <option key={network} value={network}>{network}</option>
               ))}
             </select>
+            {formErrors.network ? <p className="text-xs text-red-600 mt-1">{formErrors.network}</p> : null}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Status *</label>
@@ -962,7 +1005,7 @@ function FormSection({ sectionId, cardTypes, cardNetworks, banks, formData, setF
 
   if (sectionId === 'fees') {
     return (
-      <FeesSection formData={formData} setFormData={setFormData} />
+      <FeesSection formData={formData} setFormData={setFormData} formErrors={formErrors} setFormErrors={setFormErrors} />
     );
   }
 
@@ -1059,7 +1102,7 @@ function FormSection({ sectionId, cardTypes, cardNetworks, banks, formData, setF
   return null;
 }
 
-function FeesSection({ formData, setFormData }: { formData: any; setFormData: (data: any) => void }) {
+function FeesSection({ formData, setFormData, formErrors, setFormErrors }: { formData: any; setFormData: (data: any) => void; formErrors: Record<string, string>; setFormErrors: (data: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => void; }) {
   const [customFees, setCustomFees] = useState<Array<{ id: number; feeType: string; amount: string }>>([]);
   const [nextId, setNextId] = useState(1);
 
@@ -1099,9 +1142,13 @@ function FeesSection({ formData, setFormData }: { formData: any; setFormData: (d
                     type="text"
                     placeholder="e.g., ₹500 or Free"
                     value={formData.joiningFee}
-                    onChange={(e) => setFormData({ ...formData, joiningFee: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onChange={(e) => {
+                      setFormData({ ...formData, joiningFee: e.target.value });
+                      if (formErrors.joiningFee) setFormErrors((prev) => ({ ...prev, joiningFee: '' }));
+                    }}
+                    className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.joiningFee ? 'border-red-400' : 'border-gray-300'}`}
                   />
+                  {formErrors.joiningFee ? <p className="text-xs text-red-600 mt-1">{formErrors.joiningFee}</p> : null}
                 </td>
                 <td className="px-4 py-3"></td>
               </tr>
@@ -1112,9 +1159,13 @@ function FeesSection({ formData, setFormData }: { formData: any; setFormData: (d
                     type="text"
                     placeholder="e.g., ₹500 or Nil"
                     value={formData.renewalFee}
-                    onChange={(e) => setFormData({ ...formData, renewalFee: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onChange={(e) => {
+                      setFormData({ ...formData, renewalFee: e.target.value });
+                      if (formErrors.renewalFee) setFormErrors((prev) => ({ ...prev, renewalFee: '' }));
+                    }}
+                    className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.renewalFee ? 'border-red-400' : 'border-gray-300'}`}
                   />
+                  {formErrors.renewalFee ? <p className="text-xs text-red-600 mt-1">{formErrors.renewalFee}</p> : null}
                 </td>
                 <td className="px-4 py-3"></td>
               </tr>
