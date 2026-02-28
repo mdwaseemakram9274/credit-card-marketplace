@@ -740,6 +740,15 @@ function AddCardContent({
     }
   };
 
+  const selectedBank = banks.find((bank) => bank.name === formData.bank);
+  const canPublish =
+    Boolean(formData.cardName.trim()) &&
+    Boolean(selectedBank) &&
+    Boolean(formData.joiningFee.trim()) &&
+    Boolean(formData.renewalFee.trim()) &&
+    Boolean(formData.cardType.trim()) &&
+    Boolean(formData.network.trim());
+
   const sections = [
     { id: 'basic', title: 'Basic Information' },
     { id: 'fees', title: 'Fees & Charges' },
@@ -795,8 +804,9 @@ function AddCardContent({
       <div className="flex items-center gap-3 flex-wrap">
         <button
           onClick={() => handleSave('publish')}
-          disabled={isSaving}
-          className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-60"
+          disabled={isSaving || !canPublish}
+          title={!canPublish ? 'Fill required publish fields first' : undefined}
+          className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
         >
           <Save className="w-4 h-4" />
           {isSaving ? 'Saving...' : 'Save & Publish'}
