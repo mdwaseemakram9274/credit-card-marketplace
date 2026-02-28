@@ -888,7 +888,7 @@ function AddCardContent({
     if (mode === 'publish') {
       if (!formData.joiningFee.trim()) nextErrors.joiningFee = 'Joining fee is required for publish.';
       if (!formData.renewalFee.trim()) nextErrors.renewalFee = 'Annual fee is required for publish.';
-      if (!formData.cardType.trim()) nextErrors.cardType = 'Card type is required for publish.';
+      if (!formData.categories.length) nextErrors.cardType = 'At least one card type is required for publish.';
       if (!formData.network.trim()) nextErrors.network = 'Network is required for publish.';
     }
 
@@ -905,7 +905,8 @@ function AddCardContent({
       return;
     }
 
-    const selectedCardType = cardTypeOptions.find((item) => item.name === formData.cardType);
+    const selectedPrimaryCardTypeName = formData.categories[0] || formData.cardType;
+    const selectedCardType = cardTypeOptions.find((item) => item.name === selectedPrimaryCardTypeName);
     const selectedNetwork = cardNetworkOptions.find((item) => item.name === formData.network);
     const statusMap: Record<string, 'enabled' | 'disabled' | 'draft'> = {
       Enabled: 'enabled',
@@ -934,7 +935,7 @@ function AddCardContent({
       card_type_id: selectedCardType?.id || null,
       network_id: selectedNetwork?.id || null,
       benefits: formData.benefits,
-      categories: formData.categories.length ? formData.categories : (formData.cardType ? [formData.cardType] : []),
+      categories: formData.categories,
       rewards_details: {
         rewards_rate: formData.rewardsRate,
         reward_redemption: formData.rewardRedemption,
@@ -1011,7 +1012,7 @@ function AddCardContent({
     Boolean(selectedBank) &&
     Boolean(formData.joiningFee.trim()) &&
     Boolean(formData.renewalFee.trim()) &&
-    Boolean(formData.cardType.trim()) &&
+    Boolean(formData.categories.length) &&
     Boolean(formData.network.trim());
 
   const sections = [
@@ -1212,6 +1213,26 @@ function FormSection({ sectionId, cardTypes, cardTypeOptions, cardNetworks, bank
   isUploadingImage: boolean;
 }) {
   if (sectionId === 'basic') {
+    const cardTypeEntries = cardTypeOptions.length
+      ? cardTypeOptions.map((item) => ({ name: item.name, icon: item.icon || '💳' }))
+      : cardTypes.map((name) => ({ name, icon: '💳' }));
+
+    const toggleCardType = (typeName: string, checked: boolean) => {
+      const nextCategories = checked
+        ? Array.from(new Set([...formData.categories, typeName]))
+        : formData.categories.filter((category: string) => category !== typeName);
+
+      setFormData({
+        ...formData,
+        categories: nextCategories,
+        cardType: nextCategories[0] || '',
+      });
+
+      if (formErrors.cardType) {
+        setFormErrors((prev) => ({ ...prev, cardType: '' }));
+      }
+    };
+
     return (
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
@@ -1286,21 +1307,22 @@ function FormSection({ sectionId, cardTypes, cardTypeOptions, cardNetworks, bank
         <div className="grid grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Card Type *</label>
-            <select
-              value={formData.cardType}
-              onChange={(e) => {
-                setFormData({ ...formData, cardType: e.target.value });
-                if (formErrors.cardType) setFormErrors((prev) => ({ ...prev, cardType: '' }));
-              }}
-              className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.cardType ? 'border-red-400' : 'border-gray-300'}`}
-            >
-              <option value="">Select Type</option>
-              {cardTypeOptions.length ? cardTypeOptions.map((type) => (
-                <option key={type.id} value={type.name}>{type.icon ? `${type.icon} ${type.name}` : type.name}</option>
-              )) : cardTypes.map((type) => (
-                <option key={type} value={type}>{type}</option>
-              ))}
-            </select>
+            <div className={`rounded-lg border p-2 max-h-36 overflow-y-auto ${formErrors.cardType ? 'border-red-400' : 'border-gray-300'}`}>
+              <div className="space-y-1">
+                {cardTypeEntries.map((type) => (
+                  <label key={type.name} className="flex items-center gap-2 px-2 py-1 rounded hover:bg-gray-50 cursor-pointer text-sm text-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={formData.categories.includes(type.name)}
+                      onChange={(event) => toggleCardType(type.name, event.target.checked)}
+                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span>{type.icon}</span>
+                    <span>{type.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
             {formErrors.cardType ? <p className="text-xs text-red-600 mt-1">{formErrors.cardType}</p> : null}
           </div>
           <div>
