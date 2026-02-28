@@ -118,13 +118,35 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     headers,
   });
 
-  const payload = await response.json().catch(() => ({}));
+  const rawBody = await response.text().catch(() => '');
+  let payload: any = {};
+  if (rawBody) {
+    try {
+      payload = JSON.parse(rawBody);
+    } catch {
+      payload = {};
+    }
+  }
+
   if (response.status === 401) {
     clearToken();
   }
 
   if (!response.ok || payload?.success === false) {
-    const message = payload?.message || 'Request failed';
+    const apiMessage =
+      payload?.message ||
+      payload?.error?.message ||
+      payload?.error ||
+      (typeof payload === 'string' ? payload : '');
+
+    const textMessage =
+      rawBody && !rawBody.trim().startsWith('<')
+        ? rawBody.trim().slice(0, 500)
+        : '';
+
+    const statusMessage = `HTTP ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`;
+    const message = apiMessage || textMessage || statusMessage;
+
     throw new Error(message);
   }
 
