@@ -305,6 +305,14 @@ export const api = {
 };
 
 export function mapApiCardToUi(card: ApiCard) {
+  const eligibility =
+    card.eligibility_criteria &&
+    typeof card.eligibility_criteria === 'object' &&
+    Array.isArray((card.eligibility_criteria as { items?: unknown }).items)
+      ? ((card.eligibility_criteria as { items?: unknown }).items as unknown[])
+          .filter((item): item is string => typeof item === 'string')
+      : [];
+
   return {
     id: card.slug || card.id,
     rawId: card.id,
@@ -322,5 +330,6 @@ export function mapApiCardToUi(card: ApiCard) {
     cardTypeId: card.card_type_id || null,
     networkId: card.network_id || null,
     cardOrientation: card.card_orientation || 'horizontal',
+    eligibilityCriteria: eligibility,
   };
 }

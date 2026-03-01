@@ -199,7 +199,7 @@ export default function CreditCardDetailPage() {
         </motion.div>
 
         {/* Card Details Section */}
-        <CardDetailsSection />
+        <CardDetailsSection eligibilityCriteria={card.eligibilityCriteria || []} />
 
         {/* Special Perks Section */}
         <SpecialPerksSection />

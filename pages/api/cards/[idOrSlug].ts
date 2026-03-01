@@ -24,6 +24,14 @@ function asObject(value: unknown): Record<string, any> | null {
   return value as Record<string, any>;
 }
 
+function normalizeEligibilityCriteria(raw: unknown, adminData: Record<string, any>): { items: string[] } | null {
+  const fromRawObject = asObject(raw);
+  const rawItems = fromRawObject ? asStringArray(fromRawObject.items) : asStringArray(raw);
+  const legacyItems = asStringArray(adminData.eligibilityCriteria);
+  const items = rawItems.length ? rawItems : legacyItems;
+  return items.length ? { items } : null;
+}
+
 function extractAdminData(raw: unknown): Record<string, any> {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
   const maybeMeta = raw as { __adminData?: unknown };
@@ -98,6 +106,8 @@ function normalizeCardRow(row: any) {
       ? legacyBenefitsFromAdmin
       : legacyBenefitsFromKeyBenefits;
 
+  const eligibilityCriteria = normalizeEligibilityCriteria(row?.eligibility_criteria, adminData);
+
   return {
     id: row?.id,
     slug: row?.slug || null,
@@ -119,7 +129,7 @@ function normalizeCardRow(row: any) {
     product_description: asString(row?.product_description) || asString(row?.description) || asString(adminData.description) || null,
     product_features: asStringArray(row?.product_features),
     special_perks: asStringArray(row?.special_perks),
-    eligibility_criteria: row?.eligibility_criteria || null,
+    eligibility_criteria: eligibilityCriteria,
     pros: asStringArray(row?.pros),
     cons: asStringArray(row?.cons),
     custom_fees: row?.custom_fees || null,
@@ -149,6 +159,7 @@ function buildLegacyCardRow(input: Record<string, any>, adminId: string) {
   const rewardsDetails = asObject(input.rewards_details);
   const eligibilityCriteria = asObject(input.eligibility_criteria);
   const customFees = asObject(input.custom_fees);
+  const eligibilityItems = asStringArray(asObject(input.eligibility_criteria)?.items || input.eligibility_criteria);
 
   const adminData = {
     bank: asString(input.bank) || '',
@@ -165,6 +176,7 @@ function buildLegacyCardRow(input: Record<string, any>, adminId: string) {
     status,
     networkId: asString(input.network_id),
     cardOrientation,
+    eligibilityCriteria: eligibilityItems,
     keyBenefits: benefits,
     pros: pros.join('\n'),
     cons: cons.join('\n'),
@@ -195,7 +207,7 @@ function buildLegacyCardRow(input: Record<string, any>, adminId: string) {
   row.rewards_details = rewardsDetails;
   row.product_features = productFeatures;
   row.special_perks = specialPerks;
-  row.eligibility_criteria = eligibilityCriteria;
+  row.eligibility_criteria = eligibilityItems.length ? { items: eligibilityItems } : null;
   row.pros = pros;
   row.cons = cons;
   row.custom_fees = customFees;
