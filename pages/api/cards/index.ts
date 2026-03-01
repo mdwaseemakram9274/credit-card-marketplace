@@ -105,6 +105,7 @@ function normalizeCardRow(row: any) {
     reward_program_name: asString(row?.reward_program_name) || null,
     welcome_bonus: asString(row?.welcome_bonus) || asString(adminData.welcomeBonus) || null,
     card_type_id: row?.card_type_id || null,
+    card_orientation: asString(row?.card_orientation) || asString(adminData.cardOrientation) || 'horizontal',
     network_id: row?.network_id || null,
     status: normalizedStatus,
     benefits: normalizedBenefits,
@@ -135,6 +136,7 @@ function buildLegacyCardRow(input: Record<string, any>, adminId: string) {
   const categories = asStringArray(input.categories);
   const benefits = asStringArray(input.benefits);
   const status = asString(input.status) || 'enabled';
+  const cardOrientation = asString(input.card_orientation) === 'vertical' ? 'vertical' : 'horizontal';
   const productFeatures = asStringArray(input.product_features);
   const specialPerks = asStringArray(input.special_perks);
   const pros = asStringArray(input.pros);
@@ -157,6 +159,7 @@ function buildLegacyCardRow(input: Record<string, any>, adminId: string) {
     categories,
     status,
     networkId: asString(input.network_id),
+    cardOrientation,
     keyBenefits: benefits,
     pros: pros.join('\n'),
     cons: cons.join('\n'),
@@ -174,6 +177,7 @@ function buildLegacyCardRow(input: Record<string, any>, adminId: string) {
     reward_program_name: asString(input.reward_program_name) || null,
     welcome_bonus: asString(input.welcome_bonus) || null,
     card_type_id: asString(input.card_type_id) || null,
+    card_orientation: cardOrientation,
     network_id: asString(input.network_id) || null,
     status,
     benefits,
