@@ -7,13 +7,12 @@ interface BenefitRow {
   description: string;
 }
 
-export default function CardDetailsSection({ eligibilityCriteria = [] }: { eligibilityCriteria?: string[] }) {
+export default function CardDetailsSection() {
   // All sections expanded by default for LLM crawlability
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>(({
     cardDetails: true,
     rewards: true,
     product: true,
-    eligibility: true,
     fees: true,
     perks: true,
   }));
@@ -182,36 +181,6 @@ export default function CardDetailsSection({ eligibilityCriteria = [] }: { eligi
               </li>
             </ul>
           </div>
-        </div>
-      </div>
-
-      {/* Eligibility Criteria */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-3 md:p-8 mb-8">
-        <button
-          onClick={() => toggleSection('eligibility')}
-          className="flex items-center justify-between w-full mb-6 group"
-          aria-expanded={expandedSections.eligibility}
-        >
-          <h2 className="text-xl md:text-2xl font-semibold text-black">Eligibility Criteria</h2>
-          <ChevronDown
-            className={`w-5 h-5 text-gray-600 transition-transform ${expandedSections.eligibility ? 'rotate-180' : ''}`}
-          />
-        </button>
-
-        <div className={`overflow-hidden transition-all duration-300 ${
-          expandedSections.eligibility ? 'max-h-[5000px]' : 'max-h-0'
-        }`}>
-          {eligibilityCriteria.length > 0 ? (
-            <ul className="space-y-2 ml-6">
-              {eligibilityCriteria.map((item, index) => (
-                <li key={index} className="list-disc text-base text-gray-700 leading-relaxed">
-                  {item}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-base text-gray-600 leading-relaxed">Eligibility criteria will be updated soon.</p>
-          )}
         </div>
       </div>
 

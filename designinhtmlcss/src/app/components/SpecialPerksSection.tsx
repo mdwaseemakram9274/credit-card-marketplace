@@ -46,7 +46,16 @@ function PerkCard({ title, description, bullets, note }: PerkCardProps) {
   );
 }
 
-export default function SpecialPerksSection() {
+export default function SpecialPerksSection({ eligibilityCriteria = [] }: { eligibilityCriteria?: string[] }) {
+  const eligibilityBullets = eligibilityCriteria.length
+    ? eligibilityCriteria
+    : [
+        "Age: 21 to 65 years.",
+        "Income: Minimum Income: ₹35,000/month (may vary by card)",
+        "CIBIL Score: 720+ preferred",
+        "Documents Required: PAN Card, Aadhaar Card, Salary Slip / ITR, Address Proof.",
+      ];
+
   const perks: PerkCardProps[] = [
     {
       title: "Welcome Gift",
@@ -69,12 +78,7 @@ export default function SpecialPerksSection() {
     {
       title: "Eligibility Criteria",
       description: "To apply for this credit card, you must meet the following:",
-      bullets: [
-        "Age: 21 to 65 years.",
-        "Income: Minimum Income: ₹35,000/month (may vary by card)",
-        "CIBIL Score: 720+ preferred",
-        "Documents Required: PAN Card, Aadhaar Card, Salary Slip / ITR, Address Proof."
-      ],
+      bullets: eligibilityBullets,
       note: {
         label: "Note",
         text: "Check Eligibility on",
