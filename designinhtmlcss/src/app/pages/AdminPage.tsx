@@ -1524,7 +1524,7 @@ function FeesSection({ formData, setFormData, formErrors, setFormErrors }: { for
   const [customFees, setCustomFees] = useState<Array<{ id: number; feeType: string; amount: string }>>(
     (formData.customFees || []).map((fee: any, index: number) => ({ id: index + 1, feeType: fee.feeType || '', amount: fee.amount || '' }))
   );
-  const [nextId, setNextId] = useState(1);
+  const [nextId, setNextId] = useState((formData.customFees || []).length + 1);
 
   useEffect(() => {
     setFormData({
@@ -1762,7 +1762,7 @@ function RewardsSection({ formData, setFormData }: { formData: any; setFormData:
       icon: benefit.icon || '🎯',
     }))
   );
-  const [nextId, setNextId] = useState(1);
+  const [nextId, setNextId] = useState((formData.customBenefits || []).length + 1);
 
   useEffect(() => {
     setFormData({
