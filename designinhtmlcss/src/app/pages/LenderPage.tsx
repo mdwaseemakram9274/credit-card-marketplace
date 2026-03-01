@@ -32,6 +32,18 @@ function CreditCard({ id, image, title, joiningFee, renewalFee, benefits, catego
       textColor: "text-pink-700", 
       borderColor: "border-pink-200" 
     },
+    "Online Shopping": {
+      icon: "🛒",
+      bgColor: "bg-pink-50",
+      textColor: "text-pink-700",
+      borderColor: "border-pink-200"
+    },
+    "Online shopping": {
+      icon: "🛒",
+      bgColor: "bg-pink-50",
+      textColor: "text-pink-700",
+      borderColor: "border-pink-200"
+    },
     "Travel": { 
       icon: "✈️", 
       bgColor: "bg-blue-50", 
@@ -61,6 +73,12 @@ function CreditCard({ id, image, title, joiningFee, renewalFee, benefits, catego
       bgColor: "bg-amber-50", 
       textColor: "text-amber-700", 
       borderColor: "border-amber-200" 
+    },
+    "Rewards": {
+      icon: "💰",
+      bgColor: "bg-amber-50",
+      textColor: "text-amber-700",
+      borderColor: "border-amber-200"
     },
     "Cashback": { 
       icon: "💰", 

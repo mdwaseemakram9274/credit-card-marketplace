@@ -138,6 +138,18 @@ export const categoryStyles: Record<string, { icon: string; bgColor: string; tex
     textColor: "text-pink-700", 
     borderColor: "border-pink-200" 
   },
+  "Online Shopping": {
+    icon: "🛒",
+    bgColor: "bg-pink-50",
+    textColor: "text-pink-700",
+    borderColor: "border-pink-200"
+  },
+  "Online shopping": {
+    icon: "🛒",
+    bgColor: "bg-pink-50",
+    textColor: "text-pink-700",
+    borderColor: "border-pink-200"
+  },
   "Travel": { 
     icon: "✈️", 
     bgColor: "bg-blue-50", 
@@ -167,6 +179,12 @@ export const categoryStyles: Record<string, { icon: string; bgColor: string; tex
     bgColor: "bg-amber-50", 
     textColor: "text-amber-700", 
     borderColor: "border-amber-200" 
+  },
+  "Rewards": {
+    icon: "💰",
+    bgColor: "bg-amber-50",
+    textColor: "text-amber-700",
+    borderColor: "border-amber-200"
   },
   "Cashback": { 
     icon: "💰", 
