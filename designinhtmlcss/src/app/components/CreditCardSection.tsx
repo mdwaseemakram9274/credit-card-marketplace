@@ -200,6 +200,25 @@ export const categoryStyles: Record<string, { icon: string; bgColor: string; tex
   }
 };
 
+export function getCategoryStyle(category: string) {
+  const directMatch = categoryStyles[category];
+  if (directMatch) return directMatch;
+
+  const normalized = category.trim().toLowerCase().replace(/\s+/g, ' ');
+  if (!normalized) return categoryStyles.Default;
+
+  if (normalized.includes('shop')) return categoryStyles.Shopping;
+  if (normalized.includes('reward')) return categoryStyles.Rewards;
+  if (normalized.includes('travel')) return categoryStyles.Travel;
+  if (normalized.includes('fuel')) return categoryStyles.Fuel;
+  if (normalized.includes('dining')) return categoryStyles.Dining;
+  if (normalized.includes('movie')) return categoryStyles.Movies;
+  if (normalized.includes('lounge')) return categoryStyles['Lounge Pass'];
+  if (normalized.includes('cashback') || normalized.includes('cash back')) return categoryStyles.Cashback;
+
+  return categoryStyles.Default;
+}
+
 // Credit Card Component
 /**
  * Card Orientation System (Technical Reference)
@@ -309,7 +328,7 @@ export function CreditCard({ id, image, title, joiningFee, renewalFee, benefits,
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center justify-between pt-4 border-t border-gray-200">
           <div className="flex gap-2 flex-wrap">
             {categories.map((category, index) => {
-              const style = categoryStyles[category] || categoryStyles["Default"];
+              const style = getCategoryStyle(category);
               return (
                 <div
                   key={index}

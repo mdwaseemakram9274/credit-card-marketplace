@@ -54,23 +54,6 @@ function asObject(value: unknown): Record<string, unknown> | null {
   return value as Record<string, unknown>;
 }
 
-function normalizeCategoryName(value: string): string {
-  const label = value.trim();
-  if (!label) return '';
-
-  const normalized = label.toLowerCase().replace(/\s+/g, ' ');
-  if (normalized.includes('shop')) return 'Shopping';
-  if (normalized.includes('reward')) return 'Rewards';
-  if (normalized.includes('travel')) return 'Travel';
-  if (normalized.includes('fuel')) return 'Fuel';
-  if (normalized.includes('dining')) return 'Dining';
-  if (normalized.includes('movie')) return 'Movies';
-  if (normalized.includes('lounge')) return 'Lounge Pass';
-  if (normalized.includes('cashback') || normalized.includes('cash back')) return 'Cashback';
-
-  return label;
-}
-
 const API_BASE_URL =
   ((globalThis as any).__API_BASE_URL__ as string | undefined) ||
   (import.meta.env.VITE_API_BASE_URL as string | undefined) ||
@@ -340,17 +323,13 @@ export const api = {
 
 export function mapApiCardToUi(card: ApiCard) {
   const categories = Array.isArray(card.categories)
-    ? Array.from(
-        new Set(
-          card.categories
-            .filter((item): item is string => typeof item === 'string')
-            .map((item) => normalizeCategoryName(item))
-            .filter(Boolean)
-        )
-      )
+    ? card.categories
+        .filter((item): item is string => typeof item === 'string')
+        .map((item) => item.trim())
+        .filter((item, index, list) => item && list.findIndex((value) => value.toLowerCase() === item.toLowerCase()) === index)
     : [];
 
-  const primaryCardType = normalizeCategoryName(asString(card.card_types?.name));
+  const primaryCardType = asString(card.card_types?.name);
   if (!categories.length && primaryCardType) {
     categories.push(primaryCardType);
   }

@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { CreditCardData } from '../data/creditCardsData';
-import { categoryStyles } from './CreditCardSection';
+import { getCategoryStyle } from './CreditCardSection';
 
 interface LenderCardProps {
   card: CreditCardData;
@@ -74,7 +74,7 @@ export function LenderCard({ card, index }: LenderCardProps) {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t border-gray-200">
             <div className="flex gap-1.5 sm:gap-2 flex-wrap">
               {card.categories.map((category, idx) => {
-                const style = categoryStyles[category] || categoryStyles["Default"];
+                const style = getCategoryStyle(category);
                 return (
                   <div
                     key={idx}

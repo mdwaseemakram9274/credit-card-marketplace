@@ -8,7 +8,7 @@ import CardDetailsSection from '../components/CardDetailsSection';
 
 // This will be imported from a shared location
 import { creditCardsData } from '../data/creditCardsData';
-import { categoryStyles } from '../components/CreditCardSection';
+import { getCategoryStyle } from '../components/CreditCardSection';
 import { api, mapApiCardToUi } from '../lib/api';
 
 export default function CreditCardDetailPage() {
@@ -129,7 +129,7 @@ export default function CreditCardDetailPage() {
               {/* Categories */}
               <div className="flex gap-1.5 sm:gap-2 flex-wrap justify-center mt-6 sm:mt-8">
                 {categoryLabels.map((category, index) => {
-                  const style = categoryStyles[category] || categoryStyles["Default"];
+                  const style = getCategoryStyle(category);
                   return (
                     <div
                       key={index}
