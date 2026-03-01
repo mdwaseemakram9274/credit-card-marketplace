@@ -30,10 +30,10 @@ export function EligibilitySection() {
     <section className="py-16 md:py-24">
       <div className="max-w-7xl mx-auto p-[0px]">
         <div className="max-w-5xl mx-auto">
-          <h2 className="font-semibold text-xl sm:text-2xl md:text-3xl text-black leading-tight">
+          <h2 className="text-h1">
             Eligibility Criteria for Credit Cards
           </h2>
-          <p className="text-base text-gray-600 mt-2 mb-12">
+          <p className="text-body-lg mt-2 mb-12">
             Understand the basic requirements to apply for a credit card in India.
           </p>
 
@@ -45,8 +45,8 @@ export function EligibilitySection() {
                   key={index} 
                   className="group bg-white border border-gray-200 rounded-2xl p-3 md:p-6 hover:border-gray-300 transition-all duration-200 hover:shadow-md"
                 >
-                  <h4 className="font-semibold text-black mb-2 text-base md:text-lg group-hover:text-gray-900 transition-colors">{item.criteria}</h4>
-                  <p className="text-gray-700 text-sm">{item.details}</p>
+                  <h4 className="text-h3 mb-2 group-hover:text-gray-900 transition-colors">{item.criteria}</h4>
+                  <p className="text-body text-gray-700">{item.details}</p>
                 </div>
               ))}
             </div>
@@ -54,8 +54,8 @@ export function EligibilitySection() {
 
           {/* Important Note */}
           <div className="bg-gray-50 border-l-4 border-black p-3 md:p-8 rounded-r-xl">
-            <h4 className="text-base md:text-lg font-semibold text-black mb-3">📋 Important Notes</h4>
-            <ul className="space-y-2 text-sm text-gray-700">
+            <h4 className="text-h3 mb-3">📋 Important Notes</h4>
+            <ul className="space-y-2 text-body text-gray-700">
               <li className="flex gap-3">
                 <span className="text-black font-bold">•</span>
                 <span>PAN Card is mandatory for all credit card applications in India</span>

@@ -39,10 +39,10 @@ export function FeesAndChargesSection() {
       <div className="relative">
         {/* Section Header */}
         <div className="mb-16">
-          <h2 className="font-semibold text-xl sm:text-2xl md:text-3xl text-black leading-tight">
+          <h2 className="text-h1">
             Credit Card Fees and Charges
           </h2>
-          <p className="text-base text-gray-600 leading-relaxed mt-4 max-w-3xl">
+          <p className="text-body-lg leading-relaxed mt-4 max-w-3xl">
             Understand all the fees associated with credit cards to avoid unexpected charges.
           </p>
         </div>
@@ -51,10 +51,10 @@ export function FeesAndChargesSection() {
         <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
           {/* Table Header */}
           <div className="grid grid-cols-2 bg-black text-white">
-            <div className="p-3 md:p-6 font-semibold text-base md:text-lg">
+            <div className="p-3 md:p-6 text-h3 text-white">
               Particular
             </div>
-            <div className="p-3 md:p-6 font-semibold text-base md:text-lg border-l border-gray-700">
+            <div className="p-3 md:p-6 text-h3 text-white border-l border-gray-700">
               Charges
             </div>
           </div>
@@ -67,10 +67,10 @@ export function FeesAndChargesSection() {
                 index % 2 === 0 ? 'bg-white' : 'bg-white'
                 } hover:bg-gray-50 transition-colors duration-200`}
             >
-              <div className="p-3 md:p-6 text-sm md:text-base text-gray-900">
+              <div className="p-3 md:p-6 text-body text-gray-900">
                 {fee.particular}
               </div>
-              <div className="p-3 md:p-6 text-sm md:text-base text-gray-700 border-l border-gray-200">
+              <div className="p-3 md:p-6 text-body text-gray-700 border-l border-gray-200">
                 {fee.charges}
               </div>
             </div>
@@ -84,11 +84,11 @@ export function FeesAndChargesSection() {
               <div className="flex-shrink-0 w-12 h-12 bg-black text-white rounded-xl flex items-center justify-center font-bold text-xl">
                 💡
               </div>
-              <h4 className="text-base md:text-lg font-semibold text-black">
+              <h4 className="text-h3">
                 Important Note
               </h4>
             </div>
-            <p className="text-base text-gray-700 leading-relaxed">
+            <p className="text-body-lg text-gray-700 leading-relaxed">
               Always read the terms and conditions carefully before applying for a credit card. Many fees can be avoided by responsible usage such as paying bills on time, staying within your credit limit, and meeting annual spending requirements for fee waivers.
             </p>
           </div>
@@ -101,22 +101,22 @@ export function FeesAndChargesSection() {
 export function InterestRateSection() {
   return (
     <section className="py-16 md:py-24">
-      <h2 className="font-semibold text-xl sm:text-2xl md:text-3xl text-black leading-tight">
+      <h2 className="text-h1">
         Credit Card Interest Rate
       </h2>
-      <p className="text-base text-gray-600 mt-4 mb-12 max-w-3xl">
+      <p className="text-body-lg mt-4 mb-12 max-w-3xl">
         Understanding how interest rates work on credit cards and how to minimize interest charges.
       </p>
 
       <div className="space-y-4">
         {/* APR Explanation */}
         <div className="group bg-white hover:bg-white border border-gray-200 hover:border-gray-300 rounded-2xl p-6 md:p-8 transition-all duration-200 hover:shadow-md">
-          <h3 className="text-xl font-semibold text-black mb-4">Annual Percentage Rate (APR)</h3>
-          <p className="text-base text-gray-700 leading-relaxed mb-4">
+          <h3 className="text-h2 mb-4">Annual Percentage Rate (APR)</h3>
+          <p className="text-body-lg text-gray-700 leading-relaxed mb-4">
             The Annual Percentage Rate (APR) on credit cards in India typically ranges from <strong className="text-black">24% to 52% per annum</strong>, which translates to approximately <strong className="text-black">2% to 4% per month</strong>. This is one of the highest interest rates among all credit products.
           </p>
           <div className="bg-gray-50 border-l-4 border-black p-4 rounded-r-lg">
-            <p className="text-base text-gray-700">
+            <p className="text-body-lg text-gray-700">
               <strong className="text-black">Example:</strong> If you have an outstanding balance of ₹50,000 at 36% APR (3% monthly), you'll pay ₹1,500 in interest charges for that month alone if you don't pay off the balance.
             </p>
           </div>
@@ -124,16 +124,16 @@ export function InterestRateSection() {
 
         {/* Interest-Free Period */}
         <div className="group bg-white hover:bg-white border border-gray-200 hover:border-gray-300 rounded-2xl p-6 md:p-8 transition-all duration-200 hover:shadow-md">
-          <h3 className="text-xl font-semibold text-black mb-4">Interest-Free Period</h3>
-          <p className="text-base text-gray-700 leading-relaxed">
+          <h3 className="text-h2 mb-4">Interest-Free Period</h3>
+          <p className="text-body-lg text-gray-700 leading-relaxed">
             Most credit cards offer an interest-free period of <strong className="text-black">45 to 50 days</strong> from the date of purchase if you pay the total outstanding amount in full by the due date. No interest is charged during this period, making it a great way to manage cash flow.
           </p>
         </div>
 
         {/* When Interest is Charged */}
         <div className="group bg-white hover:bg-white border border-gray-200 hover:border-gray-300 rounded-2xl p-6 md:p-8 transition-all duration-200 hover:shadow-md">
-          <h3 className="text-xl font-semibold text-black mb-4">When is Interest Charged?</h3>
-          <ul className="space-y-3 text-base text-gray-700">
+          <h3 className="text-h2 mb-4">When is Interest Charged?</h3>
+          <ul className="space-y-3 text-body-lg text-gray-700">
             <li className="flex gap-3 items-start">
               <span className="text-black font-bold mt-0.5">•</span>
               <span>When you pay only the minimum amount due instead of the total outstanding</span>
@@ -155,8 +155,8 @@ export function InterestRateSection() {
 
         {/* How to Avoid Interest */}
         <div className="bg-black text-white rounded-2xl p-6 md:p-8">
-          <h3 className="text-xl font-semibold mb-4">How to Avoid Interest Charges</h3>
-          <ul className="space-y-3 text-base text-gray-100">
+          <h3 className="text-h2 text-white mb-4">How to Avoid Interest Charges</h3>
+          <ul className="space-y-3 text-body-lg text-gray-100">
             <li className="flex gap-3 items-start">
               <span className="font-bold text-white">1.</span>
               <span>Always pay the full outstanding amount before the due date</span>

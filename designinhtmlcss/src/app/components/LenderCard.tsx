@@ -31,7 +31,7 @@ export function LenderCard({ card, index }: LenderCardProps) {
         <div className="p-4 sm:p-6 md:p-8 flex flex-col justify-between">
           {/* Card Name */}
           <div className="mb-4">
-            <h3 className="text-lg sm:text-xl font-bold text-black mb-2 leading-tight">
+            <h3 className="text-h3 text-black mb-2 leading-tight">
               {card.title}
             </h3>
           </div>
@@ -41,8 +41,8 @@ export function LenderCard({ card, index }: LenderCardProps) {
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="text-base sm:text-lg">💰</div>
               <div>
-                <p className="text-[10px] sm:text-xs text-gray-500 font-medium">Joining Fee</p>
-                <p className="font-semibold text-sm sm:text-base text-black">{card.joiningFee}</p>
+                <p className="text-label text-gray-500">Joining Fee</p>
+                <p className="text-body text-black">{card.joiningFee}</p>
               </div>
             </div>
             
@@ -51,20 +51,20 @@ export function LenderCard({ card, index }: LenderCardProps) {
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="text-base sm:text-lg">🔄</div>
               <div>
-                <p className="text-[10px] sm:text-xs text-gray-500 font-medium">Renewal Fee</p>
-                <p className="font-semibold text-sm sm:text-base text-black">{card.renewalFee}</p>
+                <p className="text-label text-gray-500">Renewal Fee</p>
+                <p className="text-body text-black">{card.renewalFee}</p>
               </div>
             </div>
           </div>
 
           {/* Key Benefits */}
           <div className="mb-4">
-            <h4 className="font-semibold text-sm sm:text-base text-black mb-3">Key Benefits</h4>
+            <h4 className="text-body-lg text-black mb-3">Key Benefits</h4>
             <ul className="space-y-2">
               {card.benefits.slice(0, 6).map((benefit, idx) => (
                 <li key={idx} className="flex items-start gap-2">
                   <span className="text-purple-600 mt-0.5 flex-shrink-0">•</span>
-                  <span className="text-xs sm:text-sm text-gray-700 leading-relaxed">{benefit}</span>
+                  <span className="text-body-sm text-gray-700 leading-relaxed">{benefit}</span>
                 </li>
               ))}
             </ul>
@@ -81,7 +81,7 @@ export function LenderCard({ card, index }: LenderCardProps) {
                     className={`${style.bgColor} border ${style.borderColor} px-2 sm:px-3 py-1 sm:py-1.5 rounded-full flex items-center gap-1 sm:gap-1.5`}
                   >
                     <span className="text-xs sm:text-sm">{style.icon}</span>
-                    <span className={`font-medium text-[10px] sm:text-xs ${style.textColor}`}>
+                    <span className={`text-label ${style.textColor}`}>
                       {category}
                     </span>
                   </div>
@@ -89,7 +89,7 @@ export function LenderCard({ card, index }: LenderCardProps) {
               })}
             </div>
             
-            <button className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold text-sm sm:text-base px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg sm:rounded-xl transition-all shadow-md hover:shadow-lg whitespace-nowrap">
+            <button className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-button px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg sm:rounded-xl transition-all shadow-md hover:shadow-lg whitespace-nowrap">
               Apply now →
             </button>
           </div>

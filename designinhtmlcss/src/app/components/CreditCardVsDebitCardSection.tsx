@@ -47,10 +47,10 @@ export function CreditCardVsDebitCardSection() {
       <div className="relative">
         {/* Section Header */}
         <div className="mb-16">
-          <h2 className="font-semibold text-xl sm:text-2xl md:text-3xl text-black leading-tight">
+          <h2 className="text-h1">
             Credit Card vs Debit Card: Key Differences
           </h2>
-          <p className="text-base text-gray-600 leading-relaxed mt-4 max-w-3xl">
+          <p className="text-body-lg leading-relaxed mt-4 max-w-3xl">
             Understanding the fundamental differences between credit and debit cards helps you choose the right payment method.
           </p>
         </div>
@@ -59,9 +59,9 @@ export function CreditCardVsDebitCardSection() {
         <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
           {/* Table Header */}
           <div className="grid grid-cols-3 bg-black text-white">
-            <div className="p-3 md:p-6 font-semibold text-sm md:text-base">Feature</div>
-            <div className="p-3 md:p-6 font-semibold text-sm md:text-base border-l border-gray-700">Credit Card</div>
-            <div className="p-3 md:p-6 font-semibold text-sm md:text-base border-l border-gray-700">Debit Card</div>
+            <div className="p-3 md:p-6 text-button">Feature</div>
+            <div className="p-3 md:p-6 text-button border-l border-gray-700">Credit Card</div>
+            <div className="p-3 md:p-6 text-button border-l border-gray-700">Debit Card</div>
           </div>
 
           {/* Table Body */}
@@ -72,9 +72,9 @@ export function CreditCardVsDebitCardSection() {
                 index % 2 === 0 ? 'bg-white' : 'bg-white'
               } border-t border-gray-200 hover:bg-gray-50 transition-colors`}
             >
-              <div className="p-3 md:p-6 font-semibold text-sm text-black">{item.feature}</div>
-              <div className="p-3 md:p-6 text-sm text-gray-700 border-l border-gray-200">{item.creditCard}</div>
-              <div className="p-3 md:p-6 text-sm text-gray-700 border-l border-gray-200">{item.debitCard}</div>
+              <div className="p-3 md:p-6 text-button text-black">{item.feature}</div>
+              <div className="p-3 md:p-6 text-body text-gray-700 border-l border-gray-200">{item.creditCard}</div>
+              <div className="p-3 md:p-6 text-body text-gray-700 border-l border-gray-200">{item.debitCard}</div>
             </div>
           ))}
         </div>
@@ -86,9 +86,9 @@ export function CreditCardVsDebitCardSection() {
               <div className="flex-shrink-0 w-12 h-12 bg-black text-white rounded-xl flex items-center justify-center font-bold text-xl">
                 💡
               </div>
-              <h3 className="text-lg md:text-xl font-semibold text-black">Bottom Line</h3>
+              <h3 className="text-h2">Bottom Line</h3>
             </div>
-            <p className="text-gray-700 leading-relaxed text-base">
+            <p className="text-body-lg text-gray-700 leading-relaxed">
               Credit cards are ideal for building credit, earning rewards, and managing large purchases with payment flexibility. Debit cards are better for daily spending control and avoiding debt. Many people benefit from using both strategically.
             </p>
           </div>

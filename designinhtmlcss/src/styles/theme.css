@@ -1,13 +1,78 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  --font-family-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-size: 16px;
+
+  --gradient-primary: linear-gradient(to right, #9333ea, #2563eb);
+  --gradient-primary-hover: linear-gradient(to right, #7e22ce, #1d4ed8);
+
+  --text-primary: #000000;
+  --text-secondary: #4b5563;
+  --text-tertiary: #6b7280;
+  --text-muted: #9ca3af;
+
+  --bg-white: #ffffff;
+  --bg-gray-50: #f9fafb;
+  --bg-gray-100: #f3f4f6;
+
+  --border-gray-200: #e5e7eb;
+  --border-gray-300: #d1d5db;
+
+  --success-bg: #dcfce7;
+  --success-text: #166534;
+  --success-border: #bbf7d0;
+
+  --warning-bg: #fef3c7;
+  --warning-text: #92400e;
+  --warning-border: #fde68a;
+
+  --error-bg: #fee2e2;
+  --error-text: #991b1b;
+  --error-border: #fecaca;
+
+  --info-bg: #dbeafe;
+  --info-text: #1e3a8a;
+  --info-border: #bfdbfe;
+
+  --dining-bg: #ffedd5;
+  --dining-text: #c2410c;
+  --dining-border: #fed7aa;
+
+  --shopping-bg: #fce7f3;
+  --shopping-text: #be185d;
+  --shopping-border: #fbcfe8;
+
+  --travel-bg: #dbeafe;
+  --travel-text: #1d4ed8;
+  --travel-border: #bfdbfe;
+
+  --fuel-bg: #dcfce7;
+  --fuel-text: #15803d;
+  --fuel-border: #bbf7d0;
+
+  --movies-bg: #f3e8ff;
+  --movies-text: #6b21a8;
+  --movies-border: #e9d5ff;
+
+  --lounge-bg: #e0e7ff;
+  --lounge-text: #4338ca;
+  --lounge-border: #c7d2fe;
+
+  --reward-bg: #fef3c7;
+  --reward-text: #b45309;
+  --reward-border: #fde68a;
+
+  --cashback-bg: #d1fae5;
+  --cashback-text: #047857;
+  --cashback-border: #a7f3d0;
+
   --background: #ffffff;
-  --foreground: oklch(0.145 0 0);
+  --foreground: var(--text-primary);
   --card: #ffffff;
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: var(--text-primary);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
+  --popover-foreground: var(--text-primary);
   --primary: #030213;
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.95 0.0058 264.53);
@@ -42,8 +107,8 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
+  --background: #111827;
+  --foreground: #f9fafb;
   --card: oklch(0.145 0 0);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.145 0 0);
@@ -81,6 +146,68 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --font-family-sans: var(--font-family-sans);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-text-muted: var(--text-muted);
+
+  --color-bg-white: var(--bg-white);
+  --color-bg-gray-50: var(--bg-gray-50);
+  --color-bg-gray-100: var(--bg-gray-100);
+
+  --color-border-gray-200: var(--border-gray-200);
+  --color-border-gray-300: var(--border-gray-300);
+
+  --color-success-bg: var(--success-bg);
+  --color-success-text: var(--success-text);
+  --color-success-border: var(--success-border);
+
+  --color-warning-bg: var(--warning-bg);
+  --color-warning-text: var(--warning-text);
+  --color-warning-border: var(--warning-border);
+
+  --color-error-bg: var(--error-bg);
+  --color-error-text: var(--error-text);
+  --color-error-border: var(--error-border);
+
+  --color-info-bg: var(--info-bg);
+  --color-info-text: var(--info-text);
+  --color-info-border: var(--info-border);
+
+  --color-dining-bg: var(--dining-bg);
+  --color-dining-text: var(--dining-text);
+  --color-dining-border: var(--dining-border);
+
+  --color-shopping-bg: var(--shopping-bg);
+  --color-shopping-text: var(--shopping-text);
+  --color-shopping-border: var(--shopping-border);
+
+  --color-travel-bg: var(--travel-bg);
+  --color-travel-text: var(--travel-text);
+  --color-travel-border: var(--travel-border);
+
+  --color-fuel-bg: var(--fuel-bg);
+  --color-fuel-text: var(--fuel-text);
+  --color-fuel-border: var(--fuel-border);
+
+  --color-movies-bg: var(--movies-bg);
+  --color-movies-text: var(--movies-text);
+  --color-movies-border: var(--movies-border);
+
+  --color-lounge-bg: var(--lounge-bg);
+  --color-lounge-text: var(--lounge-text);
+  --color-lounge-border: var(--lounge-border);
+
+  --color-reward-bg: var(--reward-bg);
+  --color-reward-text: var(--reward-text);
+  --color-reward-border: var(--reward-border);
+
+  --color-cashback-bg: var(--cashback-bg);
+  --color-cashback-text: var(--cashback-text);
+  --color-cashback-border: var(--cashback-border);
+
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
@@ -126,6 +253,8 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-family-sans);
+    color: var(--text-secondary);
   }
 
   /**
@@ -139,21 +268,25 @@
   }
 
   h1 {
-    font-size: var(--text-2xl);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+    font-size: 1.25rem;
+    line-height: 1.1;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    color: var(--text-primary);
   }
 
   h2 {
-    font-size: var(--text-xl);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+    font-size: 1.125rem;
+    line-height: 1.2;
+    font-weight: 600;
+    color: var(--text-primary);
   }
 
   h3 {
-    font-size: var(--text-lg);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+    font-size: 1rem;
+    line-height: 1.3;
+    font-weight: 600;
+    color: var(--text-primary);
   }
 
   h4 {
@@ -163,21 +296,139 @@
   }
 
   label {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+    font-size: 0.75rem;
+    line-height: 1;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-tertiary);
   }
 
   button {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+    font-size: 0.875rem;
+    line-height: 1;
+    font-weight: 600;
   }
 
   input {
-    font-size: var(--text-base);
+    font-size: 0.875rem;
     font-weight: var(--font-weight-normal);
     line-height: 1.5;
+  }
+
+  @media (min-width: 640px) {
+    h1 {
+      font-size: 1.5rem;
+    }
+
+    h2 {
+      font-size: 1.25rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    h1 {
+      font-size: 1.875rem;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+    }
+  }
+}
+
+@layer utilities {
+  .text-hero {
+    font-size: 2rem;
+    line-height: 1.1;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+  }
+
+  .text-h1 {
+    font-size: 1.25rem;
+    line-height: 1.1;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    color: var(--text-primary);
+  }
+
+  .text-h2 {
+    font-size: 1.125rem;
+    line-height: 1.2;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .text-h3 {
+    font-size: 1rem;
+    line-height: 1.3;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .text-body-lg {
+    font-size: 1rem;
+    line-height: 1.6;
+    font-weight: 400;
+    color: var(--text-secondary);
+  }
+
+  .text-body {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    font-weight: 400;
+    color: var(--text-secondary);
+  }
+
+  .text-body-sm {
+    font-size: 0.75rem;
+    line-height: 1.4;
+    font-weight: 500;
+    color: var(--text-tertiary);
+  }
+
+  .text-button {
+    font-size: 0.875rem;
+    line-height: 1;
+    font-weight: 600;
+  }
+
+  .text-label {
+    font-size: 0.75rem;
+    line-height: 1;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  @media (min-width: 640px) {
+    .text-hero {
+      font-size: 2.5rem;
+    }
+
+    .text-h1 {
+      font-size: 1.5rem;
+    }
+
+    .text-h2 {
+      font-size: 1.25rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .text-hero {
+      font-size: 3rem;
+    }
+
+    .text-h1 {
+      font-size: 1.875rem;
+    }
+
+    .text-h2 {
+      font-size: 1.5rem;
+    }
   }
 }
 

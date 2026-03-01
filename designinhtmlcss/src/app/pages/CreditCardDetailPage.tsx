@@ -68,11 +68,11 @@ export default function CreditCardDetailPage() {
       <div className="min-h-screen bg-gray-50">
         <Header />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
-          <h1 className="text-3xl font-bold text-black mb-4">Card Not Found</h1>
-          <p className="text-gray-600 mb-8">The credit card you're looking for doesn't exist.</p>
+          <h1 className="text-hero font-bold mb-4">Card Not Found</h1>
+          <p className="text-body-lg mb-8">The credit card you're looking for doesn't exist.</p>
           <Link 
             to="/" 
-            className="inline-block bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold px-8 py-3 rounded-lg transition-colors"
+            className="text-button inline-block bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3 rounded-lg transition-colors"
           >
             ← Back to Home
           </Link>
@@ -107,7 +107,7 @@ export default function CreditCardDetailPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-4 sm:mb-6 md:mb-8"
         >
-          <Link to="/" className="text-xs sm:text-sm text-gray-600 hover:text-purple-600 transition-colors">
+          <Link to="/" className="text-body text-gray-600 hover:text-purple-600 transition-colors">
             ← Back to all cards
           </Link>
         </motion.div>
@@ -136,7 +136,7 @@ export default function CreditCardDetailPage() {
                       className={`${style.bgColor} border ${style.borderColor} px-2 sm:px-3 py-1 sm:py-1.5 rounded-full flex items-center gap-1 sm:gap-1.5`}
                     >
                       <span className="text-xs sm:text-sm">{style.icon}</span>
-                      <span className={`font-medium text-[10px] sm:text-xs ${style.textColor}`}>
+                      <span className={`text-body-sm ${style.textColor}`}>
                         {category}
                       </span>
                     </div>
@@ -150,13 +150,13 @@ export default function CreditCardDetailPage() {
               {/* Powered By */}
               {networkLabels.length ? (
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-start sm:items-center mb-6 pb-6 border-b border-gray-200">
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Powered By</p>
+                  <p className="text-label text-gray-400">Powered By</p>
                   <div className="flex gap-2 sm:gap-3 items-center flex-wrap">
                     {networkLabels.map((network: string) => {
                       const colorClass = networkBadgeStyles[normalizeNetworkName(network)] || 'text-gray-700';
                       return (
                         <div key={network} className="bg-gray-50 border border-gray-200 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg">
-                          <span className={`font-bold text-xs ${colorClass}`}>{network}</span>
+                          <span className={`text-button ${colorClass}`}>{network}</span>
                         </div>
                       );
                     })}
@@ -166,11 +166,11 @@ export default function CreditCardDetailPage() {
 
               {/* Title & Description */}
               <div className="mb-6 sm:mb-8">
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-black mb-3 sm:mb-4 leading-tight">
+                <h1 className="text-hero font-bold mb-3 sm:mb-4">
                   {card.title || card.cardName}
                 </h1>
                 {card.description ? (
-                  <p className="text-sm sm:text-base md:text-lg text-gray-600 leading-relaxed">
+                  <p className="text-body-lg text-gray-600 leading-relaxed">
                     {card.description}
                   </p>
                 ) : null}
@@ -184,8 +184,8 @@ export default function CreditCardDetailPage() {
                       <span className="text-lg sm:text-xl">💰</span>
                     </div>
                     <div>
-                      <p className="text-[10px] sm:text-xs text-gray-500 font-medium mb-0.5 sm:mb-1">Joining Fee</p>
-                      <p className="font-semibold text-sm sm:text-base text-black">{card.joiningFee || card.joining_fee || 'Not specified'}</p>
+                      <p className="text-label text-gray-500 mb-0.5 sm:mb-1">Joining Fee</p>
+                      <p className="text-button text-black">{card.joiningFee || card.joining_fee || 'Not specified'}</p>
                     </div>
                   </div>
                 </div>
@@ -196,15 +196,15 @@ export default function CreditCardDetailPage() {
                       <span className="text-lg sm:text-xl">🔄</span>
                     </div>
                     <div>
-                      <p className="text-[10px] sm:text-xs text-gray-500 font-medium mb-0.5 sm:mb-1">Annual Fee</p>
-                      <p className="font-semibold text-sm sm:text-base text-black">{card.renewalFee || card.annual_fee || 'Not specified'}</p>
+                      <p className="text-label text-gray-500 mb-0.5 sm:mb-1">Annual Fee</p>
+                      <p className="text-button text-black">{card.renewalFee || card.annual_fee || 'Not specified'}</p>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* CTA */}
-              <button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold text-sm sm:text-base px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl transition-all shadow-lg hover:shadow-xl">
+              <button className="text-button w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl transition-all shadow-lg hover:shadow-xl">
                 Apply Now →
               </button>
             </div>
@@ -236,11 +236,11 @@ export default function CreditCardDetailPage() {
               transition={{ delay: 0.5 }}
               className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-8 md:p-12 text-center text-white"
             >
-              <h2 className="text-2xl md:text-3xl font-bold mb-4">Ready to Apply?</h2>
-              <p className="text-base md:text-lg mb-8 opacity-90">
+              <h2 className="text-h1 text-white font-bold mb-4">Ready to Apply?</h2>
+              <p className="text-body-lg mb-8 opacity-90">
                 Get your {card.title} in just a few simple steps
               </p>
-              <button className="bg-white text-purple-600 hover:bg-gray-100 font-semibold text-base px-12 py-4 rounded-lg transition-colors shadow-lg">
+              <button className="text-button bg-white text-purple-600 hover:bg-gray-100 px-12 py-4 rounded-lg transition-colors shadow-lg">
                 Apply Now →
               </button>
             </motion.div>

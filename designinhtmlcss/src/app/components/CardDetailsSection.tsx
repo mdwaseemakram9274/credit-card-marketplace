@@ -117,7 +117,7 @@ export default function CardDetailsSection({
           className="flex items-center justify-between w-full group m-[0px]"
           aria-expanded={expandedSections.rewards}
         >
-          <h2 className="text-xl md:text-2xl font-semibold text-black">Rewards & Benefits</h2>
+          <h2 className="text-h1">Rewards & Benefits</h2>
           <ChevronDown 
             className={`w-5 h-5 text-gray-600 transition-transform ${expandedSections.rewards ? 'rotate-180' : ''}`}
           />
@@ -130,8 +130,8 @@ export default function CardDetailsSection({
           <div className="overflow-x-auto">
             {/* Header */}
             <div className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-200 hidden md:grid md:grid-cols-[2fr_3fr] gap-6">
-              <p className="font-medium text-base text-black">Rewards Category</p>
-              <p className="font-medium text-base text-black">Description</p>
+              <p className="text-button text-black">Rewards Category</p>
+              <p className="text-button text-black">Description</p>
             </div>
             
             {/* Rows */}
@@ -146,9 +146,9 @@ export default function CardDetailsSection({
                       <div className="bg-gray-100 rounded-lg p-2 flex items-center justify-center">
                         <span className="text-lg">{row.icon}</span>
                       </div>
-                      <p className="font-medium text-base text-black">{row.category}</p>
+                      <p className="text-button text-black">{row.category}</p>
                     </div>
-                    <p className="text-base text-gray-700 leading-relaxed md:pt-2">
+                    <p className="text-body-lg text-gray-700 leading-relaxed md:pt-2">
                       {row.description}
                     </p>
                   </div>
@@ -166,7 +166,7 @@ export default function CardDetailsSection({
           className="flex items-center justify-between w-full mb-6 group"
           aria-expanded={expandedSections.fees}
         >
-          <h2 className="text-xl md:text-2xl font-semibold text-black">Fees & Charges</h2>
+          <h2 className="text-h1">Fees & Charges</h2>
           <ChevronDown 
             className={`w-5 h-5 text-gray-600 transition-transform ${expandedSections.fees ? 'rotate-180' : ''}`}
           />
@@ -179,8 +179,8 @@ export default function CardDetailsSection({
           <div className="overflow-x-auto">
             {/* Header */}
             <div className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-200 hidden md:grid md:grid-cols-2 gap-6">
-              <p className="font-medium text-base text-black">Fee type</p>
-              <p className="font-medium text-base text-black">Amount / Details</p>
+              <p className="text-button text-black">Fee type</p>
+              <p className="text-button text-black">Amount / Details</p>
             </div>
             
             {/* Rows */}
@@ -191,8 +191,8 @@ export default function CardDetailsSection({
                     key={index} 
                     className="border-b border-gray-200 pb-4 last:border-0 md:grid md:grid-cols-2 gap-6 flex flex-col"
                   >
-                    <p className="font-medium text-base text-black">{row.type}</p>
-                    <p className="text-base text-gray-700 leading-relaxed whitespace-pre-line">
+                    <p className="text-button text-black">{row.type}</p>
+                    <p className="text-body-lg text-gray-700 leading-relaxed whitespace-pre-line">
                       {row.details}
                     </p>
                   </div>

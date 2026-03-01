@@ -23,7 +23,7 @@ function TabButton({
         : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
     }`}>
       {icon}
-      <span className="font-medium text-sm whitespace-nowrap">
+      <span className="text-button whitespace-nowrap">
         {label}
       </span>
     </button>
@@ -245,7 +245,7 @@ export function CreditCard({ id, image, title, joiningFee, renewalFee, benefits,
       {/* Card Details Section */}
       <div className="flex flex-col gap-5 flex-1 w-full">
         {/* Card Title */}
-        <h3 className="font-semibold text-base text-black">
+        <h3 className="text-h3">
           {title}
         </h3>
 
@@ -254,8 +254,8 @@ export function CreditCard({ id, image, title, joiningFee, renewalFee, benefits,
           <div className="flex items-center gap-3">
             <div className="text-lg">💰</div>
             <div>
-              <p className="text-xs text-gray-500 font-medium">Joining Fee</p>
-              <p className="font-semibold text-sm text-black">{joiningFee}</p>
+              <p className="text-label text-gray-500">Joining Fee</p>
+              <p className="text-button text-black">{joiningFee}</p>
             </div>
           </div>
           
@@ -264,22 +264,22 @@ export function CreditCard({ id, image, title, joiningFee, renewalFee, benefits,
           <div className="flex items-center gap-3">
             <div className="text-lg">🔄</div>
             <div>
-              <p className="text-xs text-gray-500 font-medium">Renewal Fee</p>
-              <p className="font-semibold text-sm text-black">{renewalFee}</p>
+              <p className="text-label text-gray-500">Renewal Fee</p>
+              <p className="text-button text-black">{renewalFee}</p>
             </div>
           </div>
         </div>
 
         {/* Benefits Section */}
         <div className="flex flex-col gap-3">
-          <p className="font-semibold text-sm text-black">
+          <p className="text-h3">
             Key Benefits
           </p>
           <ul className="space-y-2.5">
             {benefits.map((benefit, index) => (
               <li key={index} className="flex items-start gap-3">
                 <span className="w-1.5 h-1.5 bg-black rounded-full mt-2 flex-shrink-0" />
-                <span className="font-normal text-sm text-gray-700 leading-relaxed">
+                <span className="text-body text-gray-700 leading-relaxed">
                   {benefit}
                 </span>
               </li>
@@ -298,7 +298,7 @@ export function CreditCard({ id, image, title, joiningFee, renewalFee, benefits,
                   className={`${style.bgColor} border ${style.borderColor} px-3 py-1.5 rounded-full flex items-center gap-1.5`}
                 >
                   <span className="text-sm">{style.icon}</span>
-                  <span className={`font-medium text-xs ${style.textColor}`}>
+                  <span className={`text-body-sm ${style.textColor}`}>
                     {category}
                   </span>
                 </div>
@@ -307,10 +307,10 @@ export function CreditCard({ id, image, title, joiningFee, renewalFee, benefits,
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-            <button className="border border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50 text-gray-700 font-medium text-sm px-6 py-3 rounded-lg transition-all w-full sm:w-auto whitespace-nowrap">
+            <button className="text-button border border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50 text-gray-700 px-6 py-3 rounded-lg transition-all w-full sm:w-auto whitespace-nowrap">
               More Details
             </button>
-            <button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold text-sm px-8 py-3 rounded-lg transition-colors w-full sm:w-auto whitespace-nowrap">
+            <button className="text-button bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3 rounded-lg transition-colors w-full sm:w-auto whitespace-nowrap">
               Apply now →
             </button>
           </div>
@@ -419,10 +419,10 @@ export default function CreditCardSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-12">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-black mb-4 leading-[1.1] tracking-tight">
+          <h2 className="text-h1 mb-4">
             Our Top Picks for You
           </h2>
-          <p className="text-base text-gray-600 max-w-2xl mx-auto">
+          <p className="text-body-lg max-w-2xl mx-auto">
             Carefully curated credit cards tailored to your lifestyle and spending habits
           </p>
         </div>

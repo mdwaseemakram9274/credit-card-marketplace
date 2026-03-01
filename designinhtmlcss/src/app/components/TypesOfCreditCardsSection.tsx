@@ -57,10 +57,10 @@ export function TypesOfCreditCardsSection() {
       <div className="relative">
         {/* Section Header */}
         <div className="mb-16">
-          <h2 className="font-semibold text-xl sm:text-2xl md:text-3xl text-black leading-tight">
+          <h2 className="text-h1">
             Types of Credit Cards
           </h2>
-          <p className="text-base text-gray-600 leading-relaxed mt-4 max-w-3xl">
+          <p className="text-body-lg leading-relaxed mt-4 max-w-3xl">
             Choose the right credit card type based on your lifestyle, spending habits, and financial goals.
           </p>
         </div>
@@ -76,16 +76,16 @@ export function TypesOfCreditCardsSection() {
                 <div className="flex-shrink-0 w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center text-base font-semibold text-black">
                   {(index + 1).toString().padStart(2, '0')}
                 </div>
-                <h3 className="text-xl font-semibold text-black leading-tight pt-1">
+                <h3 className="text-h2 pt-1">
                   {cardType.title}
                 </h3>
               </div>
-              <p className="text-base text-gray-700 leading-relaxed mb-6">
+              <p className="text-body-lg text-gray-700 leading-relaxed mb-6">
                 {cardType.description}
               </p>
               <div className="bg-white border-l-4 border-black rounded-r-lg p-3 md:p-4">
-                <p className="text-xs text-gray-500 font-semibold mb-1">BEST FOR</p>
-                <p className="text-sm text-gray-900 font-medium">{cardType.bestFor}</p>
+                <p className="text-label text-gray-500 mb-1">BEST FOR</p>
+                <p className="text-body text-gray-900">{cardType.bestFor}</p>
               </div>
             </article>
           ))}

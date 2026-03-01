@@ -238,7 +238,7 @@ export default function AdminPage() {
             <div className="bg-white p-1.5 rounded">
               <CreditCard className="w-5 h-5 text-blue-600" />
             </div>
-            <span className="font-bold text-base">Card Admin</span>
+            <span className="text-body-lg">Card Admin</span>
           </div>
         </div>
 
@@ -246,7 +246,7 @@ export default function AdminPage() {
         <nav className="flex-1 p-3 space-y-1">
           <button
             onClick={() => setActiveTab('dashboard')}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-button transition-colors ${
               activeTab === 'dashboard'
                 ? 'bg-blue-700 text-white'
                 : 'text-blue-100 hover:bg-blue-700 hover:text-white'
@@ -257,7 +257,7 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab('add-card')}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-button transition-colors ${
               activeTab === 'add-card'
                 ? 'bg-blue-700 text-white'
                 : 'text-blue-100 hover:bg-blue-700 hover:text-white'
@@ -268,7 +268,7 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab('banks')}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-button transition-colors ${
               activeTab === 'banks'
                 ? 'bg-blue-700 text-white'
                 : 'text-blue-100 hover:bg-blue-700 hover:text-white'
@@ -281,7 +281,7 @@ export default function AdminPage() {
           {/* Back to Website Link */}
           <Link
             to="/"
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-blue-100 hover:bg-blue-700 hover:text-white transition-colors mt-4 border-t border-blue-500 pt-4"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-button text-blue-100 hover:bg-blue-700 hover:text-white transition-colors mt-4 border-t border-blue-500 pt-4"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Website
@@ -290,9 +290,9 @@ export default function AdminPage() {
 
         {/* Footer */}
         <div className="p-4 border-t border-blue-500">
-          <div className="text-xs">
-            <div className="font-semibold">Admin Workspace</div>
-            <div className="text-blue-200 mt-0.5">Credit Card CRM Panel</div>
+          <div className="text-label">
+            <div className="text-body-sm">Admin Workspace</div>
+            <div className="text-blue-200 mt-0.5 text-label">Credit Card CRM Panel</div>
           </div>
         </div>
       </aside>
@@ -309,7 +309,7 @@ export default function AdminPage() {
                 placeholder="Search cards, banks, fees..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -319,7 +319,7 @@ export default function AdminPage() {
             </button>
             <button
               onClick={isAuthenticated ? handleAdminLogout : undefined}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-button hover:bg-blue-700 transition-colors"
             >
               <span>{isAuthenticated ? 'Logout Admin' : 'Admin Login'}</span>
               <ChevronDown className="w-4 h-4" />
@@ -435,35 +435,35 @@ function AdminLoginPanel({
   return (
     <div className="min-h-full flex items-center justify-center">
       <div className="w-full max-w-md bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Admin Login</h2>
-        <p className="text-sm text-gray-600 mb-6">Sign in to manage cards, banks, and metadata.</p>
+        <h2 className="text-h2 text-gray-900 mb-2">Admin Login</h2>
+        <p className="text-body text-gray-600 mb-6">Sign in to manage cards, banks, and metadata.</p>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+            <label className="block text-label text-gray-700 mb-2">Email</label>
             <input
               type="email"
               value={email}
               onChange={(event) => onEmailChange(event.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="admin@example.com"
             />
-            {emailError ? <p className="text-xs text-red-600 mt-1">{emailError}</p> : null}
+            {emailError ? <p className="text-label text-red-600 mt-1">{emailError}</p> : null}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+            <label className="block text-label text-gray-700 mb-2">Password</label>
             <input
               type="password"
               value={password}
               onChange={(event) => onPasswordChange(event.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="••••••••"
             />
-            {passwordError ? <p className="text-xs text-red-600 mt-1">{passwordError}</p> : null}
+            {passwordError ? <p className="text-label text-red-600 mt-1">{passwordError}</p> : null}
           </div>
 
-          <label className="flex items-center gap-2 text-sm text-gray-700">
+          <label className="flex items-center gap-2 text-body-sm text-gray-700">
             <input
               type="checkbox"
               checked={rememberMe}
@@ -473,12 +473,12 @@ function AdminLoginPanel({
             Remember me
           </label>
 
-          {error ? <p className="text-sm text-red-600">{error}</p> : null}
+          {error ? <p className="text-body-sm text-red-600">{error}</p> : null}
 
           <button
             onClick={onSubmit}
             disabled={loading}
-            className="w-full px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-60"
+            className="w-full px-4 py-2.5 bg-blue-600 text-white rounded-lg text-button hover:bg-blue-700 transition-colors disabled:opacity-60"
           >
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
@@ -523,19 +523,19 @@ function DashboardContent({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <LayoutDashboard className="w-5 h-5 text-blue-600" />
-          <h1 className="text-xl font-bold text-gray-900">Dashboard - Cards List</h1>
+          <h1 className="text-h2 text-gray-900">Dashboard - Cards List</h1>
         </div>
-        <div className="text-sm text-gray-500">Stored in Supabase</div>
+        <div className="text-body-sm text-gray-500">Stored in Supabase</div>
       </div>
 
       {/* Filters */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Bank</label>
+          <label className="block text-label text-gray-700 mb-2">Filter by Bank</label>
           <select
             value={filterBank}
             onChange={(e) => setFilterBank(e.target.value)}
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             {uniqueBanks.map(bank => (
               <option key={bank} value={bank}>{bank}</option>
@@ -543,11 +543,11 @@ function DashboardContent({
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Joining Fee</label>
+          <label className="block text-label text-gray-700 mb-2">Filter by Joining Fee</label>
           <select
             value={filterFee}
             onChange={(e) => setFilterFee(e.target.value)}
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="All">All</option>
             <option value="Free">Free</option>
@@ -555,11 +555,11 @@ function DashboardContent({
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Status</label>
+          <label className="block text-label text-gray-700 mb-2">Filter by Status</label>
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="All Status">All Status</option>
             <option value="Enabled">Enabled</option>
@@ -575,14 +575,14 @@ function DashboardContent({
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Image</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Bank</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Card Name</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Joining Fee</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Annual Fee</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Card Type</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                <th className="px-4 py-3 text-left text-label text-gray-600 uppercase tracking-wider">Image</th>
+                <th className="px-4 py-3 text-left text-label text-gray-600 uppercase tracking-wider">Bank</th>
+                <th className="px-4 py-3 text-left text-label text-gray-600 uppercase tracking-wider">Card Name</th>
+                <th className="px-4 py-3 text-left text-label text-gray-600 uppercase tracking-wider">Joining Fee</th>
+                <th className="px-4 py-3 text-left text-label text-gray-600 uppercase tracking-wider">Annual Fee</th>
+                <th className="px-4 py-3 text-left text-label text-gray-600 uppercase tracking-wider">Card Type</th>
+                <th className="px-4 py-3 text-left text-label text-gray-600 uppercase tracking-wider">Status</th>
+                <th className="px-4 py-3 text-left text-label text-gray-600 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -604,13 +604,13 @@ function DashboardContent({
                       );
                     })()}
                   </td>
-                  <td className="px-4 py-4 text-sm font-medium text-gray-900">{card.bank}</td>
-                  <td className="px-4 py-4 text-sm text-gray-900">{card.cardName}</td>
-                  <td className="px-4 py-4 text-sm text-gray-700">{card.joiningFeeDisplay}</td>
-                  <td className="px-4 py-4 text-sm text-gray-700">{card.annualFeeDisplay}</td>
-                  <td className="px-4 py-4 text-sm text-gray-700">{card.cardType}</td>
+                  <td className="px-4 py-4 text-body text-gray-900">{card.bank}</td>
+                  <td className="px-4 py-4 text-body text-gray-900">{card.cardName}</td>
+                  <td className="px-4 py-4 text-body text-gray-700">{card.joiningFeeDisplay}</td>
+                  <td className="px-4 py-4 text-body text-gray-700">{card.annualFeeDisplay}</td>
+                  <td className="px-4 py-4 text-body text-gray-700">{card.cardType}</td>
                   <td className="px-4 py-4">
-                    <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${
+                    <span className={`inline-flex px-2.5 py-1 rounded-full text-label ${
                       card.status === 'Enabled' 
                         ? 'bg-green-100 text-green-800' 
                         : card.status === 'Disabled'
@@ -651,7 +651,7 @@ function DashboardContent({
       </div>
 
       {/* Results count */}
-      <div className="text-sm text-gray-600">
+      <div className="text-body-sm text-gray-600">
         {isLoading ? 'Loading cards...' : `Showing ${filteredCards.length} of ${totalCards} cards`}
       </div>
     </div>
@@ -1044,7 +1044,7 @@ function AddCardContent({
       {/* Header */}
       <div className="flex items-center gap-2">
         <Plus className="w-5 h-5 text-blue-600" />
-        <h1 className="text-xl font-bold text-gray-900">Add / Edit Card</h1>
+        <h1 className="text-h2 text-gray-900">Add / Edit Card</h1>
       </div>
 
       {/* Form Sections */}
@@ -1055,7 +1055,7 @@ function AddCardContent({
               onClick={() => setOpenSection(openSection === section.id ? null : section.id)}
               className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors"
             >
-              <span className="text-sm font-medium text-gray-900">{section.title}</span>
+              <span className="text-label text-gray-900">{section.title}</span>
               <ChevronDown 
                 className={`w-5 h-5 text-gray-500 transition-transform ${
                   openSection === section.id ? 'rotate-180' : ''
@@ -1089,7 +1089,7 @@ function AddCardContent({
           onClick={() => handleSave('publish')}
           disabled={isSaving || !canPublish}
           title={!canPublish ? 'Fill required publish fields first' : undefined}
-          className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg text-button hover:bg-blue-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
         >
           <Save className="w-4 h-4" />
           {isSaving ? 'Saving...' : 'Save & Publish'}
@@ -1097,14 +1097,14 @@ function AddCardContent({
         <button
           onClick={() => handleSave('draft')}
           disabled={isSaving}
-          className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-yellow-400 text-yellow-700 rounded-lg font-medium hover:bg-yellow-50 transition-colors disabled:opacity-60"
+          className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-yellow-400 text-yellow-700 rounded-lg text-button hover:bg-yellow-50 transition-colors disabled:opacity-60"
         >
           <FileText className="w-4 h-4" />
           Save as Draft
         </button>
         <button 
           onClick={() => setShowPreview(true)}
-          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-medium hover:from-purple-700 hover:to-blue-700 transition-colors"
+          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg text-button hover:from-purple-700 hover:to-blue-700 transition-colors"
         >
           <Eye className="w-4 h-4" />
           Preview Card
@@ -1158,7 +1158,7 @@ function AddCardContent({
             });
             setFormErrors({});
           }}
-          className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+          className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg text-button hover:bg-gray-50 transition-colors"
         >
           <RotateCcw className="w-4 h-4" />
           Reset
@@ -1171,8 +1171,8 @@ function AddCardContent({
           <div className="bg-gray-50 rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-auto">
             <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Card Preview</h3>
-                <p className="text-sm text-gray-500 mt-0.5">This is how your card will appear on the website</p>
+                <h3 className="text-h3 text-gray-900">Card Preview</h3>
+                <p className="text-body-sm text-gray-500 mt-0.5">This is how your card will appear on the website</p>
               </div>
               <button 
                 onClick={() => setShowPreview(false)}
@@ -1205,8 +1205,8 @@ function AddCardContent({
           </svg>
         </div>
         <div className="flex-1">
-          <h4 className="text-sm font-semibold text-blue-900 mb-1">💡 Draft Mode</h4>
-          <p className="text-sm text-blue-700">
+          <h4 className="text-body-sm text-blue-900 mb-1">💡 Draft Mode</h4>
+          <p className="text-body-sm text-blue-700">
             Click <strong>"Save as Draft"</strong> to save your partially completed form and come back later. Drafts won't appear on the public website until you click <strong>"Save & Publish"</strong>.
           </p>
         </div>
@@ -1253,7 +1253,7 @@ function FormSection({ sectionId, cardTypes, cardTypeOptions, cardNetworks, bank
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Card Name *</label>
+            <label className="block text-label text-gray-700 mb-2">Card Name *</label>
             <input
               type="text"
               placeholder="e.g., HDFC Regalia Credit Card"
@@ -1262,40 +1262,40 @@ function FormSection({ sectionId, cardTypes, cardTypeOptions, cardNetworks, bank
                 setFormData({ ...formData, cardName: e.target.value });
                 if (formErrors.cardName) setFormErrors((prev) => ({ ...prev, cardName: '' }));
               }}
-              className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.cardName ? 'border-red-400' : 'border-gray-300'}`}
+              className={`w-full px-4 py-2.5 border rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.cardName ? 'border-red-400' : 'border-gray-300'}`}
             />
-            {formErrors.cardName ? <p className="text-xs text-red-600 mt-1">{formErrors.cardName}</p> : null}
+            {formErrors.cardName ? <p className="text-label text-red-600 mt-1">{formErrors.cardName}</p> : null}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Bank / Issuer *</label>
+            <label className="block text-label text-gray-700 mb-2">Bank / Issuer *</label>
             <select 
               value={formData.bank}
               onChange={(e) => {
                 setFormData({ ...formData, bank: e.target.value });
                 if (formErrors.bank) setFormErrors((prev) => ({ ...prev, bank: '' }));
               }}
-              className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.bank ? 'border-red-400' : 'border-gray-300'}`}
+              className={`w-full px-4 py-2.5 border rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.bank ? 'border-red-400' : 'border-gray-300'}`}
             >
               <option value="">Select Bank</option>
               {banks.map((bank) => (
                 <option key={bank.id} value={bank.name}>{bank.name}</option>
               ))}
             </select>
-            {formErrors.bank ? <p className="text-xs text-red-600 mt-1">{formErrors.bank}</p> : null}
+            {formErrors.bank ? <p className="text-label text-red-600 mt-1">{formErrors.bank}</p> : null}
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Card Description</label>
+          <label className="block text-label text-gray-700 mb-2">Card Description</label>
           <textarea
             rows={4}
             placeholder="Describe the card's main features and benefits..."
             value={formData.cardDescription}
             onChange={(e) => setFormData({ ...formData, cardDescription: e.target.value })}
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Card Image URL</label>
+          <label className="block text-label text-gray-700 mb-2">Card Image URL</label>
           <input
             type="text"
             placeholder="https://..."
@@ -1303,9 +1303,9 @@ function FormSection({ sectionId, cardTypes, cardTypeOptions, cardNetworks, bank
             onChange={(e) => {
               setFormData({ ...formData, cardImageUrl: e.target.value, cardImage: e.target.value || formData.cardImage });
             }}
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3"
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3"
           />
-          <label className="block text-sm font-medium text-gray-700 mb-2">Card Image Upload (optional, not persisted yet)</label>
+          <label className="block text-label text-gray-700 mb-2">Card Image Upload (optional, not persisted yet)</label>
           <input
             type="file"
             accept="image/*"
@@ -1316,17 +1316,17 @@ function FormSection({ sectionId, cardTypes, cardTypeOptions, cardNetworks, bank
               e.currentTarget.value = '';
             }}
             disabled={isUploadingImage}
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          {isUploadingImage ? <p className="text-xs text-blue-600 mt-1">Uploading image...</p> : null}
+          {isUploadingImage ? <p className="text-label text-blue-600 mt-1">Uploading image...</p> : null}
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">Card Orientation *</label>
+          <label className="block text-label text-gray-700 mb-3">Card Orientation *</label>
           <div className="flex gap-3">
             <button
               type="button"
               onClick={() => setFormData({ ...formData, cardOrientation: 'horizontal' })}
-              className={`flex-1 flex items-center justify-center gap-3 px-6 py-4 rounded-lg text-sm font-medium transition-all border-2 ${
+              className={`flex-1 flex items-center justify-center gap-3 px-6 py-4 rounded-lg text-button transition-all border-2 ${
                 formData.cardOrientation === 'horizontal'
                   ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
                   : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400 hover:bg-gray-50'
@@ -1345,7 +1345,7 @@ function FormSection({ sectionId, cardTypes, cardTypeOptions, cardNetworks, bank
             <button
               type="button"
               onClick={() => setFormData({ ...formData, cardOrientation: 'vertical' })}
-              className={`flex-1 flex items-center justify-center gap-3 px-6 py-4 rounded-lg text-sm font-medium transition-all border-2 ${
+              className={`flex-1 flex items-center justify-center gap-3 px-6 py-4 rounded-lg text-button transition-all border-2 ${
                 formData.cardOrientation === 'vertical'
                   ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
                   : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400 hover:bg-gray-50'
@@ -1364,7 +1364,7 @@ function FormSection({ sectionId, cardTypes, cardTypeOptions, cardNetworks, bank
         </div>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Card Type *</label>
+            <label className="block text-label text-gray-700 mb-3">Card Type *</label>
             <div className="flex flex-wrap gap-2">
               {cardTypeEntries.map((type) => {
                 const isSelected = formData.categories.includes(type.name);
@@ -1374,7 +1374,7 @@ function FormSection({ sectionId, cardTypes, cardTypeOptions, cardNetworks, bank
                     key={type.name}
                     type="button"
                     onClick={() => toggleCardType(type.name, !isSelected)}
-                    className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                    className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-button transition-all ${
                       isSelected
                         ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
@@ -1386,11 +1386,11 @@ function FormSection({ sectionId, cardTypes, cardTypeOptions, cardNetworks, bank
                 );
               })}
             </div>
-            {formErrors.cardType ? <p className="text-xs text-red-600 mt-1">{formErrors.cardType}</p> : null}
+            {formErrors.cardType ? <p className="text-label text-red-600 mt-1">{formErrors.cardType}</p> : null}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Network *</label>
+            <label className="block text-label text-gray-700 mb-3">Network *</label>
             <div className="flex flex-wrap gap-2">
               {cardNetworks.map((network) => {
                 const isSelected = formData.network === network;
@@ -1403,7 +1403,7 @@ function FormSection({ sectionId, cardTypes, cardTypeOptions, cardNetworks, bank
                       setFormData({ ...formData, network });
                       if (formErrors.network) setFormErrors((prev) => ({ ...prev, network: '' }));
                     }}
-                    className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                    className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-button transition-all ${
                       isSelected
                         ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
@@ -1414,15 +1414,15 @@ function FormSection({ sectionId, cardTypes, cardTypeOptions, cardNetworks, bank
                 );
               })}
             </div>
-            {formErrors.network ? <p className="text-xs text-red-600 mt-1">{formErrors.network}</p> : null}
+            {formErrors.network ? <p className="text-label text-red-600 mt-1">{formErrors.network}</p> : null}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Status *</label>
+            <label className="block text-label text-gray-700 mb-2">Status *</label>
             <select
               value={formData.status}
               onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option>Enabled</option>
               <option>Disabled</option>
@@ -1450,23 +1450,23 @@ function FormSection({ sectionId, cardTypes, cardTypeOptions, cardNetworks, bank
     return (
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Special Perks (One per line)</label>
+          <label className="block text-label text-gray-700 mb-2">Special Perks (One per line)</label>
           <textarea
             rows={5}
             placeholder="Enter each perk on a new line..."
             value={formData.specialPerksText}
             onChange={(e) => setFormData({ ...formData, specialPerksText: e.target.value })}
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Offers (One per line)</label>
+          <label className="block text-label text-gray-700 mb-2">Offers (One per line)</label>
           <textarea
             rows={5}
             placeholder="Enter each offer on a new line..."
             value={formData.offersText}
             onChange={(e) => setFormData({ ...formData, offersText: e.target.value })}
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
@@ -1477,13 +1477,13 @@ function FormSection({ sectionId, cardTypes, cardTypeOptions, cardNetworks, bank
     return (
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Eligibility Criteria (One per line)</label>
+          <label className="block text-label text-gray-700 mb-2">Eligibility Criteria (One per line)</label>
           <textarea
             rows={5}
             placeholder="Enter each criterion on a new line..."
             value={formData.eligibilityCriteriaText}
             onChange={(e) => setFormData({ ...formData, eligibilityCriteriaText: e.target.value })}
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
@@ -1494,23 +1494,23 @@ function FormSection({ sectionId, cardTypes, cardTypeOptions, cardNetworks, bank
     return (
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Pros (One per line)</label>
+          <label className="block text-label text-gray-700 mb-2">Pros (One per line)</label>
           <textarea
             rows={5}
             placeholder="Enter each pro on a new line..."
             value={formData.prosText}
             onChange={(e) => setFormData({ ...formData, prosText: e.target.value })}
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Cons (One per line)</label>
+          <label className="block text-label text-gray-700 mb-2">Cons (One per line)</label>
           <textarea
             rows={5}
             placeholder="Enter each con on a new line..."
             value={formData.consText}
             onChange={(e) => setFormData({ ...formData, consText: e.target.value })}
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
@@ -1557,15 +1557,15 @@ function FeesSection({ formData, setFormData, formErrors, setFormErrors }: { for
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-300">Fee Type</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-300">Amount</th>
+                <th className="px-4 py-3 text-left text-label text-gray-600 uppercase tracking-wider border-b border-gray-300">Fee Type</th>
+                <th className="px-4 py-3 text-left text-label text-gray-600 uppercase tracking-wider border-b border-gray-300">Amount</th>
                 <th className="px-4 py-3 w-16 border-b border-gray-300"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
               {/* Primary Fees */}
               <tr>
-                <td className="px-4 py-3 text-sm font-medium text-gray-700">Joining Fee *</td>
+                <td className="px-4 py-3 text-body-sm text-gray-700">Joining Fee *</td>
                 <td className="px-4 py-3">
                   <input
                     type="text"
@@ -1575,14 +1575,14 @@ function FeesSection({ formData, setFormData, formErrors, setFormErrors }: { for
                       setFormData({ ...formData, joiningFee: e.target.value });
                       if (formErrors.joiningFee) setFormErrors((prev) => ({ ...prev, joiningFee: '' }));
                     }}
-                    className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.joiningFee ? 'border-red-400' : 'border-gray-300'}`}
+                    className={`w-full px-3 py-2 border rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.joiningFee ? 'border-red-400' : 'border-gray-300'}`}
                   />
-                  {formErrors.joiningFee ? <p className="text-xs text-red-600 mt-1">{formErrors.joiningFee}</p> : null}
+                  {formErrors.joiningFee ? <p className="text-label text-red-600 mt-1">{formErrors.joiningFee}</p> : null}
                 </td>
                 <td className="px-4 py-3"></td>
               </tr>
               <tr>
-                <td className="px-4 py-3 text-sm font-medium text-gray-700">Annual Fee *</td>
+                <td className="px-4 py-3 text-body-sm text-gray-700">Annual Fee *</td>
                 <td className="px-4 py-3">
                   <input
                     type="text"
@@ -1592,21 +1592,21 @@ function FeesSection({ formData, setFormData, formErrors, setFormErrors }: { for
                       setFormData({ ...formData, renewalFee: e.target.value });
                       if (formErrors.renewalFee) setFormErrors((prev) => ({ ...prev, renewalFee: '' }));
                     }}
-                    className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.renewalFee ? 'border-red-400' : 'border-gray-300'}`}
+                    className={`w-full px-3 py-2 border rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.renewalFee ? 'border-red-400' : 'border-gray-300'}`}
                   />
-                  {formErrors.renewalFee ? <p className="text-xs text-red-600 mt-1">{formErrors.renewalFee}</p> : null}
+                  {formErrors.renewalFee ? <p className="text-label text-red-600 mt-1">{formErrors.renewalFee}</p> : null}
                 </td>
                 <td className="px-4 py-3"></td>
               </tr>
               <tr>
-                <td className="px-4 py-3 text-sm font-medium text-gray-700">Interest Rate (APR)</td>
+                <td className="px-4 py-3 text-body-sm text-gray-700">Interest Rate (APR)</td>
                 <td className="px-4 py-3">
                   <input
                     type="text"
                     placeholder="e.g., 3.5% per month"
                     value={formData.interestRate}
                     onChange={(e) => setFormData({ ...formData, interestRate: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </td>
                 <td className="px-4 py-3"></td>
@@ -1614,79 +1614,79 @@ function FeesSection({ formData, setFormData, formErrors, setFormErrors }: { for
               
               {/* Other Standard Fees */}
               <tr>
-                <td className="px-4 py-3 text-sm font-medium text-gray-700">Late Payment Fee</td>
+                <td className="px-4 py-3 text-body-sm text-gray-700">Late Payment Fee</td>
                 <td className="px-4 py-3">
                   <input
                     type="text"
                     placeholder="e.g., ₹500"
                     value={formData.latePaymentFee}
                     onChange={(e) => setFormData({ ...formData, latePaymentFee: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </td>
                 <td className="px-4 py-3"></td>
               </tr>
               <tr>
-                <td className="px-4 py-3 text-sm font-medium text-gray-700">Overlimit Fee</td>
+                <td className="px-4 py-3 text-body-sm text-gray-700">Overlimit Fee</td>
                 <td className="px-4 py-3">
                   <input
                     type="text"
                     placeholder="e.g., ₹600"
                     value={formData.overlimitFee}
                     onChange={(e) => setFormData({ ...formData, overlimitFee: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </td>
                 <td className="px-4 py-3"></td>
               </tr>
               <tr>
-                <td className="px-4 py-3 text-sm font-medium text-gray-700">Cash Advance Fee</td>
+                <td className="px-4 py-3 text-body-sm text-gray-700">Cash Advance Fee</td>
                 <td className="px-4 py-3">
                   <input
                     type="text"
                     placeholder="e.g., 2.5% or ₹300 (whichever is higher)"
                     value={formData.cashAdvanceFee}
                     onChange={(e) => setFormData({ ...formData, cashAdvanceFee: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </td>
                 <td className="px-4 py-3"></td>
               </tr>
               <tr>
-                <td className="px-4 py-3 text-sm font-medium text-gray-700">Foreign Transaction Fee</td>
+                <td className="px-4 py-3 text-body-sm text-gray-700">Foreign Transaction Fee</td>
                 <td className="px-4 py-3">
                   <input
                     type="text"
                     placeholder="e.g., 3.5% + GST"
                     value={formData.foreignTransactionFee}
                     onChange={(e) => setFormData({ ...formData, foreignTransactionFee: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </td>
                 <td className="px-4 py-3"></td>
               </tr>
               <tr>
-                <td className="px-4 py-3 text-sm font-medium text-gray-700">Returned Payment Fee</td>
+                <td className="px-4 py-3 text-body-sm text-gray-700">Returned Payment Fee</td>
                 <td className="px-4 py-3">
                   <input
                     type="text"
                     placeholder="e.g., ₹450"
                     value={formData.returnedPaymentFee}
                     onChange={(e) => setFormData({ ...formData, returnedPaymentFee: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </td>
                 <td className="px-4 py-3"></td>
               </tr>
               <tr>
-                <td className="px-4 py-3 text-sm font-medium text-gray-700">Card Replacement Fee</td>
+                <td className="px-4 py-3 text-body-sm text-gray-700">Card Replacement Fee</td>
                 <td className="px-4 py-3">
                   <input
                     type="text"
                     placeholder="e.g., ₹100"
                     value={formData.cardReplacementFee}
                     onChange={(e) => setFormData({ ...formData, cardReplacementFee: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </td>
                 <td className="px-4 py-3"></td>
@@ -1701,7 +1701,7 @@ function FeesSection({ formData, setFormData, formErrors, setFormErrors }: { for
                       placeholder="Fee Type (e.g., Add-on Card Fee)"
                       value={fee.feeType}
                       onChange={(e) => updateCustomFee(fee.id, 'feeType', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </td>
                   <td className="px-4 py-3">
@@ -1710,7 +1710,7 @@ function FeesSection({ formData, setFormData, formErrors, setFormErrors }: { for
                       placeholder="Amount"
                       value={fee.amount}
                       onChange={(e) => updateCustomFee(fee.id, 'amount', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </td>
                   <td className="px-4 py-3 text-center">
@@ -1731,7 +1731,7 @@ function FeesSection({ formData, setFormData, formErrors, setFormErrors }: { for
         {/* Add Custom Fee Button */}
         <button
           onClick={addCustomFee}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 mt-3 bg-blue-50 border-2 border-dashed border-blue-300 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 mt-3 bg-blue-50 border-2 border-dashed border-blue-300 text-blue-600 rounded-lg text-button hover:bg-blue-100 transition-colors"
         >
           <Plus className="w-4 h-4" />
           Add Custom Fee Type
@@ -1740,13 +1740,13 @@ function FeesSection({ formData, setFormData, formErrors, setFormErrors }: { for
       
       {/* Fee Waiver Conditions */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Fee Waiver Conditions</label>
+        <label className="block text-label text-gray-700 mb-2">Fee Waiver Conditions</label>
         <textarea
           rows={3}
           placeholder="Describe conditions to waive joining/annual fees..."
           value={formData.feeWaiverConditions}
           onChange={(e) => setFormData({ ...formData, feeWaiverConditions: e.target.value })}
-          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
     </div>
@@ -1811,26 +1811,26 @@ function RewardsSection({ formData, setFormData }: { formData: any; setFormData:
     <div className="space-y-6">
       {/* Basic Reward Info */}
       <div className="pb-4 border-b border-gray-200">
-        <h3 className="text-sm font-semibold text-gray-900 mb-4">Basic Reward Information</h3>
+        <h3 className="text-body-sm text-gray-900 mb-4">Basic Reward Information</h3>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Reward Program Name</label>
+            <label className="block text-label text-gray-700 mb-2">Reward Program Name</label>
             <input
               type="text"
               placeholder="e.g., HDFC RewardZ Points"
               value={formData.rewardProgramName}
               onChange={(e) => setFormData({ ...formData, rewardProgramName: e.target.value })}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Welcome Bonus</label>
+            <label className="block text-label text-gray-700 mb-2">Welcome Bonus</label>
             <input
               type="text"
               placeholder="e.g., 5,000 bonus points on first purchase"
               value={formData.welcomeBonus}
               onChange={(e) => setFormData({ ...formData, welcomeBonus: e.target.value })}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
@@ -1838,33 +1838,33 @@ function RewardsSection({ formData, setFormData }: { formData: any; setFormData:
       
       {/* Key Benefits for Card Preview */}
       <div className="pb-4 border-b border-gray-200">
-        <h3 className="text-sm font-semibold text-gray-900 mb-2">Key Benefits (For Card Preview)</h3>
-        <p className="text-xs text-gray-500 mb-4">These benefits will appear on the card listing. One benefit per line.</p>
+        <h3 className="text-body-sm text-gray-900 mb-2">Key Benefits (For Card Preview)</h3>
+        <p className="text-label text-gray-500 mb-4">These benefits will appear on the card listing. One benefit per line.</p>
         <textarea
           rows={5}
           value={formData.benefits.join('\n')}
           onChange={(e) => setFormData({ ...formData, benefits: e.target.value.split('\n').filter((b: string) => b.trim()) })}
           placeholder="Enter each benefit on a new line&#10;e.g., Welcome bonus of 5,000 reward points&#10;Complimentary airport lounge access&#10;Fuel surcharge waiver"
-          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
         />
       </div>
 
       {/* Structured Rewards & Benefits Table */}
       <div>
-        <h3 className="text-sm font-semibold text-gray-900 mb-4">Rewards & Benefits Details (As shown in table)</h3>
+        <h3 className="text-body-sm text-gray-900 mb-4">Rewards & Benefits Details (As shown in table)</h3>
         <div className="space-y-4">
           {/* Rewards Rate */}
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-lg">🎁</span>
-              <label className="text-sm font-medium text-gray-900">Rewards Rate</label>
+              <label className="text-label text-gray-900">Rewards Rate</label>
             </div>
             <input
               type="text"
               placeholder="e.g., 4 points per ₹150 spent — save up to 1.3% on every transaction"
               value={formData.rewardsRate}
               onChange={(e) => setFormData({ ...formData, rewardsRate: e.target.value })}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -1872,14 +1872,14 @@ function RewardsSection({ formData, setFormData }: { formData: any; setFormData:
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-lg">💳</span>
-              <label className="text-sm font-medium text-gray-900">Reward Redemption</label>
+              <label className="text-label text-gray-900">Reward Redemption</label>
             </div>
             <textarea
               rows={3}
               placeholder="e.g., You can redeem reward points for air tickets and AirMiles (1 RP = 0.50 Air Mile) on select airlines..."
               value={formData.rewardRedemption}
               onChange={(e) => setFormData({ ...formData, rewardRedemption: e.target.value })}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -1887,14 +1887,14 @@ function RewardsSection({ formData, setFormData }: { formData: any; setFormData:
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-lg">✈️</span>
-              <label className="text-sm font-medium text-gray-900">International Lounge Access</label>
+              <label className="text-label text-gray-900">International Lounge Access</label>
             </div>
             <input
               type="text"
               placeholder="e.g., 6 complimentary visits per year or N/A"
               value={formData.internationalLoungeAccess}
               onChange={(e) => setFormData({ ...formData, internationalLoungeAccess: e.target.value })}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -1902,14 +1902,14 @@ function RewardsSection({ formData, setFormData }: { formData: any; setFormData:
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-lg">🛋️</span>
-              <label className="text-sm font-medium text-gray-900">Domestic Lounge Access</label>
+              <label className="text-label text-gray-900">Domestic Lounge Access</label>
             </div>
             <input
               type="text"
               placeholder="e.g., 6 complimentary visits per year or N/A"
               value={formData.domesticLoungeAccess}
               onChange={(e) => setFormData({ ...formData, domesticLoungeAccess: e.target.value })}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -1917,14 +1917,14 @@ function RewardsSection({ formData, setFormData }: { formData: any; setFormData:
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-lg">🛡️</span>
-              <label className="text-sm font-medium text-gray-900">Insurance Benefits</label>
+              <label className="text-label text-gray-900">Insurance Benefits</label>
             </div>
             <textarea
               rows={2}
               placeholder="e.g., Air accident cover of ₹1 Cr + medical and baggage insurance"
               value={formData.insuranceBenefits}
               onChange={(e) => setFormData({ ...formData, insuranceBenefits: e.target.value })}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -1932,14 +1932,14 @@ function RewardsSection({ formData, setFormData }: { formData: any; setFormData:
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-lg">🌍</span>
-              <label className="text-sm font-medium text-gray-900">Travel Benefits</label>
+              <label className="text-label text-gray-900">Travel Benefits</label>
             </div>
             <textarea
               rows={2}
               placeholder="e.g., Access to 1,000+ global lounges + bonus points on bookings"
               value={formData.travelBenefits}
               onChange={(e) => setFormData({ ...formData, travelBenefits: e.target.value })}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -1947,14 +1947,14 @@ function RewardsSection({ formData, setFormData }: { formData: any; setFormData:
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-lg">🎬</span>
-              <label className="text-sm font-medium text-gray-900">Movie & Dining</label>
+              <label className="text-label text-gray-900">Movie & Dining</label>
             </div>
             <input
               type="text"
               placeholder="e.g., Buy 1 Get 1 free on movie tickets or N/A"
               value={formData.movieDiningBenefits}
               onChange={(e) => setFormData({ ...formData, movieDiningBenefits: e.target.value })}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -1962,14 +1962,14 @@ function RewardsSection({ formData, setFormData }: { formData: any; setFormData:
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-lg">⛳</span>
-              <label className="text-sm font-medium text-gray-900">Golf Benefits</label>
+              <label className="text-label text-gray-900">Golf Benefits</label>
             </div>
             <input
               type="text"
               placeholder="e.g., Complimentary golf sessions at select courses or N/A"
               value={formData.golfBenefits}
               onChange={(e) => setFormData({ ...formData, golfBenefits: e.target.value })}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -1992,7 +1992,7 @@ function RewardsSection({ formData, setFormData }: { formData: any; setFormData:
                     placeholder="Benefit Category Name (e.g., Fuel Benefits)"
                     value={benefit.category}
                     onChange={(e) => updateCustomBenefit(benefit.id, 'category', e.target.value)}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <button
@@ -2008,7 +2008,7 @@ function RewardsSection({ formData, setFormData }: { formData: any; setFormData:
                 placeholder="Description of this benefit..."
                 value={benefit.description}
                 onChange={(e) => updateCustomBenefit(benefit.id, 'description', e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           ))}
@@ -2016,7 +2016,7 @@ function RewardsSection({ formData, setFormData }: { formData: any; setFormData:
           {/* Add Custom Benefit Button */}
           <button
             onClick={addCustomBenefit}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-50 border-2 border-dashed border-blue-300 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-50 border-2 border-dashed border-blue-300 text-blue-600 rounded-lg text-button hover:bg-blue-100 transition-colors"
           >
             <Plus className="w-4 h-4" />
             Add Custom Benefit / Reward
@@ -2026,15 +2026,15 @@ function RewardsSection({ formData, setFormData }: { formData: any; setFormData:
 
       {/* Cashback Rate (Additional) */}
       <div className="pt-4 border-t border-gray-200">
-        <h3 className="text-sm font-semibold text-gray-900 mb-4">Additional Benefits</h3>
+        <h3 className="text-body-sm text-gray-900 mb-4">Additional Benefits</h3>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Cashback Rate</label>
+          <label className="block text-label text-gray-700 mb-2">Cashback Rate</label>
           <input
             type="text"
             placeholder="e.g., 5% on online purchases, 2% on offline"
             value={formData.cashbackRate}
             onChange={(e) => setFormData({ ...formData, cashbackRate: e.target.value })}
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
@@ -2250,16 +2250,16 @@ function BanksManagementContent({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Building2 className="w-5 h-5 text-blue-600" />
-          <h1 className="text-xl font-bold text-gray-900">Banks Management</h1>
+          <h1 className="text-h2 text-gray-900">Banks Management</h1>
         </div>
-        <div className="text-sm text-gray-500">Stored in Supabase</div>
+        <div className="text-body-sm text-gray-500">Stored in Supabase</div>
       </div>
 
       {/* Add Bank Button */}
       <div className="flex items-center gap-3">
         <button 
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+          className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg text-button hover:bg-blue-700 transition-colors"
         >
           <Plus className="w-4 h-4" />
           Add Bank
@@ -2272,17 +2272,17 @@ function BanksManagementContent({
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Bank Name</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                <th className="px-4 py-3 text-left text-label text-gray-600 uppercase tracking-wider">Bank Name</th>
+                <th className="px-4 py-3 text-left text-label text-gray-600 uppercase tracking-wider">Status</th>
+                <th className="px-4 py-3 text-left text-label text-gray-600 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {banks.map((bank) => (
                 <tr key={bank.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-4 text-sm font-medium text-gray-900">{bank.name}</td>
+                  <td className="px-4 py-4 text-body text-gray-900">{bank.name}</td>
                   <td className="px-4 py-4">
-                    <span className="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">Enabled</span>
+                    <span className="inline-flex px-2.5 py-1 rounded-full text-label bg-green-100 text-green-800">Enabled</span>
                   </td>
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-2">
@@ -2310,7 +2310,7 @@ function BanksManagementContent({
       </div>
 
       {/* Results count */}
-      <div className="text-sm text-gray-600">
+      <div className="text-body-sm text-gray-600">
         Showing {banks.length} of {banks.length} banks
       </div>
 
@@ -2319,7 +2319,7 @@ function BanksManagementContent({
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <CreditCard className="w-5 h-5 text-blue-600" />
-            <h2 className="text-lg font-bold text-gray-900">Card Types</h2>
+            <h2 className="text-h3 text-gray-900">Card Types</h2>
           </div>
           <button 
             onClick={() => {
@@ -2329,7 +2329,7 @@ function BanksManagementContent({
               setShowIconPicker(false);
               setShowAddTypeModal(true);
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-button hover:bg-blue-700 transition-colors"
           >
             <Plus className="w-4 h-4" />
             Add Type
@@ -2339,7 +2339,7 @@ function BanksManagementContent({
           {cardTypeOptions.map((type) => (
             <div key={type.id} className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg">
               <span className="text-base">{type.icon || '💳'}</span>
-              <span className="text-sm font-medium text-gray-700">{type.name}</span>
+              <span className="text-body-sm text-gray-700">{type.name}</span>
               <button
                 onClick={() => {
                   setEditingCardType(type);
@@ -2370,7 +2370,7 @@ function BanksManagementContent({
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <CreditCard className="w-5 h-5 text-blue-600" />
-            <h2 className="text-lg font-bold text-gray-900">Card Networks</h2>
+            <h2 className="text-h3 text-gray-900">Card Networks</h2>
           </div>
           <button 
             onClick={() => {
@@ -2378,7 +2378,7 @@ function BanksManagementContent({
               setNewCardNetwork('');
               setShowAddNetworkModal(true);
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-button hover:bg-blue-700 transition-colors"
           >
             <Plus className="w-4 h-4" />
             Add Network
@@ -2387,7 +2387,7 @@ function BanksManagementContent({
         <div className="flex flex-wrap gap-2">
           {cardNetworkOptions.map((network) => (
             <div key={network.id} className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg">
-              <span className="text-sm font-medium text-gray-700">{network.name}</span>
+              <span className="text-body-sm text-gray-700">{network.name}</span>
               <button
                 onClick={() => {
                   setEditingCardNetwork(network);
@@ -2417,7 +2417,7 @@ function BanksManagementContent({
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-gray-900">
+                <h2 className="text-h3 text-gray-900">
                   {editingBank ? 'Edit Bank' : 'Add New Bank'}
                 </h2>
                 <button
@@ -2432,7 +2432,7 @@ function BanksManagementContent({
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-label text-gray-700 mb-2">
                   Bank Name *
                 </label>
                 <input
@@ -2440,7 +2440,7 @@ function BanksManagementContent({
                   value={newBankName}
                   onChange={(e) => setNewBankName(e.target.value)}
                   placeholder="e.g., Kotak Mahindra Bank"
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   onKeyPress={(e) => {
                     if (e.key === 'Enter') {
                       editingBank ? handleEditBank() : handleAddBank();
@@ -2449,7 +2449,7 @@ function BanksManagementContent({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-label text-gray-700 mb-2">
                   Bank Description
                 </label>
                 <textarea
@@ -2457,11 +2457,11 @@ function BanksManagementContent({
                   value={newBankDescription}
                   onChange={(e) => setNewBankDescription(e.target.value)}
                   placeholder="Enter a brief description of the bank..."
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-label text-gray-700 mb-2">
                   Bank Logo <span className="text-gray-500">(PNG or SVG only)</span>
                 </label>
                 <div className="space-y-3">
@@ -2476,7 +2476,7 @@ function BanksManagementContent({
                     />
                     <label
                       htmlFor="logo-upload"
-                      className="flex items-center justify-center gap-2 w-full px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:border-blue-500 hover:text-blue-600 cursor-pointer transition-colors"
+                      className="flex items-center justify-center gap-2 w-full px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-lg text-button text-gray-700 hover:border-blue-500 hover:text-blue-600 cursor-pointer transition-colors"
                     >
                       <Upload className="w-4 h-4" />
                       {logoFileName ? 'Change Logo' : 'Upload Logo'}
@@ -2490,7 +2490,7 @@ function BanksManagementContent({
                         <div className="p-1.5 bg-blue-100 rounded">
                           <Building2 className="w-4 h-4 text-blue-600" />
                         </div>
-                        <span className="text-sm font-medium text-blue-900">{logoFileName}</span>
+                        <span className="text-body-sm text-blue-900">{logoFileName}</span>
                       </div>
                       <button
                         onClick={() => {
@@ -2508,7 +2508,7 @@ function BanksManagementContent({
                   {/* Logo Preview */}
                   {newBankLogo && (
                     <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
-                      <p className="text-xs font-medium text-gray-700 mb-2">Preview:</p>
+                      <p className="text-label text-gray-700 mb-2">Preview:</p>
                       <div className="flex items-center justify-center p-4 bg-white rounded border border-gray-200">
                         <img 
                           src={newBankLogo} 
@@ -2524,14 +2524,14 @@ function BanksManagementContent({
             <div className="p-6 border-t border-gray-200 flex items-center justify-end gap-3">
               <button
                 onClick={closeModal}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg text-button hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={editingBank ? handleEditBank : handleAddBank}
                 disabled={!newBankName.trim()}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-button hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {editingBank ? 'Save Changes' : 'Add Bank'}
               </button>
@@ -2546,7 +2546,7 @@ function BanksManagementContent({
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-gray-900">{editingCardType ? 'Edit Card Type' : 'Add New Card Type'}</h2>
+                <h2 className="text-h3 text-gray-900">{editingCardType ? 'Edit Card Type' : 'Add New Card Type'}</h2>
                 <button
                   onClick={() => {
                     setShowAddTypeModal(false);
@@ -2564,7 +2564,7 @@ function BanksManagementContent({
               </div>
             </div>
             <div className="p-6 space-y-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-label text-gray-700 mb-2">
                 Type Name *
               </label>
               <input
@@ -2572,7 +2572,7 @@ function BanksManagementContent({
                 value={newCardType}
                 onChange={(e) => setNewCardType(e.target.value)}
                 placeholder="e.g., Fuel, Business, Premium"
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 onKeyPress={(e) => {
                   if (e.key === 'Enter' && !showIconPicker) {
                     handleAddCardType();
@@ -2581,11 +2581,11 @@ function BanksManagementContent({
               />
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Type Icon</label>
+                <label className="block text-label text-gray-700 mb-2">Type Icon</label>
                 <button
                   type="button"
                   onClick={() => setShowIconPicker(!showIconPicker)}
-                  className="w-full flex items-center justify-between px-4 py-2.5 border border-gray-300 rounded-lg text-sm hover:border-blue-500 transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm hover:border-blue-500 transition-colors"
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-2xl">{newCardTypeIcon}</span>
@@ -2628,14 +2628,14 @@ function BanksManagementContent({
                   setNewCardTypeIcon('💳');
                   setShowIconPicker(false);
                 }}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg text-button hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddCardType}
                 disabled={!newCardType.trim()}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-button hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {editingCardType ? 'Save Type' : 'Add Type'}
               </button>
@@ -2650,7 +2650,7 @@ function BanksManagementContent({
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-gray-900">{editingCardNetwork ? 'Edit Card Network' : 'Add New Card Network'}</h2>
+                <h2 className="text-h3 text-gray-900">{editingCardNetwork ? 'Edit Card Network' : 'Add New Card Network'}</h2>
                 <button
                   onClick={() => {
                     setShowAddNetworkModal(false);
@@ -2666,7 +2666,7 @@ function BanksManagementContent({
               </div>
             </div>
             <div className="p-6 space-y-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-label text-gray-700 mb-2">
                 Network Name *
               </label>
               <input
@@ -2674,7 +2674,7 @@ function BanksManagementContent({
                 value={newCardNetwork}
                 onChange={(e) => setNewCardNetwork(e.target.value)}
                 placeholder="e.g., Diners Club, UnionPay"
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 onKeyPress={(e) => {
                   if (e.key === 'Enter') {
                     handleAddCardNetwork();
@@ -2690,14 +2690,14 @@ function BanksManagementContent({
                   setEditingCardNetwork(null);
                   setNewCardNetwork('');
                 }}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg text-button hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddCardNetwork}
                 disabled={!newCardNetwork.trim()}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-button hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {editingCardNetwork ? 'Save Network' : 'Add Network'}
               </button>
@@ -2711,26 +2711,26 @@ function BanksManagementContent({
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
             <div className="p-6 border-b border-gray-200">
-              <h2 className="text-lg font-bold text-gray-900">Delete Card Type</h2>
+              <h2 className="text-h3 text-gray-900">Delete Card Type</h2>
             </div>
             <div className="p-6">
-              <p className="text-sm text-gray-600">
-                Are you sure you want to delete the card type <span className="font-semibold text-gray-900">"{deleteConfirmType}"</span>?
+              <p className="text-body-sm text-gray-600">
+                Are you sure you want to delete the card type <span className="text-body-sm text-gray-900">"{deleteConfirmType}"</span>?
               </p>
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-body-sm text-gray-500 mt-2">
                 This action cannot be undone.
               </p>
             </div>
             <div className="p-6 border-t border-gray-200 flex items-center justify-end gap-3">
               <button
                 onClick={() => setDeleteConfirmType(null)}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg text-button hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleDeleteCardType(deleteConfirmType)}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
+                className="px-4 py-2 bg-red-600 text-white rounded-lg text-button hover:bg-red-700 transition-colors"
               >
                 Delete
               </button>
@@ -2744,26 +2744,26 @@ function BanksManagementContent({
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
             <div className="p-6 border-b border-gray-200">
-              <h2 className="text-lg font-bold text-gray-900">Delete Card Network</h2>
+              <h2 className="text-h3 text-gray-900">Delete Card Network</h2>
             </div>
             <div className="p-6">
-              <p className="text-sm text-gray-600">
-                Are you sure you want to delete the card network <span className="font-semibold text-gray-900">"{deleteConfirmNetwork}"</span>?
+              <p className="text-body-sm text-gray-600">
+                Are you sure you want to delete the card network <span className="text-body-sm text-gray-900">"{deleteConfirmNetwork}"</span>?
               </p>
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-body-sm text-gray-500 mt-2">
                 This action cannot be undone.
               </p>
             </div>
             <div className="p-6 border-t border-gray-200 flex items-center justify-end gap-3">
               <button
                 onClick={() => setDeleteConfirmNetwork(null)}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg text-button hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleDeleteCardNetwork(deleteConfirmNetwork)}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
+                className="px-4 py-2 bg-red-600 text-white rounded-lg text-button hover:bg-red-700 transition-colors"
               >
                 Delete
               </button>

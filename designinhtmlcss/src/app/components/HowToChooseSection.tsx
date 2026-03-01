@@ -45,10 +45,10 @@ export function HowToChooseSection() {
   return (
     <section className="py-20 md:py-32">
       <div className="relative">
-        <h2 className="font-semibold text-xl sm:text-2xl md:text-3xl text-black leading-tight">
+        <h2 className="text-h1">
           How to Choose the Right Credit Card?
         </h2>
-        <p className="text-base text-gray-600 mt-4 mb-16 max-w-3xl">
+        <p className="text-body-lg mt-4 mb-16 max-w-3xl">
           Follow these key factors to select a credit card that perfectly matches your financial needs and lifestyle.
         </p>
 
@@ -63,11 +63,11 @@ export function HowToChooseSection() {
                 <div className="flex-shrink-0 w-10 h-10 bg-white rounded-lg flex items-center justify-center font-semibold text-base text-black">
                   {index + 1}
                 </div>
-                <h3 className="text-xl font-semibold text-black leading-tight pt-1">
+                <h3 className="text-h2 pt-1">
                   {factor.title}
                 </h3>
               </div>
-              <p className="text-base text-gray-700 leading-relaxed">
+              <p className="text-body-lg text-gray-700 leading-relaxed">
                 {factor.description}
               </p>
             </article>
@@ -76,23 +76,23 @@ export function HowToChooseSection() {
 
         {/* Summary Box */}
         <div className="mt-12 bg-gray-50 border-l-4 border-black p-6 md:p-8 rounded-r-xl">
-          <h3 className="text-lg md:text-xl font-semibold text-black mb-6">Quick Selection Guide</h3>
+          <h3 className="text-h2 mb-6">Quick Selection Guide</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <p className="font-semibold mb-2 text-base text-black">For Daily Spending:</p>
-              <p className="text-gray-700 text-base">Cashback or Rewards cards with no annual fee</p>
+              <p className="text-button mb-2 text-black">For Daily Spending:</p>
+              <p className="text-body text-gray-700">Cashback or Rewards cards with no annual fee</p>
             </div>
             <div>
-              <p className="font-semibold mb-2 text-base text-black">For Frequent Travelers:</p>
-              <p className="text-gray-700 text-base">Travel cards with lounge access and air miles</p>
+              <p className="text-button mb-2 text-black">For Frequent Travelers:</p>
+              <p className="text-body text-gray-700">Travel cards with lounge access and air miles</p>
             </div>
             <div>
-              <p className="font-semibold mb-2 text-base text-black">For Building Credit:</p>
-              <p className="text-gray-700 text-base">Student or secured credit cards</p>
+              <p className="text-button mb-2 text-black">For Building Credit:</p>
+              <p className="text-body text-gray-700">Student or secured credit cards</p>
             </div>
             <div>
-              <p className="font-semibold mb-2 text-base text-black">For Luxury Benefits:</p>
-              <p className="text-gray-700 text-base">Premium cards with high spending power</p>
+              <p className="text-button mb-2 text-black">For Luxury Benefits:</p>
+              <p className="text-body text-gray-700">Premium cards with high spending power</p>
             </div>
           </div>
         </div>

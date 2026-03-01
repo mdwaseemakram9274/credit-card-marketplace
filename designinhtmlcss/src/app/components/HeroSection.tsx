@@ -280,11 +280,11 @@ export function HeroSection() {
               }}
             />
             <span className="w-2 h-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full animate-pulse relative z-10" />
-            <span className="text-sm font-medium text-black relative z-10">India's #1 Credit Card Comparison Platform</span>
+            <span className="text-body relative z-10 text-black">India's #1 Credit Card Comparison Platform</span>
           </motion.div>
 
           <motion.h1 
-            className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-black mb-8 leading-[1.1] tracking-tight"
+            className="text-hero mb-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
@@ -313,7 +313,7 @@ export function HeroSection() {
           </motion.h1>
           
           <motion.p 
-            className="text-base text-gray-600 mb-10 leading-relaxed max-w-3xl mx-auto"
+            className="text-body-lg mb-10 max-w-3xl mx-auto"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
@@ -328,7 +328,7 @@ export function HeroSection() {
             transition={{ duration: 0.6, delay: 0.6 }}
           >
             <motion.button 
-              className="group bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold px-8 py-4 rounded-lg transition-all flex items-center gap-2 relative overflow-hidden"
+              className="text-button group bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-4 rounded-lg transition-all flex items-center gap-2 relative overflow-hidden"
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -342,7 +342,7 @@ export function HeroSection() {
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform relative z-10" />
             </motion.button>
             <motion.button 
-              className="bg-white hover:bg-gray-50 text-black font-semibold px-8 py-4 rounded-lg border-2 border-gray-200 hover:border-purple-600 transition-all"
+              className="text-button bg-white hover:bg-gray-50 text-black px-8 py-4 rounded-lg border-2 border-gray-200 hover:border-purple-600 transition-all"
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -371,7 +371,7 @@ export function HeroSection() {
         animate={{ opacity: 1 }}
         transition={{ duration: 1, delay: 1.5 }}
       >
-        <span className="text-xs text-gray-500 font-medium uppercase tracking-wider">Scroll to explore</span>
+        <span className="text-label text-gray-500">Scroll to explore</span>
         <motion.div
           animate={{ y: [0, 8, 0] }}
           transition={{
@@ -401,12 +401,12 @@ function StatCard({ target, suffix, label, delay }: { target: number; suffix: st
       whileHover={{ scale: 1.05 }}
     >
       <motion.div 
-        className="text-3xl md:text-4xl font-bold text-black mb-3"
+        className="text-hero font-bold mb-3"
         key={count}
       >
         {count}{suffix}
       </motion.div>
-      <div className="text-xs md:text-sm text-gray-500 font-medium uppercase tracking-wide">{label}</div>
+      <div className="text-label text-gray-500">{label}</div>
     </motion.div>
   );
 }

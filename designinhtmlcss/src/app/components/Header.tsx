@@ -27,12 +27,12 @@ export function Header() {
             <div className="bg-gradient-to-br from-purple-600 to-blue-600 p-1.5 rounded-lg">
               <CreditCard className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-black">CreditCard.com</span>
+            <span className="text-h3 font-bold">CreditCard.com</span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            <Link to="/#cards" className="text-black hover:text-purple-600 font-medium transition-colors">
+            <Link to="/#cards" className="text-button text-black hover:text-purple-600 transition-colors">
               Credit Cards
             </Link>
             
@@ -42,7 +42,7 @@ export function Header() {
               onMouseEnter={() => setIsBanksDropdownOpen(true)}
               onMouseLeave={() => setIsBanksDropdownOpen(false)}
             >
-              <button className="flex items-center gap-1 text-black hover:text-purple-600 font-medium transition-colors">
+              <button className="text-button flex items-center gap-1 text-black hover:text-purple-600 transition-colors">
                 Banks
                 <ChevronDown className={`w-4 h-4 transition-transform ${isBanksDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
@@ -57,7 +57,7 @@ export function Header() {
                       className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors"
                     >
                       <span className="text-xl">{bank.logo}</span>
-                      <span className="text-sm font-medium text-gray-700 hover:text-purple-600">
+                      <span className="text-body text-gray-700 hover:text-purple-600">
                         {bank.name}
                       </span>
                     </Link>
@@ -66,13 +66,13 @@ export function Header() {
               )}
             </div>
             
-            <Link to="/admin" className="text-black hover:text-purple-600 font-medium transition-colors">
+            <Link to="/admin" className="text-button text-black hover:text-purple-600 transition-colors">
               Admin
             </Link>
           </div>
 
           {/* CTA Button - Desktop */}
-          <button className="hidden md:block bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium px-6 py-2.5 rounded-lg transition-all">
+          <button className="text-button hidden md:block bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-2.5 rounded-lg transition-all">
             Apply Now
           </button>
 
@@ -92,7 +92,7 @@ export function Header() {
             <div className="flex flex-col gap-4">
               <Link
                 to="/#cards"
-                className="text-black hover:text-purple-600 font-medium transition-colors py-2"
+                className="text-button text-black hover:text-purple-600 transition-colors py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Credit Cards
@@ -102,7 +102,7 @@ export function Header() {
               <div>
                 <button
                   onClick={() => setIsBanksDropdownOpen(!isBanksDropdownOpen)}
-                  className="flex items-center justify-between w-full text-black hover:text-purple-600 font-medium transition-colors py-2"
+                  className="text-button flex items-center justify-between w-full text-black hover:text-purple-600 transition-colors py-2"
                 >
                   Banks
                   <ChevronDown className={`w-4 h-4 transition-transform ${isBanksDropdownOpen ? 'rotate-180' : ''}`} />
@@ -114,7 +114,7 @@ export function Header() {
                       <Link
                         key={bank.id}
                         to={`/lender/${bank.id}`}
-                        className="flex items-center gap-2 text-sm text-gray-700 hover:text-purple-600 py-2 transition-colors"
+                        className="text-body flex items-center gap-2 text-gray-700 hover:text-purple-600 py-2 transition-colors"
                         onClick={() => {
                           setIsMenuOpen(false);
                           setIsBanksDropdownOpen(false);
@@ -130,12 +130,12 @@ export function Header() {
               
               <Link
                 to="/admin"
-                className="text-black hover:text-purple-600 font-medium transition-colors py-2"
+                className="text-button text-black hover:text-purple-600 transition-colors py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Admin
               </Link>
-              <button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium px-6 py-2.5 rounded-lg transition-all mt-2">
+              <button className="text-button bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-2.5 rounded-lg transition-all mt-2">
                 Apply Now
               </button>
             </div>

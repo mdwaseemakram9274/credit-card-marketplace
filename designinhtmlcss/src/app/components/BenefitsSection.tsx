@@ -34,10 +34,10 @@ export function BenefitsSection() {
       <div className="relative">
         {/* Section Header */}
         <div className="mb-10 md:mb-12">
-          <h2 className="font-semibold text-xl sm:text-2xl md:text-3xl text-black leading-tight">
+          <h2 className="text-h1">
             5 Benefits of Using a Credit Card
           </h2>
-          <p className="text-sm md:text-base text-gray-600 leading-relaxed mt-3 max-w-2xl">
+          <p className="text-body-lg mt-3 max-w-2xl leading-relaxed">
             Discover how credit cards can enhance your financial flexibility and provide valuable rewards and protections.
           </p>
         </div>
@@ -56,13 +56,13 @@ export function BenefitsSection() {
                     {benefit.icon}
                   </div>
                 </div>
-                <h3 className="text-lg md:text-xl font-semibold text-black">
+                <h3 className="text-h2">
                   {benefit.title}
                 </h3>
               </div>
               
               {/* Description */}
-              <p className="text-sm md:text-base text-gray-600 leading-relaxed">
+              <p className="text-body leading-relaxed">
                 {benefit.description}
               </p>
             </div>

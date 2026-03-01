@@ -83,7 +83,7 @@ function CreditCard({ id, image, title, joiningFee, renewalFee, benefits, catego
         <div className="w-[200px] sm:w-[240px] h-auto rounded-lg overflow-hidden">
           <img alt={title} className="w-full h-auto" src={image} />
         </div>
-        <h3 className="font-semibold text-base text-black text-center lg:text-left max-w-[200px] sm:max-w-[240px]">
+        <h3 className="text-body-lg text-black text-center lg:text-left max-w-[200px] sm:max-w-[240px]">
           {title}
         </h3>
       </div>
@@ -95,8 +95,8 @@ function CreditCard({ id, image, title, joiningFee, renewalFee, benefits, catego
           <div className="flex items-center gap-3">
             <div className="text-lg">💰</div>
             <div>
-              <p className="text-xs text-gray-500 font-medium">Joining Fee</p>
-              <p className="font-semibold text-sm text-black">{joiningFee}</p>
+              <p className="text-label text-gray-500">Joining Fee</p>
+              <p className="text-body text-black">{joiningFee}</p>
             </div>
           </div>
           
@@ -105,22 +105,22 @@ function CreditCard({ id, image, title, joiningFee, renewalFee, benefits, catego
           <div className="flex items-center gap-3">
             <div className="text-lg">🔄</div>
             <div>
-              <p className="text-xs text-gray-500 font-medium">Renewal Fee</p>
-              <p className="font-semibold text-sm text-black">{renewalFee}</p>
+              <p className="text-label text-gray-500">Renewal Fee</p>
+              <p className="text-body text-black">{renewalFee}</p>
             </div>
           </div>
         </div>
 
         {/* Benefits Section */}
         <div className="flex flex-col gap-3">
-          <p className="font-semibold text-sm text-black">
+          <p className="text-body-lg text-black">
             Key Benefits
           </p>
           <ul className="space-y-2.5">
             {benefits.map((benefit, index) => (
               <li key={index} className="flex items-start gap-3">
                 <span className="w-1.5 h-1.5 bg-black rounded-full mt-2 flex-shrink-0" />
-                <span className="font-normal text-sm text-gray-700 leading-relaxed">
+                <span className="text-body text-gray-700 leading-relaxed">
                   {benefit}
                 </span>
               </li>
@@ -139,7 +139,7 @@ function CreditCard({ id, image, title, joiningFee, renewalFee, benefits, catego
                   className={`${style.bgColor} border ${style.borderColor} px-3 py-1.5 rounded-full flex items-center gap-1.5`}
                 >
                   <span className="text-sm">{style.icon}</span>
-                  <span className={`font-medium text-xs ${style.textColor}`}>
+                  <span className={`text-label ${style.textColor}`}>
                     {category}
                   </span>
                 </div>
@@ -150,11 +150,11 @@ function CreditCard({ id, image, title, joiningFee, renewalFee, benefits, catego
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
             <Link 
               to={`/card/${id}`}
-              className="border border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50 text-gray-700 font-medium text-sm px-6 py-3 rounded-lg transition-all w-full sm:w-auto whitespace-nowrap text-center"
+              className="border border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50 text-gray-700 text-button px-6 py-3 rounded-lg transition-all w-full sm:w-auto whitespace-nowrap text-center"
             >
               More Details
             </Link>
-            <button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold text-sm px-8 py-3 rounded-lg transition-colors w-full sm:w-auto whitespace-nowrap">
+            <button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-button px-8 py-3 rounded-lg transition-colors w-full sm:w-auto whitespace-nowrap">
               Apply now →
             </button>
           </div>
@@ -339,11 +339,11 @@ export default function LenderPage() {
       <div className="min-h-screen bg-gray-50">
         <Header />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
-          <h1 className="text-3xl font-bold text-black mb-4">Lender Not Found</h1>
-          <p className="text-gray-600 mb-8">The lender you're looking for doesn't exist.</p>
+          <h1 className="text-h1 text-black mb-4">Lender Not Found</h1>
+          <p className="text-body text-gray-600 mb-8">The lender you're looking for doesn't exist.</p>
           <Link 
             to="/" 
-            className="inline-block bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold px-8 py-3 rounded-lg transition-colors"
+            className="inline-block bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-button px-8 py-3 rounded-lg transition-colors"
           >
             ← Back to Home
           </Link>
@@ -364,7 +364,7 @@ export default function LenderPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-4 sm:mb-6 md:mb-8"
         >
-          <Link to="/" className="text-xs sm:text-sm text-gray-600 hover:text-purple-600 transition-colors">
+          <Link to="/" className="text-body-sm text-gray-600 hover:text-purple-600 transition-colors">
             ← Back to all lenders
           </Link>
         </motion.div>
@@ -385,18 +385,18 @@ export default function LenderPage() {
             
             {/* Name and Badge Row - Horizontally Aligned & Centered */}
             <div className="flex items-center justify-center gap-3 flex-wrap">
-              <h1 className="text-xl font-bold text-black">
+              <h1 className="text-h2 text-black">
                 {lender.name}
               </h1>
               <div className="bg-[#dff0ff] border border-[#95b1ca] rounded-full px-4 py-1.5">
-                <span className="text-xs font-semibold text-[#004c8f]">
+                <span className="text-label text-[#004c8f]">
                   {filteredCards.length || lender.totalCards} CC Available
                 </span>
               </div>
             </div>
             
             {/* Description */}
-            <p className="text-sm text-[#364153] leading-relaxed">
+            <p className="text-body text-[#364153] leading-relaxed">
               {lender.description}
             </p>
           </div>
@@ -409,11 +409,11 @@ export default function LenderPage() {
             
             {/* Bank Name and Badge - Horizontally Aligned */}
             <div className="flex items-center gap-6">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-black">
+              <h1 className="text-hero text-black">
                 {lender.name}
               </h1>
               <div className="bg-[#dff0ff] border border-[#95b1ca] rounded-full px-4 py-1.5">
-                <span className="text-sm font-semibold text-[#004c8f]">
+                <span className="text-body-sm text-[#004c8f]">
                   {filteredCards.length || lender.totalCards} Credit Cards Available
                 </span>
               </div>
@@ -421,7 +421,7 @@ export default function LenderPage() {
           </div>
           
           {/* Desktop Description */}
-          <p className="hidden md:block text-sm sm:text-base text-[#364153] leading-relaxed">
+          <p className="hidden md:block text-body text-[#364153] leading-relaxed">
             {lender.description}
           </p>
         </motion.div>
@@ -433,7 +433,7 @@ export default function LenderPage() {
           transition={{ delay: 0.2 }}
           className="mb-6 sm:mb-8"
         >
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-black mb-6">
+          <h2 className="text-h1 text-black mb-6">
             Popular {lender.name} Credit Cards
           </h2>
           <div className="space-y-4 sm:space-y-6">
@@ -451,10 +451,10 @@ export default function LenderPage() {
           className="bg-gradient-to-br from-gray-50 to-white rounded-xl sm:rounded-2xl border border-gray-200 p-6 sm:p-8 md:p-12 mb-6 sm:mb-8"
         >
           <div className="mb-8 sm:mb-12">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-black mb-3">
+            <h2 className="text-h1 text-black mb-3">
               How to Apply for {lender.name} Credit Card
             </h2>
-            <p className="text-sm sm:text-base text-gray-600">
+            <p className="text-body text-gray-600">
               Follow these simple steps to get your card in just a few days
             </p>
           </div>
@@ -467,10 +467,10 @@ export default function LenderPage() {
               </div>
               <div className="mt-2">
                 <div className="text-4xl mb-4">✅</div>
-                <h3 className="font-bold text-lg text-black mb-3">
+                <h3 className="text-h3 text-black mb-3">
                   Check Eligibility
                 </h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="text-body text-gray-600 leading-relaxed">
                   Review eligibility criteria: age (21-60 years), minimum income, and CIBIL score (750+). Ensure documents are ready.
                 </p>
               </div>
@@ -483,10 +483,10 @@ export default function LenderPage() {
               </div>
               <div className="mt-2">
                 <div className="text-4xl mb-4">💳</div>
-                <h3 className="font-bold text-lg text-black mb-3">
+                <h3 className="text-h3 text-black mb-3">
                   Choose Your Card
                 </h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="text-body text-gray-600 leading-relaxed">
                   Compare card variants based on spending patterns, lifestyle needs, and benefits. Select the best match.
                 </p>
               </div>
@@ -499,10 +499,10 @@ export default function LenderPage() {
               </div>
               <div className="mt-2">
                 <div className="text-4xl mb-4">📝</div>
-                <h3 className="font-bold text-lg text-black mb-3">
+                <h3 className="text-h3 text-black mb-3">
                   Submit Application
                 </h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="text-body text-gray-600 leading-relaxed">
                   Fill online form with personal and financial details. Upload PAN, Aadhaar, income proof, and address proof.
                 </p>
               </div>
@@ -515,10 +515,10 @@ export default function LenderPage() {
               </div>
               <div className="mt-2">
                 <div className="text-4xl mb-4">🔍</div>
-                <h3 className="font-bold text-lg text-black mb-3">
+                <h3 className="text-h3 text-black mb-3">
                   Verification & Approval
                 </h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="text-body text-gray-600 leading-relaxed">
                   Bank verifies documents and conducts credit check. Takes 2-7 working days. Expect a verification call.
                 </p>
               </div>
@@ -531,10 +531,10 @@ export default function LenderPage() {
               </div>
               <div className="mt-2">
                 <div className="text-4xl mb-4">🎉</div>
-                <h3 className="font-bold text-lg text-black mb-3">
+                <h3 className="text-h3 text-black mb-3">
                   Receive Your Card
                 </h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="text-body text-gray-600 leading-relaxed">
                   Card dispatched to registered address in 7-10 days. Activate via mobile app or customer care. Start enjoying!
                 </p>
               </div>
@@ -543,13 +543,13 @@ export default function LenderPage() {
             {/* CTA Card */}
             <div className="relative bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl p-6 text-white flex flex-col justify-center items-center text-center hover:shadow-md transition-all duration-200">
               <div className="text-4xl mb-4">🚀</div>
-              <h3 className="font-bold text-lg mb-3">
+              <h3 className="text-h3 mb-3">
                 Ready to Apply?
               </h3>
-              <p className="text-sm text-white/90 mb-4 leading-relaxed">
+              <p className="text-body text-white/90 mb-4 leading-relaxed">
                 Start your application today and get approved within days
               </p>
-              <button className="bg-white text-purple-600 font-semibold text-sm px-6 py-2.5 rounded-lg hover:bg-gray-100 transition-colors">
+              <button className="bg-white text-purple-600 text-button px-6 py-2.5 rounded-lg hover:bg-gray-100 transition-colors">
                 Apply Now →
               </button>
             </div>
@@ -563,7 +563,7 @@ export default function LenderPage() {
           transition={{ delay: 0.4 }}
           className="bg-white rounded-xl sm:rounded-2xl border border-gray-200 p-3 md:p-8 mb-6 sm:mb-8"
         >
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-black mb-6">
+          <h2 className="text-h1 text-black mb-6">
             {lender.name} Fees & Charges Comparison
           </h2>
           
@@ -572,19 +572,19 @@ export default function LenderPage() {
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="text-left p-4 font-semibold text-sm text-black">CARD VARIANT</th>
-                  <th className="text-left p-4 font-semibold text-sm text-black">JOINING FEE</th>
-                  <th className="text-left p-4 font-semibold text-sm text-black">ANNUAL FEE</th>
-                  <th className="text-left p-4 font-semibold text-sm text-black">BEST FOR</th>
+                  <th className="text-left p-4 text-label text-black">CARD VARIANT</th>
+                  <th className="text-left p-4 text-label text-black">JOINING FEE</th>
+                  <th className="text-left p-4 text-label text-black">ANNUAL FEE</th>
+                  <th className="text-left p-4 text-label text-black">BEST FOR</th>
                 </tr>
               </thead>
               <tbody>
                 {cardVariants.map((variant, index) => (
                   <tr key={index} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
-                    <td className="p-4 font-medium text-sm text-black">{variant.variant}</td>
-                    <td className="p-4 text-sm text-gray-700">{variant.joiningFee}</td>
-                    <td className="p-4 text-sm text-gray-700">{variant.annualFee}</td>
-                    <td className="p-4 text-sm text-gray-700">{variant.bestFor}</td>
+                    <td className="p-4 text-body text-black">{variant.variant}</td>
+                    <td className="p-4 text-body text-gray-700">{variant.joiningFee}</td>
+                    <td className="p-4 text-body text-gray-700">{variant.annualFee}</td>
+                    <td className="p-4 text-body text-gray-700">{variant.bestFor}</td>
                   </tr>
                 ))}
               </tbody>
@@ -595,19 +595,19 @@ export default function LenderPage() {
           <div className="md:hidden space-y-4">
             {cardVariants.map((variant, index) => (
               <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <h3 className="font-semibold text-base text-black mb-3">{variant.variant}</h3>
+                <h3 className="text-body-lg text-black mb-3">{variant.variant}</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-xs text-gray-500 font-medium">Joining Fee:</span>
-                    <span className="text-sm text-gray-900 font-semibold">{variant.joiningFee}</span>
+                    <span className="text-label text-gray-500">Joining Fee:</span>
+                    <span className="text-body text-gray-900">{variant.joiningFee}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-xs text-gray-500 font-medium">Annual Fee:</span>
-                    <span className="text-sm text-gray-900 font-semibold">{variant.annualFee}</span>
+                    <span className="text-label text-gray-500">Annual Fee:</span>
+                    <span className="text-body text-gray-900">{variant.annualFee}</span>
                   </div>
                   <div className="pt-2 border-t border-gray-200">
-                    <span className="text-xs text-gray-500 font-medium">Best For:</span>
-                    <p className="text-sm text-gray-900 mt-1">{variant.bestFor}</p>
+                    <span className="text-label text-gray-500">Best For:</span>
+                    <p className="text-body text-gray-900 mt-1">{variant.bestFor}</p>
                   </div>
                 </div>
               </div>
@@ -615,8 +615,8 @@ export default function LenderPage() {
           </div>
 
           <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-              <span className="font-semibold text-black">Note:</span> Fees mentioned are subject to change. 
+            <p className="text-body-sm text-gray-600 leading-relaxed">
+              <span className="text-body text-black">Note:</span> Fees mentioned are subject to change. 
               Annual fees may be waived based on annual spending criteria. GST applicable as per government regulations. 
               Please check the official {lender.name} website for the most current information.
             </p>
@@ -631,7 +631,7 @@ export default function LenderPage() {
           className="bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 rounded-xl sm:rounded-2xl border border-gray-200 p-6 sm:p-8 md:p-12 mb-6 sm:mb-8"
         >
           <div className="text-center mb-8">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-black mb-2">
+            <h2 className="text-h1 text-black mb-2">
               Explore Cards from Leading Issuers
             </h2>
             
@@ -655,7 +655,7 @@ export default function LenderPage() {
                     '🏦'
                   )}
                 </span>
-                <span className={`font-semibold text-xs sm:text-sm whitespace-nowrap ${
+                <span className={`text-label whitespace-nowrap ${
                   otherLender.id === lenderId ? 'text-purple-600' : 'text-gray-700 group-hover:text-gray-900'
                 }`}>
                   {otherLender.name}

@@ -17,10 +17,10 @@ export function ThingsToKnowSection() {
       <div className="relative">
         {/* Section Header */}
         <div className="mb-16">
-          <h2 className="font-semibold text-xl sm:text-2xl md:text-3xl text-black leading-tight">
+          <h2 className="text-h1">
             Things to Know About Credit Cards
           </h2>
-          <p className="text-base text-gray-600 leading-relaxed mt-4 max-w-3xl">
+          <p className="text-body-lg leading-relaxed mt-4 max-w-3xl">
             Essential information every credit card holder should understand for smart financial management.
           </p>
         </div>
@@ -32,7 +32,7 @@ export function ThingsToKnowSection() {
                 <div className="flex-shrink-0 w-6 h-6 bg-black text-white rounded-full flex items-center justify-center mt-1">
                   <CheckCircle className="w-4 h-4" />
                 </div>
-                <span className="text-sm md:text-base text-gray-700 leading-relaxed">{item}</span>
+                <span className="text-body text-gray-700 leading-relaxed">{item}</span>
               </li>
             ))}
           </ul>
@@ -75,10 +75,10 @@ export function DosAndDontsSection() {
       <div className="relative">
         {/* Section Header */}
         <div className="mb-16">
-          <h2 className="font-semibold text-xl sm:text-2xl md:text-3xl text-black leading-tight">
+          <h2 className="text-h1">
             Do's and Don'ts for Credit Cards
           </h2>
-          <p className="text-base text-gray-600 leading-relaxed mt-4 max-w-3xl">
+          <p className="text-body-lg leading-relaxed mt-4 max-w-3xl">
             Best practices and common pitfalls to avoid when using credit cards.
           </p>
         </div>
@@ -91,13 +91,13 @@ export function DosAndDontsSection() {
               <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
                 <CheckCircle className="w-6 h-6 text-green-600" />
               </div>
-              <h3 className="text-lg md:text-xl font-semibold text-white">Do's</h3>
+              <h3 className="text-h2 text-white">Do's</h3>
             </div>
             <div className="p-3 md:p-6 flex items-center gap-3">
               <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
                 <XCircle className="w-6 h-6 text-red-600" />
               </div>
-              <h3 className="text-lg md:text-xl font-semibold text-white">Don't</h3>
+              <h3 className="text-h2 text-white">Don't</h3>
             </div>
           </div>
 
@@ -113,7 +113,7 @@ export function DosAndDontsSection() {
               <div className="p-3 md:p-6 border-r border-gray-200">
                 <div className="flex gap-4 items-start">
                   <span className="text-green-600 font-bold text-xl flex-shrink-0 mt-0.5">✓</span>
-                  <span className="text-base text-gray-700 leading-relaxed">{item.do}</span>
+                  <span className="text-body text-gray-700 leading-relaxed">{item.do}</span>
                 </div>
               </div>
 
@@ -121,7 +121,7 @@ export function DosAndDontsSection() {
               <div className="p-3 md:p-6">
                 <div className="flex gap-4 items-start">
                   <span className="text-red-600 font-bold text-xl flex-shrink-0 mt-0.5">✗</span>
-                  <span className="text-base text-gray-700 leading-relaxed">{item.dont}</span>
+                  <span className="text-body text-gray-700 leading-relaxed">{item.dont}</span>
                 </div>
               </div>
             </div>
@@ -130,7 +130,7 @@ export function DosAndDontsSection() {
 
         {/* Bottom Note */}
         <div className="mt-8 bg-gray-50 border-l-4 border-black p-6 rounded-r-xl">
-          <p className="text-base text-gray-700 leading-relaxed">
+          <p className="text-body-lg text-gray-700 leading-relaxed">
             <strong className="text-black">Remember:</strong> Responsible credit card usage is key to building a strong credit history and maximizing benefits. Always spend within your means and treat your credit card as a convenience tool, not as extra income.
           </p>
         </div>

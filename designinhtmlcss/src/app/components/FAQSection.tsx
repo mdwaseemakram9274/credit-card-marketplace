@@ -98,10 +98,10 @@ export function FAQSection() {
       <div className="relative max-w-5xl mx-auto p-[0px]">
         {/* Section Header */}
         <div className="mb-12 text-center">
-          <h2 className="font-semibold text-xl sm:text-2xl md:text-3xl text-black leading-tight mb-4">
+          <h2 className="text-h1 mb-4">
             Frequently Asked Questions
           </h2>
-          <p className="text-base text-gray-600 leading-relaxed max-w-2xl mx-auto">
+          <p className="text-body-lg leading-relaxed max-w-2xl mx-auto">
             Everything you need to know about credit cards in India
           </p>
         </div>
@@ -122,7 +122,7 @@ export function FAQSection() {
                   className="w-full flex items-center justify-between gap-6 px-3 md:px-8 py-5 md:py-6 text-left hover:bg-gray-50 transition-colors"
                   aria-expanded={isOpen}
                 >
-                  <h3 className="text-base md:text-lg font-medium text-gray-900 flex-1">
+                  <h3 className="text-body-lg text-gray-900 flex-1">
                     {faq.question}
                   </h3>
                   <div className="flex-shrink-0">
@@ -139,7 +139,7 @@ export function FAQSection() {
                     isOpen ? 'pb-5 md:pb-6 max-h-[1000px]' : 'max-h-0'
                   }`}
                 >
-                  <p className="text-sm md:text-base text-gray-600 leading-relaxed">
+                  <p className="text-body text-gray-600 leading-relaxed">
                     {faq.answer}
                   </p>
                 </div>
@@ -150,10 +150,10 @@ export function FAQSection() {
 
         {/* Help CTA */}
         <div className="mt-12 text-center">
-          <p className="text-base text-gray-600 mb-4">
+          <p className="text-body-lg mb-4">
             Still have questions?
           </p>
-          <button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold px-8 py-3 rounded-xl transition-all inline-flex items-center justify-center gap-2">
+          <button className="text-button bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3 rounded-xl transition-all inline-flex items-center justify-center gap-2">
             <MessageCircle className="w-5 h-5" />
             <span>Contact Support</span>
           </button>

@@ -15,18 +15,18 @@ function PerkCard({ title, description, bullets, note }: PerkCardProps) {
       {/* Header with blue accent bar */}
       <div className="bg-gray-50 flex gap-3 items-center rounded-lg p-3 border border-gray-200">
         <div className="bg-gradient-to-r from-purple-600 to-blue-600 h-10 rounded-sm w-1 flex-shrink-0" />
-        <h3 className="font-semibold text-lg text-black">{title}</h3>
+        <h3 className="text-h2">{title}</h3>
       </div>
       
       {/* Content */}
       <div className="flex flex-col gap-2">
         {description ? (
-          <p className="text-base text-gray-700 leading-relaxed">{description}</p>
+          <p className="text-body-lg text-gray-700 leading-relaxed">{description}</p>
         ) : null}
         
         <ul className="space-y-2 ml-6">
           {bullets.map((bullet, index) => (
-            <li key={index} className="list-disc text-base text-gray-700 leading-relaxed">
+            <li key={index} className="list-disc text-body-lg text-gray-700 leading-relaxed">
               {bullet}
             </li>
           ))}
@@ -34,8 +34,8 @@ function PerkCard({ title, description, bullets, note }: PerkCardProps) {
         
         {note && (
           <div className="mt-2">
-            <p className="text-base text-gray-700">
-              <span className="font-semibold text-black">Note:</span>{' '}
+            <p className="text-body-lg text-gray-700">
+              <span className="text-button text-black">Note:</span>{' '}
               {note.text}
               {note.linkText && (
                 <span className="text-purple-600 underline cursor-pointer"> {note.linkText}</span>
@@ -100,7 +100,7 @@ export default function SpecialPerksSection({
   return (
     <section className="bg-white rounded-2xl border border-gray-200 p-3 md:p-8 mb-8">
       {/* Section Header */}
-      <h2 className="text-xl md:text-2xl font-semibold text-black mb-6">
+      <h2 className="text-h1 mb-6">
         Special Perks You Shouldn't Miss
       </h2>
       
