@@ -20,7 +20,9 @@ function PerkCard({ title, description, bullets, note }: PerkCardProps) {
       
       {/* Content */}
       <div className="flex flex-col gap-2">
-        <p className="text-base text-gray-700 leading-relaxed">{description}</p>
+        {description ? (
+          <p className="text-base text-gray-700 leading-relaxed">{description}</p>
+        ) : null}
         
         <ul className="space-y-2 ml-6">
           {bullets.map((bullet, index) => (
@@ -77,13 +79,8 @@ export default function SpecialPerksSection({ eligibilityCriteria = [] }: { elig
     },
     {
       title: "Eligibility Criteria",
-      description: "To apply for this credit card, you must meet the following:",
+      description: "",
       bullets: eligibilityBullets,
-      note: {
-        label: "Note",
-        text: "Check Eligibility on",
-        linkText: "IndiaLends – No impact on credit score!"
-      }
     }
   ];
 
