@@ -173,6 +173,36 @@ export const categoryStyles: Record<string, { icon: string; bgColor: string; tex
 };
 
 // Credit Card Component
+/**
+ * Card Orientation System (Technical Reference)
+ *
+ * Dual Orientation Support
+ * - Supports both horizontal (`16:10`) and vertical (`2:3`) card image layouts.
+ * - Orientation is controlled by `cardOrientation` with a default of `horizontal`.
+ *
+ * Card Image Container System
+ * - The image container width remains constant (`w-[200px] sm:w-[240px]`) for all cards.
+ * - This keeps content alignment consistent across mixed orientation cards.
+ * - The container acts as a stable layout anchor while the image rendering strategy changes.
+ *
+ * Vertical Card Image Handling
+ * - Rendered smaller (`w-[140px] sm:w-[170px]`) inside the same container.
+ * - Uses `object-contain` with centered positioning to prevent cropping.
+ * - Preserves full artwork visibility while keeping row alignment intact.
+ *
+ * Horizontal Card Image Handling
+ * - Uses full container width (`w-full`) for a wider visual footprint.
+ * - Uses `object-cover` for standard card-banner presentation.
+ *
+ * Fees Section Responsive Alignment
+ * - Center-aligned on mobile/tablet: `justify-center`.
+ * - Left-aligned on desktop: `lg:justify-start`.
+ *
+ * Design Goals
+ * - Keep card rows visually aligned across orientation variants.
+ * - Avoid vertical-image cropping while maintaining proportional sizing.
+ * - Preserve responsive readability and consistent information hierarchy.
+ */
 interface CreditCardProps {
   id: string;
   image: string;

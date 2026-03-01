@@ -43,6 +43,7 @@ type AdminCardRow = {
   slug: string | null;
   cardTypeId: string | null;
   networkId: string | null;
+  cardOrientation: 'horizontal' | 'vertical';
 };
 
 const mapApiToAdminRow = (card: any): AdminCardRow => {
@@ -66,6 +67,7 @@ const mapApiToAdminRow = (card: any): AdminCardRow => {
     slug: uiCard.slug,
     cardTypeId: uiCard.cardTypeId,
     networkId: uiCard.networkId,
+    cardOrientation: uiCard.cardOrientation === 'vertical' ? 'vertical' : 'horizontal',
   };
 };
 
@@ -587,11 +589,20 @@ function DashboardContent({
               {filteredCards.map((card) => (
                 <tr key={card.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-4">
+                    {(() => {
+                      const isVerticalCard = card.cardOrientation === 'vertical';
+                      return (
                     <img 
                       src={card.image} 
                       alt={card.cardName}
-                      className="w-16 h-10 object-cover rounded border border-gray-200"
+                      className={`rounded border border-gray-200 ${
+                        isVerticalCard
+                          ? 'w-12 h-16 object-contain bg-gray-50'
+                          : 'w-16 h-10 object-cover'
+                      }`}
                     />
+                      );
+                    })()}
                   </td>
                   <td className="px-4 py-4 text-sm font-medium text-gray-900">{card.bank}</td>
                   <td className="px-4 py-4 text-sm text-gray-900">{card.cardName}</td>
