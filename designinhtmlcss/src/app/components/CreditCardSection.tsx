@@ -5,9 +5,19 @@ import { useEffect, useState } from "react";
 import { api, mapApiCardToUi } from "../lib/api";
 
 // Tab Navigation Component
-function TabButton({ icon, label, isActive }: { icon: React.ReactNode; label: string; isActive?: boolean }) {
+function TabButton({
+  icon,
+  label,
+  isActive,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  isActive?: boolean;
+  onClick?: () => void;
+}) {
   return (
-    <button className={`flex flex-col items-center gap-2 px-4 py-3 transition-all rounded-lg ${
+    <button onClick={onClick} className={`flex flex-col items-center gap-2 px-4 py-3 transition-all rounded-lg ${
       isActive 
         ? 'text-black bg-white border border-gray-200' 
         : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
@@ -312,16 +322,19 @@ export function CreditCard({ id, image, title, joiningFee, renewalFee, benefits,
 
 // Main Component
 export default function CreditCardSection() {
-  const tabs = [
-    { icon: <DynamicFeedIcon />, label: 'All Cards', isActive: false },
-    { icon: <TravelIcon />, label: 'Travel', isActive: true },
-    { icon: <ShoppingIcon />, label: 'Shopping', isActive: false },
-    { icon: <DiningIcon />, label: 'Dining', isActive: false },
-    { icon: <FuelIcon />, label: 'Fuel', isActive: false },
-    { icon: <MoviesIcon />, label: 'Movies', isActive: false },
-    { icon: <LoungeIcon />, label: 'Lounge Pass', isActive: false },
-    { icon: <RewardIcon />, label: 'Reward Points', isActive: false },
-  ];
+  const getTabIcon = (label: string) => {
+    const normalized = label.trim().toLowerCase();
+
+    if (normalized.includes('travel')) return <TravelIcon />;
+    if (normalized.includes('shop')) return <ShoppingIcon />;
+    if (normalized.includes('dining') || normalized.includes('food')) return <DiningIcon />;
+    if (normalized.includes('fuel')) return <FuelIcon />;
+    if (normalized.includes('movie') || normalized.includes('entertain')) return <MoviesIcon />;
+    if (normalized.includes('lounge')) return <LoungeIcon />;
+    if (normalized.includes('reward') || normalized.includes('cashback')) return <RewardIcon />;
+
+    return <RewardIcon />;
+  };
 
   const fallbackCards: CreditCardProps[] = creditCardsData.map((card: CreditCardData) => ({
     id: card.id,
@@ -335,30 +348,58 @@ export default function CreditCardSection() {
   }));
 
   const [cards, setCards] = useState<CreditCardProps[]>(fallbackCards);
+  const [cardTypeTabs, setCardTypeTabs] = useState<string[]>(
+    Array.from(new Set(fallbackCards.flatMap((card) => card.categories))).filter(Boolean)
+  );
+  const [selectedTab, setSelectedTab] = useState<string>('All Cards');
+
+  const tabs = [
+    { icon: <DynamicFeedIcon />, label: 'All Cards', isActive: selectedTab === 'All Cards' },
+    ...cardTypeTabs.map((label) => ({
+      icon: getTabIcon(label),
+      label,
+      isActive: selectedTab === label,
+    })),
+  ];
+
+  const filteredCards =
+    selectedTab === 'All Cards'
+      ? cards
+      : cards.filter((card) => card.categories.some((category) => category === selectedTab));
 
   useEffect(() => {
     let active = true;
 
     const loadCards = async () => {
       try {
-        const apiCards = await api.getCards('enabled');
-        if (!active || !apiCards.length) return;
+        const [apiCards, typeRows] = await Promise.all([api.getCards('enabled'), api.getCardTypes()]);
+        if (!active) return;
 
-        setCards(
-          apiCards.map((card) => {
-            const uiCard = mapApiCardToUi(card);
-            return {
-              id: uiCard.slug || uiCard.rawId,
-              image: uiCard.image,
-              title: uiCard.title,
-              joiningFee: uiCard.joiningFee,
-              renewalFee: uiCard.renewalFee,
-              benefits: uiCard.benefits,
-              categories: uiCard.categories,
-              cardOrientation: uiCard.cardOrientation,
-            };
-          })
-        );
+        if (apiCards.length) {
+          setCards(
+            apiCards.map((card) => {
+              const uiCard = mapApiCardToUi(card);
+              return {
+                id: uiCard.slug || uiCard.rawId,
+                image: uiCard.image,
+                title: uiCard.title,
+                joiningFee: uiCard.joiningFee,
+                renewalFee: uiCard.renewalFee,
+                benefits: uiCard.benefits,
+                categories: uiCard.categories,
+                cardOrientation: uiCard.cardOrientation,
+              };
+            })
+          );
+        }
+
+        const nextTabs = typeRows
+          .map((item) => item.name?.trim())
+          .filter((name): name is string => Boolean(name));
+
+        if (nextTabs.length) {
+          setCardTypeTabs(Array.from(new Set(nextTabs)));
+        }
       } catch {
       }
     };
@@ -386,19 +427,19 @@ export default function CreditCardSection() {
         <div className="mb-12 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <div className="flex items-center gap-2 md:gap-3 min-w-max justify-center px-2">
             {tabs.map((tab, index) => (
-              <TabButton key={index} {...tab} />
+              <TabButton key={index} {...tab} onClick={() => setSelectedTab(tab.label)} />
             ))}
           </div>
         </div>
 
         {/* Credit Cards List */}
         <div className="flex flex-col gap-8">
-          {cards.map((card, index) => (
+          {filteredCards.map((card, index) => (
             <div key={index}>
               <Link to={`/card/${card.id}`} className="block">
                 <CreditCard {...card} />
               </Link>
-              {index < cards.length - 1 && (
+              {index < filteredCards.length - 1 && (
                 <div className="h-px w-full bg-gray-200 mt-8" />
               )}
             </div>

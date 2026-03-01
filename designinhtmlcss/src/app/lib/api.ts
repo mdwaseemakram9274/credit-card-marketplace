@@ -20,6 +20,7 @@ export interface ApiCard {
   welcome_bonus?: string | null;
   card_type_id?: string | null;
   network_id?: string | null;
+  network?: string | null;
   status: 'draft' | 'enabled' | 'disabled';
   benefits?: string[] | null;
   categories?: string[] | null;
@@ -35,6 +36,22 @@ export interface ApiCard {
   card_types?: ApiMetaItem;
   card_networks?: ApiMetaItem;
   card_orientation?: 'horizontal' | 'vertical' | null;
+}
+
+function asString(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function asStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => asString(item))
+    .filter(Boolean);
+}
+
+function asObject(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  return value as Record<string, unknown>;
 }
 
 const API_BASE_URL =
@@ -305,6 +322,17 @@ export const api = {
 };
 
 export function mapApiCardToUi(card: ApiCard) {
+  const categories = Array.isArray(card.categories)
+    ? Array.from(
+        new Set(
+          card.categories
+            .filter((item): item is string => typeof item === 'string')
+            .map((item) => item.trim())
+            .filter(Boolean)
+        )
+      )
+    : [];
+
   const eligibility =
     card.eligibility_criteria &&
     typeof card.eligibility_criteria === 'object' &&
@@ -313,6 +341,25 @@ export function mapApiCardToUi(card: ApiCard) {
           .filter((item): item is string => typeof item === 'string')
       : [];
 
+  const rewardsDetailsRaw = asObject(card.rewards_details) || {};
+  const customFeesRaw = asObject(card.custom_fees) || {};
+  const customFeeItemsRaw = Array.isArray(customFeesRaw.items) ? customFeesRaw.items : [];
+  const feeItems = customFeeItemsRaw
+    .map((item) => {
+      const itemObject = asObject(item);
+      if (!itemObject) return null;
+
+      const feeType = asString(itemObject.feeType || itemObject.type);
+      const amount = asString(itemObject.amount || itemObject.value);
+      if (!feeType && !amount) return null;
+
+      return {
+        feeType,
+        amount,
+      };
+    })
+    .filter((item): item is { feeType: string; amount: string } => Boolean(item));
+
   return {
     id: card.slug || card.id,
     rawId: card.id,
@@ -320,15 +367,36 @@ export function mapApiCardToUi(card: ApiCard) {
     title: card.card_name,
     joiningFee: card.joining_fee || 'Not specified',
     renewalFee: card.annual_fee || 'Not specified',
+    interestRate: asString(card.interest_rate),
     benefits: card.benefits && card.benefits.length ? card.benefits : ['Details will be updated soon'],
-    categories: card.categories && card.categories.length ? card.categories : ['General'],
+    categories,
     description: card.product_description || '',
+    productDescription: card.product_description || '',
+    productFeatures: asStringArray(card.product_features),
+    specialPerks: asStringArray(card.special_perks),
+    pros: asStringArray(card.pros),
+    cons: asStringArray(card.cons),
+    rewardsDetails: {
+      rewardsRate: asString(rewardsDetailsRaw.rewards_rate),
+      rewardRedemption: asString(rewardsDetailsRaw.reward_redemption),
+      internationalLoungeAccess: asString(rewardsDetailsRaw.international_lounge_access),
+      domesticLoungeAccess: asString(rewardsDetailsRaw.domestic_lounge_access),
+      insuranceBenefits: asString(rewardsDetailsRaw.insurance_benefits),
+      travelBenefits: asString(rewardsDetailsRaw.travel_benefits),
+      movieDining: asString(rewardsDetailsRaw.movie_dining),
+      golfBenefits: asString(rewardsDetailsRaw.golf_benefits),
+      cashbackRate: asString(rewardsDetailsRaw.cashback_rate),
+      customBenefits: asStringArray(rewardsDetailsRaw.custom_benefits),
+    },
+    feeItems,
+    feeWaiverConditions: asString(customFeesRaw.fee_waiver_conditions),
     status: card.status,
     bankName: card.banks?.name || '',
     bankId: card.bank_id,
     slug: card.slug || null,
     cardTypeId: card.card_type_id || null,
     networkId: card.network_id || null,
+    network: card.card_networks?.name || card.network || null,
     cardOrientation: card.card_orientation || 'horizontal',
     eligibilityCriteria: eligibility,
   };

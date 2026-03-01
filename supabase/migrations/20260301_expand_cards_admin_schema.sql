@@ -1,28 +1,9 @@
+-- Expand schema for admin-driven card detail flow.
+-- Safe and idempotent migration.
+
+begin;
+
 create extension if not exists "pgcrypto";
-
-create table if not exists public.banks (
-  id uuid primary key default gen_random_uuid(),
-  slug text not null unique,
-  name text not null,
-  description text,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
-
-create table if not exists public.cards (
-  id uuid primary key default gen_random_uuid(),
-  bank_id uuid not null references public.banks(id) on delete cascade,
-  slug text not null,
-  title text not null,
-  source_url text,
-  image_url text,
-  annual_fee text,
-  description text,
-  key_benefits jsonb not null default '[]'::jsonb,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now(),
-  unique (bank_id, slug)
-);
 
 create table if not exists public.admins (
   id uuid primary key default gen_random_uuid(),
@@ -52,7 +33,8 @@ create table if not exists public.card_networks (
 );
 
 alter table if exists public.banks
-  add column if not exists logo_url text;
+  add column if not exists logo_url text,
+  add column if not exists description text;
 
 alter table if exists public.cards
   add column if not exists created_by uuid references public.admins(id),
@@ -79,7 +61,6 @@ alter table if exists public.cards
   add column if not exists cons text[] default '{}',
   add column if not exists custom_fees jsonb;
 
-create index if not exists idx_cards_bank_id on public.cards(bank_id);
 create index if not exists idx_cards_card_type_id on public.cards(card_type_id);
 create index if not exists idx_cards_network_id on public.cards(network_id);
 create index if not exists idx_cards_status on public.cards(status);
@@ -92,16 +73,6 @@ begin
   return new;
 end;
 $$ language plpgsql;
-
-drop trigger if exists trg_banks_updated_at on public.banks;
-create trigger trg_banks_updated_at
-before update on public.banks
-for each row execute function public.set_updated_at();
-
-drop trigger if exists trg_cards_updated_at on public.cards;
-create trigger trg_cards_updated_at
-before update on public.cards
-for each row execute function public.set_updated_at();
 
 drop trigger if exists trg_admins_updated_at on public.admins;
 create trigger trg_admins_updated_at
@@ -117,3 +88,7 @@ drop trigger if exists trg_card_networks_updated_at on public.card_networks;
 create trigger trg_card_networks_updated_at
 before update on public.card_networks
 for each row execute function public.set_updated_at();
+
+notify pgrst, 'reload schema';
+
+commit;

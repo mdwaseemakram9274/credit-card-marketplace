@@ -3,10 +3,8 @@ import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
-import { ChevronDown } from 'lucide-react';
 import SpecialPerksSection from '../components/SpecialPerksSection';
 import CardDetailsSection from '../components/CardDetailsSection';
-import { FAQSection } from '../components/FAQSection';
 
 // This will be imported from a shared location
 import { creditCardsData } from '../data/creditCardsData';
@@ -17,17 +15,15 @@ export default function CreditCardDetailPage() {
   const { cardId } = useParams<{ cardId: string }>();
   const [isLoading, setIsLoading] = useState(true);
   const [card, setCard] = useState<any | null>(null);
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    overview: true,
-  });
 
-  const toggleSection = (section: string) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
+  const normalizeNetworkName = (value: string) => value.trim().toLowerCase();
+
+  const networkBadgeStyles: Record<string, string> = {
+    visa: 'text-blue-600',
+    mastercard: 'text-red-600',
+    rupay: 'text-orange-500',
   };
-  
+
   useEffect(() => {
     let active = true;
 
@@ -86,6 +82,12 @@ export default function CreditCardDetailPage() {
     );
   }
 
+  const networkLabels = Array.isArray(card.networks)
+    ? card.networks
+    : typeof card.network === 'string' && card.network.trim()
+      ? [card.network.trim()]
+      : [];
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -138,29 +140,32 @@ export default function CreditCardDetailPage() {
             {/* Right Column - Card Info */}
             <div className="md:col-span-3 p-6 sm:p-8 md:p-12 flex flex-col justify-center">
               {/* Powered By */}
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-start sm:items-center mb-6 pb-6 border-b border-gray-200">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Powered By</p>
-                <div className="flex gap-2 sm:gap-3 items-center flex-wrap">
-                  <div className="bg-gray-50 border border-gray-200 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg">
-                    <span className="font-bold text-xs text-blue-600">VISA</span>
-                  </div>
-                  <div className="bg-gray-50 border border-gray-200 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg">
-                    <span className="font-bold text-xs text-orange-500">RuPay</span>
-                  </div>
-                  <div className="bg-gray-50 border border-gray-200 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg">
-                    <span className="font-bold text-xs text-red-600">Mastercard</span>
+              {networkLabels.length ? (
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-start sm:items-center mb-6 pb-6 border-b border-gray-200">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Powered By</p>
+                  <div className="flex gap-2 sm:gap-3 items-center flex-wrap">
+                    {networkLabels.map((network: string) => {
+                      const colorClass = networkBadgeStyles[normalizeNetworkName(network)] || 'text-gray-700';
+                      return (
+                        <div key={network} className="bg-gray-50 border border-gray-200 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg">
+                          <span className={`font-bold text-xs ${colorClass}`}>{network}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
-              </div>
+              ) : null}
 
               {/* Title & Description */}
               <div className="mb-6 sm:mb-8">
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-black mb-3 sm:mb-4 leading-tight">
                   {card.title || card.cardName}
                 </h1>
-                <p className="text-sm sm:text-base md:text-lg text-gray-600 leading-relaxed">
-                  {card.description || "Discover the perfect credit card that matches your lifestyle and spending habits."}
-                </p>
+                {card.description ? (
+                  <p className="text-sm sm:text-base md:text-lg text-gray-600 leading-relaxed">
+                    {card.description}
+                  </p>
+                ) : null}
               </div>
 
               {/* Quick Stats */}
@@ -199,13 +204,22 @@ export default function CreditCardDetailPage() {
         </motion.div>
 
         {/* Card Details Section */}
-        <CardDetailsSection />
+        <CardDetailsSection
+          rewardsDetails={card.rewardsDetails}
+          productDescription={card.productDescription || card.description}
+          productFeatures={card.productFeatures || []}
+          feeItems={card.feeItems || []}
+          feeWaiverConditions={card.feeWaiverConditions}
+          interestRate={card.interestRate}
+        />
 
         {/* Special Perks Section */}
-        <SpecialPerksSection eligibilityCriteria={card.eligibilityCriteria || []} />
-
-        {/* FAQ Section */}
-        <FAQSection />
+        <SpecialPerksSection
+          eligibilityCriteria={card.eligibilityCriteria || []}
+          specialPerks={card.specialPerks || []}
+          pros={card.pros || []}
+          cons={card.cons || []}
+        />
 
         {/* Bottom CTA */}
         <div className="bg-gray-50 pb-12 md:pb-20">

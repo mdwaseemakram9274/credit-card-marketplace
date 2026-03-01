@@ -48,41 +48,54 @@ function PerkCard({ title, description, bullets, note }: PerkCardProps) {
   );
 }
 
-export default function SpecialPerksSection({ eligibilityCriteria = [] }: { eligibilityCriteria?: string[] }) {
-  const eligibilityBullets = eligibilityCriteria.length
-    ? eligibilityCriteria
-    : [
-        "Age: 21 to 65 years.",
-        "Income: Minimum Income: ₹35,000/month (may vary by card)",
-        "CIBIL Score: 720+ preferred",
-        "Documents Required: PAN Card, Aadhaar Card, Salary Slip / ITR, Address Proof.",
-      ];
+interface SpecialPerksSectionProps {
+  eligibilityCriteria?: string[];
+  specialPerks?: string[];
+  pros?: string[];
+  cons?: string[];
+}
 
-  const perks: PerkCardProps[] = [
-    {
-      title: "Welcome Gift",
-      description: "Kickstart your card journey with a special reward when you make your first transaction.",
-      bullets: [
-        "Get a ₹250 Amazon voucher on your first spend within 30 days",
-        "Offer valid only for new cardholders",
-        "No minimum spend required"
-      ]
-    },
-    {
-      title: "Weekend Shopping Offer",
-      description: "Enjoy exclusive discounts on your favorite brands every weekend.",
-      bullets: [
-        "10% off on Myntra every Saturday and Sunday",
-        "Max discount ₹300, min spend ₹999.",
-        "No coupon needed — discount auto-applies at checkout"
-      ]
-    },
-    {
-      title: "Eligibility Criteria",
-      description: "",
-      bullets: eligibilityBullets,
-    }
-  ];
+export default function SpecialPerksSection({
+  eligibilityCriteria = [],
+  specialPerks = [],
+  pros = [],
+  cons = [],
+}: SpecialPerksSectionProps) {
+  const perks: PerkCardProps[] = [];
+
+  if (specialPerks.length) {
+    perks.push({
+      title: 'Special Perks & Offers',
+      description: '',
+      bullets: specialPerks,
+    });
+  }
+
+  if (eligibilityCriteria.length) {
+    perks.push({
+      title: 'Eligibility Criteria',
+      description: '',
+      bullets: eligibilityCriteria,
+    });
+  }
+
+  if (pros.length) {
+    perks.push({
+      title: 'Pros',
+      description: '',
+      bullets: pros,
+    });
+  }
+
+  if (cons.length) {
+    perks.push({
+      title: 'Cons',
+      description: '',
+      bullets: cons,
+    });
+  }
+
+  if (!perks.length) return null;
 
   return (
     <section className="bg-white rounded-2xl border border-gray-200 p-3 md:p-8 mb-8">
