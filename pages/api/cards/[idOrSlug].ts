@@ -107,6 +107,23 @@ function normalizeCardRow(row: any) {
       : legacyBenefitsFromKeyBenefits;
 
   const eligibilityCriteria = normalizeEligibilityCriteria(row?.eligibility_criteria, adminData);
+  const rewardsDetailsFromRow = asObject(row?.rewards_details);
+  const rewardsDetailsFallback = {
+    rewards_rate: asString(adminData.rewardsRate),
+    reward_redemption: asString(adminData.rewardRedemption),
+    international_lounge_access: asString(adminData.internationalLoungeAccess),
+    domestic_lounge_access: asString(adminData.domesticLoungeAccess),
+    insurance_benefits: asString(adminData.insuranceBenefits),
+    travel_benefits: asString(adminData.travelBenefits),
+    movie_dining: asString(adminData.movieDiningBenefits || adminData.movieDining),
+    golf_benefits: asString(adminData.golfBenefits),
+    cashback_rate: asString(adminData.cashbackRate),
+    custom_benefits: asStringArray(adminData.customBenefits),
+  };
+  const hasFallbackRewardsDetails = Object.entries(rewardsDetailsFallback).some(([key, value]) => {
+    if (key === 'custom_benefits') return Array.isArray(value) && value.length > 0;
+    return typeof value === 'string' && Boolean(value.trim());
+  });
 
   return {
     id: row?.id,
@@ -132,6 +149,7 @@ function normalizeCardRow(row: any) {
     eligibility_criteria: eligibilityCriteria,
     pros: asStringArray(row?.pros),
     cons: asStringArray(row?.cons),
+    rewards_details: rewardsDetailsFromRow || (hasFallbackRewardsDetails ? rewardsDetailsFallback : null),
     custom_fees: row?.custom_fees || null,
     banks: row?.banks
       ? {
