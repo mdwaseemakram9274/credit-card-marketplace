@@ -146,6 +146,7 @@ function normalizeCardRow(row: any) {
     cons: asStringArray(row?.cons),
     rewards_details: rewardsDetailsFromRow || (hasFallbackRewardsDetails ? rewardsDetailsFallback : null),
     custom_fees: row?.custom_fees || null,
+    late_payment_charges: row?.late_payment_charges || null,
     banks: row?.banks
       ? {
           id: row.banks.id,
@@ -172,6 +173,7 @@ function buildLegacyCardRow(input: Record<string, any>, adminId: string) {
   const rewardsDetails = asObject(input.rewards_details);
   const eligibilityCriteria = asObject(input.eligibility_criteria);
   const customFees = asObject(input.custom_fees);
+  const latePaymentCharges = Array.isArray(input.late_payment_charges) ? input.late_payment_charges : null;
   const eligibilityItems = asStringArray(asObject(input.eligibility_criteria)?.items || input.eligibility_criteria);
 
   const adminData = {
@@ -228,6 +230,7 @@ function buildLegacyCardRow(input: Record<string, any>, adminId: string) {
       __adminData: adminData,
       items: benefits,
     },
+    late_payment_charges: latePaymentCharges,
     updated_by: adminId,
   };
 }
