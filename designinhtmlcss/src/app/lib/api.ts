@@ -25,6 +25,7 @@ export interface ApiCard {
   benefits?: string[] | null;
   categories?: string[] | null;
   rewards_details?: unknown;
+  late_payment_charges?: unknown;
   product_description?: string | null;
   product_features?: string[] | null;
   special_perks?: string[] | null;
@@ -344,6 +345,7 @@ export function mapApiCardToUi(card: ApiCard) {
 
   const rewardsDetailsRaw = asObject(card.rewards_details) || {};
   const customFeesRaw = asObject(card.custom_fees) || {};
+  const latePaymentChargesRaw = Array.isArray(card.late_payment_charges) ? card.late_payment_charges : [];
   const customFeeItemsRaw = Array.isArray(customFeesRaw.items) ? customFeesRaw.items : [];
   const feeItems = customFeeItemsRaw
     .map((item) => {
@@ -391,6 +393,16 @@ export function mapApiCardToUi(card: ApiCard) {
     },
     feeItems,
     feeWaiverConditions: asString(customFeesRaw.fee_waiver_conditions),
+    latePaymentCharges: latePaymentChargesRaw
+      .map((item) => {
+        const itemObject = asObject(item);
+        if (!itemObject) return null;
+        const balanceRange = asString(itemObject.balance_range);
+        const charge = asString(itemObject.charge);
+        if (!balanceRange || !charge) return null;
+        return { balance_range: balanceRange, charge };
+      })
+      .filter((item): item is { balance_range: string; charge: string } => Boolean(item)),
     status: card.status,
     bankName: card.banks?.name || '',
     bankId: card.bank_id,

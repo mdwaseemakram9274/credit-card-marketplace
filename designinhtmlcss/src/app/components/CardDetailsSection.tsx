@@ -28,6 +28,7 @@ interface CardDetailsSectionProps {
   feeItems?: Array<{ feeType: string; amount: string }>;
   feeWaiverConditions?: string;
   interestRate?: string;
+  latePaymentCharges?: Array<{ balance_range: string; charge: string }>;
 }
 
 export default function CardDetailsSection({
@@ -35,12 +36,14 @@ export default function CardDetailsSection({
   feeItems = [],
   feeWaiverConditions,
   interestRate,
+  latePaymentCharges = [],
 }: CardDetailsSectionProps) {
   // All sections expanded by default for LLM crawlability
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>(({
     cardDetails: true,
     rewards: true,
     fees: true,
+    latePaymentCharges: true,
     perks: true,
   }));
 
@@ -202,6 +205,50 @@ export default function CardDetailsSection({
           </div>
         </div>
       </div>
+
+      {/* Late Payment Charges */}
+      {latePaymentCharges.length > 0 && (
+        <div className="bg-white rounded-2xl border border-gray-200 p-3 md:p-8 mb-8">
+          <button
+            onClick={() => toggleSection('latePaymentCharges')}
+            className="flex items-center justify-between w-full mb-6 group"
+            aria-expanded={expandedSections.latePaymentCharges}
+          >
+            <h2 className="text-h1">Late Payment Charges</h2>
+            <ChevronDown 
+              className={`w-5 h-5 text-gray-600 transition-transform ${expandedSections.latePaymentCharges ? 'rotate-180' : ''}`}
+            />
+          </button>
+
+          {/* Always render content for LLM crawling, but visually collapse it */}
+          <div className={`overflow-hidden transition-all duration-300 ${
+            expandedSections.latePaymentCharges ? 'max-h-[5000px]' : 'max-h-0'
+          }`}>
+            <div className="overflow-x-auto">
+              {/* Header */}
+              <div className="bg-orange-50 rounded-lg p-4 mb-4 border border-orange-200 hidden md:grid md:grid-cols-2 gap-6">
+                <p className="text-button text-black">For Statement Balance</p>
+                <p className="text-button text-black">Late Payment Charge</p>
+              </div>
+              
+              {/* Rows */}
+              <div className="space-y-4">
+                {latePaymentCharges.map((row, index) => (
+                  <div 
+                    key={index} 
+                    className="border-b border-gray-200 pb-4 last:border-0 md:grid md:grid-cols-2 gap-6 flex flex-col"
+                  >
+                    <p className="text-button text-black">{row.balance_range}</p>
+                    <p className="text-body-lg text-gray-700 leading-relaxed">
+                      {row.charge}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Perks */}
       

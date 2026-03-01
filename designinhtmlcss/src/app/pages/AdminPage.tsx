@@ -691,7 +691,7 @@ function AddCardContent({
     joiningFee: editingCard?.joiningFee || '',
     renewalFee: editingCard?.renewalFee || '',
     interestRate: '',
-    latePaymentFee: '',
+    latePaymentCharges: [] as Array<{ balanceRange: string; charge: string }>,
     overlimitFee: '',
     cashAdvanceFee: '',
     foreignTransactionFee: '',
@@ -739,7 +739,7 @@ function AddCardContent({
     joiningFee: card?.joiningFee || '',
     renewalFee: card?.renewalFee || '',
     interestRate: '',
-    latePaymentFee: '',
+    latePaymentCharges: [] as Array<{ balanceRange: string; charge: string }>,
     overlimitFee: '',
     cashAdvanceFee: '',
     foreignTransactionFee: '',
@@ -930,7 +930,6 @@ function AddCardContent({
     };
 
     const standardFees = [
-      { feeType: 'Late Payment Fee', amount: formData.latePaymentFee },
       { feeType: 'Overlimit Fee', amount: formData.overlimitFee },
       { feeType: 'Cash Advance Fee', amount: formData.cashAdvanceFee },
       { feeType: 'Foreign Transaction Fee', amount: formData.foreignTransactionFee },
@@ -978,6 +977,12 @@ function AddCardContent({
         items: [...standardFees, ...formData.customFees],
         fee_waiver_conditions: formData.feeWaiverConditions,
       },
+      late_payment_charges: formData.latePaymentCharges
+        .filter((item) => item.balanceRange.trim() && item.charge.trim())
+        .map((item) => ({
+          balance_range: item.balanceRange.trim(),
+          charge: item.charge.trim(),
+        })),
       status: mode === 'draft' ? 'draft' : (statusMap[formData.status] || 'enabled'),
     } as any;
 
@@ -1524,7 +1529,16 @@ function FeesSection({ formData, setFormData, formErrors, setFormErrors }: { for
   const [customFees, setCustomFees] = useState<Array<{ id: number; feeType: string; amount: string }>>(
     (formData.customFees || []).map((fee: any, index: number) => ({ id: index + 1, feeType: fee.feeType || '', amount: fee.amount || '' }))
   );
-  const [nextId, setNextId] = useState((formData.customFees || []).length + 1);
+  const [nextFeeId, setNextFeeId] = useState((formData.customFees || []).length + 1);
+
+  const [latePaymentCharges, setLatePaymentCharges] = useState<Array<{ id: number; balanceRange: string; charge: string }>>(
+    (formData.latePaymentCharges || []).map((charge: any, index: number) => ({
+      id: index + 1,
+      balanceRange: charge.balanceRange || '',
+      charge: charge.charge || '',
+    }))
+  );
+  const [nextChargeId, setNextChargeId] = useState((formData.latePaymentCharges || []).length + 1);
 
   useEffect(() => {
     setFormData({
@@ -1532,12 +1546,15 @@ function FeesSection({ formData, setFormData, formErrors, setFormErrors }: { for
       customFees: customFees
         .filter((fee) => fee.feeType.trim() || fee.amount.trim())
         .map((fee) => ({ feeType: fee.feeType.trim(), amount: fee.amount.trim() })),
+      latePaymentCharges: latePaymentCharges
+        .filter((charge) => charge.balanceRange.trim() && charge.charge.trim())
+        .map((charge) => ({ balanceRange: charge.balanceRange.trim(), charge: charge.charge.trim() })),
     });
-  }, [customFees]);
+  }, [customFees, latePaymentCharges]);
 
   const addCustomFee = () => {
-    setCustomFees([...customFees, { id: nextId, feeType: '', amount: '' }]);
-    setNextId(nextId + 1);
+    setCustomFees([...customFees, { id: nextFeeId, feeType: '', amount: '' }]);
+    setNextFeeId(nextFeeId + 1);
   };
 
   const removeCustomFee = (id: number) => {
@@ -1547,6 +1564,21 @@ function FeesSection({ formData, setFormData, formErrors, setFormErrors }: { for
   const updateCustomFee = (id: number, field: 'feeType' | 'amount', value: string) => {
     setCustomFees(customFees.map(fee => 
       fee.id === id ? { ...fee, [field]: value } : fee
+    ));
+  };
+
+  const addLatePaymentCharge = () => {
+    setLatePaymentCharges([...latePaymentCharges, { id: nextChargeId, balanceRange: '', charge: '' }]);
+    setNextChargeId(nextChargeId + 1);
+  };
+
+  const removeLatePaymentCharge = (id: number) => {
+    setLatePaymentCharges(latePaymentCharges.filter(charge => charge.id !== id));
+  };
+
+  const updateLatePaymentCharge = (id: number, field: 'balanceRange' | 'charge', value: string) => {
+    setLatePaymentCharges(latePaymentCharges.map(charge => 
+      charge.id === id ? { ...charge, [field]: value } : charge
     ));
   };
 
@@ -1613,19 +1645,6 @@ function FeesSection({ formData, setFormData, formErrors, setFormErrors }: { for
               </tr>
               
               {/* Other Standard Fees */}
-              <tr>
-                <td className="px-4 py-3 text-body-sm text-gray-700">Late Payment Fee</td>
-                <td className="px-4 py-3">
-                  <input
-                    type="text"
-                    placeholder="e.g., ₹500"
-                    value={formData.latePaymentFee}
-                    onChange={(e) => setFormData({ ...formData, latePaymentFee: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </td>
-                <td className="px-4 py-3"></td>
-              </tr>
               <tr>
                 <td className="px-4 py-3 text-body-sm text-gray-700">Overlimit Fee</td>
                 <td className="px-4 py-3">
@@ -1748,6 +1767,64 @@ function FeesSection({ formData, setFormData, formErrors, setFormErrors }: { for
           onChange={(e) => setFormData({ ...formData, feeWaiverConditions: e.target.value })}
           className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
+      </div>
+
+      {/* Late Payment Charges Table */}
+      <div>
+        <label className="block text-label text-gray-700 mb-4 font-semibold">Late Payment Charges</label>
+        <div className="border border-gray-300 rounded-lg overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-3 text-left text-label text-gray-600 uppercase tracking-wider border-b border-gray-300">Balance Range</th>
+                <th className="px-4 py-3 text-left text-label text-gray-600 uppercase tracking-wider border-b border-gray-300">Charge</th>
+                <th className="px-4 py-3 w-16 border-b border-gray-300"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 bg-white">
+              {latePaymentCharges.map((charge) => (
+                <tr key={charge.id} className="bg-orange-50 hover:bg-orange-100 transition-colors">
+                  <td className="px-4 py-3">
+                    <input
+                      type="text"
+                      placeholder="e.g., Less than Rs. 500"
+                      value={charge.balanceRange}
+                      onChange={(e) => updateLatePaymentCharge(charge.id, 'balanceRange', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </td>
+                  <td className="px-4 py-3">
+                    <input
+                      type="text"
+                      placeholder="e.g., Nil"
+                      value={charge.charge}
+                      onChange={(e) => updateLatePaymentCharge(charge.id, 'charge', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <button
+                      onClick={() => removeLatePaymentCharge(charge.id)}
+                      className="p-1.5 hover:bg-red-100 rounded-lg transition-colors"
+                      title="Remove charge"
+                    >
+                      <Trash2 className="w-4 h-4 text-red-600" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Add Late Payment Charge Button */}
+        <button
+          onClick={addLatePaymentCharge}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 mt-3 bg-orange-50 border-2 border-dashed border-orange-300 text-orange-600 rounded-lg text-button hover:bg-orange-100 transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          Add Late Payment Charge Range
+        </button>
       </div>
     </div>
   );

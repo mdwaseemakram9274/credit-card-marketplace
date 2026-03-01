@@ -217,6 +217,7 @@ export default function CreditCardDetailPage() {
           feeItems={card.feeItems || []}
           feeWaiverConditions={card.feeWaiverConditions}
           interestRate={card.interestRate}
+          latePaymentCharges={card.latePaymentCharges || []}
         />
 
         {/* Special Perks Section */}
