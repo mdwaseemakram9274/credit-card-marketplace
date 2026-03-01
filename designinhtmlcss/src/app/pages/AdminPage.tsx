@@ -964,8 +964,7 @@ function AddCardContent({
         cashback_rate: formData.cashbackRate,
         custom_benefits: formData.customBenefits,
       },
-      product_description: formData.productDescription || formData.cardDescription || null,
-      product_features: formData.productFeaturesText.split('\n').map((item) => item.trim()).filter(Boolean),
+      product_description: formData.cardDescription || null,
       special_perks: [
         ...formData.specialPerksText.split('\n').map((item) => item.trim()).filter(Boolean),
         ...formData.offersText.split('\n').map((item) => item.trim()).filter(Boolean),
@@ -1035,7 +1034,6 @@ function AddCardContent({
     { id: 'basic', title: 'Basic Information' },
     { id: 'fees', title: 'Fees & Charges' },
     { id: 'rewards', title: 'Rewards & Benefits Details' },
-    { id: 'product', title: 'Product Details & Description' },
     { id: 'perks', title: 'Special Perks & Offers' },
     { id: 'eligibility', title: 'Eligibility Criteria' },
     { id: 'pros', title: 'Pros & Cons' },
@@ -1445,33 +1443,6 @@ function FormSection({ sectionId, cardTypes, cardTypeOptions, cardNetworks, bank
   if (sectionId === 'rewards') {
     return (
       <RewardsSection formData={formData} setFormData={setFormData} />
-    );
-  }
-
-  if (sectionId === 'product') {
-    return (
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Product Description</label>
-          <textarea
-            rows={5}
-            placeholder="Enter a detailed description of the product..."
-            value={formData.productDescription}
-            onChange={(e) => setFormData({ ...formData, productDescription: e.target.value })}
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Product Features (One per line)</label>
-          <textarea
-            rows={5}
-            placeholder="Enter each feature on a new line..."
-            value={formData.productFeaturesText}
-            onChange={(e) => setFormData({ ...formData, productFeaturesText: e.target.value })}
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-      </div>
     );
   }
 

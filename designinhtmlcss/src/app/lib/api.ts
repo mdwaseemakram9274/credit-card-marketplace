@@ -333,6 +333,14 @@ export function mapApiCardToUi(card: ApiCard) {
       )
     : [];
 
+  const primaryCardType = asString(card.card_types?.name);
+  if (
+    primaryCardType &&
+    !categories.some((item) => item.toLowerCase() === primaryCardType.toLowerCase())
+  ) {
+    categories.push(primaryCardType);
+  }
+
   const eligibility =
     card.eligibility_criteria &&
     typeof card.eligibility_criteria === 'object' &&

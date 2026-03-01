@@ -88,6 +88,14 @@ export default function CreditCardDetailPage() {
       ? [card.network.trim()]
       : [];
 
+  const categoryLabels = Array.from(
+    new Set(
+      (Array.isArray(card.categories) ? card.categories : [])
+        .map((item: string) => (typeof item === 'string' ? item.trim() : ''))
+        .filter(Boolean)
+    )
+  );
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -120,7 +128,7 @@ export default function CreditCardDetailPage() {
               
               {/* Categories */}
               <div className="flex gap-1.5 sm:gap-2 flex-wrap justify-center mt-6 sm:mt-8">
-                {card.categories.map((category, index) => {
+                {categoryLabels.map((category, index) => {
                   const style = categoryStyles[category] || categoryStyles["Default"];
                   return (
                     <div
@@ -206,8 +214,6 @@ export default function CreditCardDetailPage() {
         {/* Card Details Section */}
         <CardDetailsSection
           rewardsDetails={card.rewardsDetails}
-          productDescription={card.productDescription || card.description}
-          productFeatures={card.productFeatures || []}
           feeItems={card.feeItems || []}
           feeWaiverConditions={card.feeWaiverConditions}
           interestRate={card.interestRate}

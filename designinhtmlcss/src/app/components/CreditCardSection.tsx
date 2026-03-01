@@ -322,8 +322,10 @@ export function CreditCard({ id, image, title, joiningFee, renewalFee, benefits,
 
 // Main Component
 export default function CreditCardSection() {
+  const normalizeLabel = (value: string) => value.trim().toLowerCase();
+
   const getTabIcon = (label: string) => {
-    const normalized = label.trim().toLowerCase();
+    const normalized = normalizeLabel(label);
 
     if (normalized.includes('travel')) return <TravelIcon />;
     if (normalized.includes('shop')) return <ShoppingIcon />;
@@ -365,7 +367,9 @@ export default function CreditCardSection() {
   const filteredCards =
     selectedTab === 'All Cards'
       ? cards
-      : cards.filter((card) => card.categories.some((category) => category === selectedTab));
+      : cards.filter((card) =>
+          card.categories.some((category) => normalizeLabel(category) === normalizeLabel(selectedTab))
+        );
 
   useEffect(() => {
     let active = true;

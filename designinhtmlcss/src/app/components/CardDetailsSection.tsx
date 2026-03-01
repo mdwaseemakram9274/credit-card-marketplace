@@ -25,8 +25,6 @@ interface CardDetailsSectionProps {
     cashbackRate?: string;
     customBenefits?: string[];
   };
-  productDescription?: string;
-  productFeatures?: string[];
   feeItems?: Array<{ feeType: string; amount: string }>;
   feeWaiverConditions?: string;
   interestRate?: string;
@@ -34,8 +32,6 @@ interface CardDetailsSectionProps {
 
 export default function CardDetailsSection({
   rewardsDetails,
-  productDescription,
-  productFeatures = [],
   feeItems = [],
   feeWaiverConditions,
   interestRate,
@@ -44,7 +40,6 @@ export default function CardDetailsSection({
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>(({
     cardDetails: true,
     rewards: true,
-    product: true,
     fees: true,
     perks: true,
   }));
@@ -159,43 +154,6 @@ export default function CardDetailsSection({
                   </div>
                 ))}
               </div>
-            ) : null}
-          </div>
-        </div>
-      </div>
-
-      {/* Product Details */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-3 md:p-8 mb-8">
-        <button
-          onClick={() => toggleSection('product')}
-          className="flex items-center justify-between w-full mb-6 group"
-          aria-expanded={expandedSections.product}
-        >
-          <h2 className="text-xl md:text-2xl font-semibold text-black">Product Details</h2>
-          <ChevronDown 
-            className={`w-5 h-5 text-gray-600 transition-transform ${expandedSections.product ? 'rotate-180' : ''}`}
-          />
-        </button>
-        
-        {/* Always render content for LLM crawling, but visually collapse it */}
-        <div className={`overflow-hidden transition-all duration-300 ${
-          expandedSections.product ? 'max-h-[5000px]' : 'max-h-0'
-        }`}>
-          <div className="space-y-4">
-            {productDescription && productDescription.trim() ? (
-              <p className="text-base text-gray-700 leading-relaxed">
-                {productDescription.trim()}
-              </p>
-            ) : null}
-
-            {productFeatures.length ? (
-              <ul className="space-y-2 ml-6">
-                {productFeatures.map((feature, index) => (
-                  <li key={index} className="list-disc text-base text-gray-700 leading-relaxed">
-                    {feature}
-                  </li>
-                ))}
-              </ul>
             ) : null}
           </div>
         </div>
