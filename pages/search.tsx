@@ -1,27 +1,93 @@
 import React from 'react';
 import Head from 'next/head';
 import { CardSearchPanel } from '../designinhtmlcss/src/app/components/CardSearchPanel';
+import {
+  generateSearchActionSchema,
+  generateOpenGraphTags,
+  generateTwitterCardTags,
+} from '../lib/utils/schemaGenerator';
 
 /**
  * Search Results Page
  * Dedicated page for advanced credit card search with filtering
  */
 const SearchPage: React.FC = () => {
+  const baseUrl = 'https://creditcardmarketplace.com';
+  const pageUrl = `${baseUrl}/search`;
+  const title = 'Find Your Perfect Credit Card - Compare & Search';
+  const description =
+    'Search and filter credit cards by network, bank, fees, benefits, and more. Find the perfect credit card for your financial needs.';
+
+  const ogTags = generateOpenGraphTags({
+    title,
+    description,
+    url: pageUrl,
+    type: 'website',
+  });
+
+  const twitterTags = generateTwitterCardTags({
+    title,
+    description,
+    card: 'summary',
+  });
+
+  const searchSchema = generateSearchActionSchema(baseUrl);
+
   return (
     <>
       <Head>
-        <title>Search Credit Cards - Find Your Perfect Card</title>
-        <meta
-          name="description"
-          content="Search and filter credit cards by network, bank, fees, benefits, and more. Find the perfect credit card for your needs."
-        />
+        <title>{title}</title>
+        <meta name="description" content={description} />
         <meta name="robots" content="index, follow" />
-        <meta property="og:title" content="Search Credit Cards - Find Your Perfect Card" />
-        <meta
-          property="og:description"
-          content="Advanced search with filters for credit cards"
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="charset" content="utf-8" />
+        <meta name="keywords" content="credit cards, search, compare, filters, best cards" />
+
+        {/* Open Graph Tags */}
+        {Object.entries(ogTags).map(([key, value]) => (
+          <meta key={`og-${key}`} property={key} content={String(value)} />
+        ))}
+
+        {/* Twitter Card Tags */}
+        {Object.entries(twitterTags).map(([key, value]) => (
+          <meta key={`twitter-${key}`} name={key} content={String(value)} />
+        ))}
+
+        {/* Canonical URL */}
+        <link rel="canonical" href={pageUrl} />
+
+        {/* JSON-LD for Search */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(searchSchema),
+          }}
         />
-        <meta property="og:type" content="website" />
+
+        {/* Breadcrumb Schema */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'BreadcrumbList',
+              itemListElement: [
+                {
+                  '@type': 'ListItem',
+                  position: 1,
+                  name: 'Home',
+                  item: baseUrl,
+                },
+                {
+                  '@type': 'ListItem',
+                  position: 2,
+                  name: 'Search Cards',
+                  item: pageUrl,
+                },
+              ],
+            }),
+          }}
+        />
       </Head>
 
       <main>
@@ -40,18 +106,6 @@ const SearchPage: React.FC = () => {
         <section style={{ padding: '40px 0' }}>
           <CardSearchPanel />
         </section>
-
-        {/* SEO Schema */}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'SearchAction',
-            target: {
-              '@type': 'EntryPoint',
-              urlTemplate: 'https://your-domain.com/search?q={query}',
-            },
-          })}
-        </script>
       </main>
     </>
   );

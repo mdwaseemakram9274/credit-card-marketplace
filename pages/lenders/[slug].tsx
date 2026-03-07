@@ -2,6 +2,12 @@ import type { NextPage, GetStaticProps, GetStaticPaths } from 'next';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
 import { getSupabaseServerClient } from '@/lib/supabase-server';
+import {
+  generateOrganizationSchema,
+  generateBreadcrumbSchema,
+  generateOpenGraphTags,
+  generateTwitterCardTags,
+} from '@/lib/utils/schemaGenerator';
 
 // Dynamically import lender page
 const LenderPage = dynamic(
@@ -22,13 +28,48 @@ interface LenderPageProps {
 }
 
 const LenderDetailPage: NextPage<LenderPageProps> = ({ lenderId, lender }) => {
+  const baseUrl = 'https://creditcardmarketplace.com';
   const title = lender
-    ? `${lender.name} Credit Cards | Best Offers 2026 | Fintech`
-    : 'Bank Credit Cards | Fintech';
+    ? `${lender.name} Credit Cards | Compare Best Offers 2025`
+    : 'Bank Credit Cards';
 
-  const description = lender?.description 
+  const description = lender?.description
     ? lender.description.slice(0, 160)
     : `Explore all credit cards from ${lender?.name}. Compare features, fees, and benefits.`;
+
+  const pageUrl = `${baseUrl}/lenders/${lenderId}`;
+
+  // Generate structured data
+  const organizationSchema = lender
+    ? generateOrganizationSchema({
+        name: lender.name,
+        url: pageUrl,
+        logo: lender.logo_url,
+        description: description,
+      })
+    : null;
+
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { position: 1, name: 'Home', item: baseUrl },
+    { position: 2, name: 'Lenders', item: `${baseUrl}/lenders` },
+    { position: 3, name: lender?.name || 'Bank' },
+  ]);
+
+  const ogTags = generateOpenGraphTags({
+    title,
+    description,
+    url: pageUrl,
+    image: lender?.logo_url,
+    imageAlt: `${lender?.name} logo`,
+    type: 'website',
+  });
+
+  const twitterTags = generateTwitterCardTags({
+    title,
+    description,
+    image: lender?.logo_url,
+    card: 'summary_large_image',
+  });
 
   return (
     <>
@@ -36,50 +77,35 @@ const LenderDetailPage: NextPage<LenderPageProps> = ({ lenderId, lender }) => {
         <title>{title}</title>
         <meta name="description" content={description} />
         <meta name="robots" content="index, follow" />
-        <meta property="og:title" content={title} />
-        <meta property="og:description" content={description} />
-        {lender?.logo_url && <meta property="og:image" content={lender.logo_url} />}
-        <meta property="og:type" content="website" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="canonical" href={`https://fintech.com/lenders/${lenderId}`} />
+        <meta name="charset" content="utf-8" />
 
-        {/* JSON-LD Schema for Organization */}
+        {/* Open Graph Tags */}
+        {Object.entries(ogTags).map(([key, value]) => (
+          <meta key={`og-${key}`} property={key} content={String(value)} />
+        ))}
+
+        {/* Twitter Card Tags */}
+        {Object.entries(twitterTags).map(([key, value]) => (
+          <meta key={`twitter-${key}`} name={key} content={String(value)} />
+        ))}
+
+        {/* Canonical URL */}
+        <link rel="canonical" href={pageUrl} />
+
+        {/* JSON-LD Schemas */}
+        {organizationSchema && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(organizationSchema),
+            }}
+          />
+        )}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org/',
-              '@type': 'Organization',
-              name: lender?.name,
-              url: `https://fintech.com/lenders/${lenderId}`,
-              logo: lender?.logo_url,
-              description: description,
-            }),
-          }}
-        />
-
-        {/* Breadcrumb Schema */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org/',
-              '@type': 'BreadcrumbList',
-              itemListElement: [
-                {
-                  '@type': 'ListItem',
-                  position: 1,
-                  name: 'Home',
-                  item: 'https://fintech.com',
-                },
-                {
-                  '@type': 'ListItem',
-                  position: 2,
-                  name: lender?.name,
-                  item: `https://fintech.com/lenders/${lenderId}`,
-                },
-              ],
-            }),
+            __html: JSON.stringify(breadcrumbSchema),
           }}
         />
       </Head>
