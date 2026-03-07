@@ -16,14 +16,16 @@ import {
   Building2,
   FileText,
   Upload,
-  X
+  X,
+  HelpCircle
 } from 'lucide-react';
 import { Link } from 'react-router';
 import { CreditCard as CreditCardPreview } from '../components/CreditCardSection';
 import { HomepageSectionsManager } from '../components/HomepageSectionsManager';
+import { FAQManager } from '../components/FAQManager';
 import { api, ApiCard, ApiMetaItem, mapApiCardToUi } from '../lib/api';
 
-type TabType = 'dashboard' | 'add-card' | 'banks' | 'homepage';
+type TabType = 'dashboard' | 'add-card' | 'banks' | 'homepage' | 'faqs';
 
 type AdminCardRow = {
   id: string;
@@ -289,6 +291,17 @@ export default function AdminPage() {
             <Home className="w-4 h-4" />
             Homepage
           </button>
+          <button
+            onClick={() => setActiveTab('faqs')}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-button transition-colors ${
+              activeTab === 'faqs'
+                ? 'bg-blue-700 text-white'
+                : 'text-blue-100 hover:bg-blue-700 hover:text-white'
+            }`}
+          >
+            <HelpCircle className="w-4 h-4" />
+            FAQs
+          </button>
           
           {/* Back to Website Link */}
           <Link
@@ -404,6 +417,14 @@ export default function AdminPage() {
             ) : (
               <div className="p-6 text-center text-gray-600">
                 Please login to manage homepage sections.
+              </div>
+            )
+          ) : activeTab === 'faqs' ? (
+            isAuthenticated && api.getToken() ? (
+              <FAQManager adminToken={api.getToken()!} />
+            ) : (
+              <div className="p-6 text-center text-gray-600">
+                Please login to manage FAQs.
               </div>
             )
           ) : (
