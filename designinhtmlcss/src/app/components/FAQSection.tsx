@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Minus, MessageCircle } from 'lucide-react';
+import { useFAQs, type FAQ } from '../../lib/hooks/useFAQs';
 
 interface FAQItem {
   question: string;
@@ -7,11 +8,8 @@ interface FAQItem {
   category: string;
 }
 
-export function FAQSection() {
-  // Start with all FAQs expanded for LLM crawlability
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-
-  const faqs: FAQItem[] = [
+// Fallback FAQs in case API is unavailable
+const FALLBACK_FAQS: FAQItem[] = [
     {
       question: "What is the minimum credit score required to get a credit card?",
       answer: "Most banks require a credit score of 700 or above for regular credit cards. Premium cards typically require 750+. However, if you're applying for the first time or have no credit history, you can opt for secured credit cards or student credit cards which have more lenient requirements.",
@@ -89,6 +87,29 @@ export function FAQSection() {
     },
   ];
 
+export function FAQSection() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const { faqs: apiFAQs, loading } = useFAQs();
+
+  // Transform API FAQs to component format
+  const transformedFAQs: FAQItem[] = apiFAQs
+    .filter((faq) => faq.is_active)
+    .sort((a, b) => {
+      // Featured FAQs first, then by display order
+      if (a.is_featured !== b.is_featured) {
+        return b.is_featured ? 1 : -1;
+      }
+      return a.display_order - b.display_order;
+    })
+    .map((faq) => ({
+      question: faq.question,
+      answer: faq.answer,
+      category: faq.category,
+    }));
+
+  // Use API FAQs if available, otherwise use fallback
+  const faqs = transformedFAQs.length > 0 ? transformedFAQs : FALLBACK_FAQS;
+
   const toggleFAQ = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
   };
@@ -106,9 +127,17 @@ export function FAQSection() {
           </p>
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-12">
+            <p className="text-body text-gray-600">Loading FAQs...</p>
+          </div>
+        )}
+
         {/* FAQ List */}
-        <div className="bg-white rounded-2xl overflow-hidden border border-gray-200">
-          {faqs.map((faq, index) => {
+        {!loading && (
+          <div className="bg-white rounded-2xl overflow-hidden border border-gray-200">
+            {faqs.map((faq, index) => {
             const isOpen = openIndex === index;
             const isLast = index === faqs.length - 1;
             
@@ -147,6 +176,7 @@ export function FAQSection() {
             );
           })}
         </div>
+        )}
 
         {/* Help CTA */}
         <div className="mt-12 text-center">
