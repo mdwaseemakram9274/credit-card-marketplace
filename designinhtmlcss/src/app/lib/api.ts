@@ -57,7 +57,9 @@ function asObject(value: unknown): Record<string, unknown> | null {
 
 const API_BASE_URL =
   ((globalThis as any).__API_BASE_URL__ as string | undefined) ||
-  (import.meta.env.VITE_API_BASE_URL as string | undefined) ||
+  (typeof import !== 'undefined' && typeof import.meta !== 'undefined'
+    ? (import.meta.env?.VITE_API_BASE_URL as string | undefined)
+    : undefined) ||
   (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:4000' : '');
 const TOKEN_KEY = 'admin_token';
 const PERSIST_KEY = 'admin_token_persist';
