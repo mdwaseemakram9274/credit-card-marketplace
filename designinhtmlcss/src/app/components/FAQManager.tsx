@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styles from './FAQManager.module.css';
-import { useFAQs, type FAQ } from '../../../lib/hooks/useFAQs';
+import { useFAQs, type FAQ } from '../../../../lib/hooks/useFAQs';
 import { Plus, Edit2, Trash2, X } from 'lucide-react';
 
 type Props = {

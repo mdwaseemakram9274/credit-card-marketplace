@@ -39,8 +39,8 @@ export interface SearchResult {
   categories?: string[];
   product_description?: string;
   rewards_details?: Record<string, any>;
-  banks?: { id: string; name: string; slug: string };
-  card_networks?: { id: string; name: string };
+  banks?: { id: string; name: string; slug: string } | { id: any; name: any; slug: any } | any[];
+  card_networks?: { id: string; name: string } | { id: any; name: any } | any[];
 }
 
 export interface SearchResponse {

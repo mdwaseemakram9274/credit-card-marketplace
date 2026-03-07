@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import type { SearchFilters, SearchResponse, SearchResult } from '../../../pages/api/cards/search';
+import type { SearchFilters, SearchResponse, SearchResult } from '../../pages/api/cards/search';
 import { normalizePaginationParams, calculatePaginationMeta, type PaginationMeta } from '../utils/pagination';
 
 interface UseSearch {
@@ -205,7 +205,14 @@ export async function fetchFilterOptions() {
       new Set(cards.map((c: SearchResult) => c.network).filter(Boolean))
     ) as string[];
     const banks = Array.from(
-      new Set(cards.map((c: SearchResult) => c.banks?.name).filter(Boolean))
+      new Set(
+        cards
+          .map((c: SearchResult) => {
+            const bank = Array.isArray(c.banks) ? c.banks[0] : c.banks;
+            return bank?.name;
+          })
+          .filter(Boolean)
+      )
     ) as string[];
     const categories = Array.from(
       new Set(cards.flatMap((c: SearchResult) => c.categories || []))

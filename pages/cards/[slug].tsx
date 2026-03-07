@@ -23,7 +23,7 @@ interface CardPageProps {
     description?: string;
     slug?: string;
     card_image_url?: string;
-    banks?: { name: string; slug: string };
+    banks?: { name: string; slug: string } | { name: any; slug: any }[];
     annual_fee?: string;
     joining_fee?: string;
     welcome_bonus?: string;
@@ -56,19 +56,21 @@ const CardDetailPage: NextPage<CardPageProps> = ({ cardId, card }) => {
           'Annual Fee': card.annual_fee || 'Contact Bank',
           'Joining Fee': card.joining_fee || 'Contact Bank',
           'Welcome Bonus': card.welcome_bonus || 'No Bonus',
-          Bank: card.banks?.name || 'Unknown Bank',
+          Bank: (Array.isArray(card.banks) ? card.banks[0]?.name : card.banks?.name) || 'Unknown Bank',
           Network: 'Visa/Mastercard',
         },
       })
     : null;
+
+  const bankInfo = card?.banks ? (Array.isArray(card.banks) ? card.banks[0] : card.banks) : null;
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { position: 1, name: 'Home', item: baseUrl },
     { position: 2, name: 'Cards', item: `${baseUrl}/cards` },
     {
       position: 3,
-      name: card?.banks?.name || 'Bank',
-      item: `${baseUrl}/lenders/${card?.banks?.slug}`,
+      name: bankInfo?.name || 'Bank',
+      item: `${baseUrl}/lenders/${bankInfo?.slug}`,
     },
     { position: 4, name: card?.card_name || 'Card' },
   ]);

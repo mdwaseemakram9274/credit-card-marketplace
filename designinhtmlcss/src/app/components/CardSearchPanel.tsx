@@ -421,7 +421,11 @@ export const CardSearchPanel: React.FC = () => {
                     )}
                     <div className={styles.cardContent}>
                       <h4>{card.card_name}</h4>
-                      {card.banks && <p className={styles.bank}>{card.banks.name}</p>}
+                      {card.banks && (
+                        <p className={styles.bank}>
+                          {Array.isArray(card.banks) ? card.banks[0]?.name : card.banks.name}
+                        </p>
+                      )}
 
                       {card.network && <span className={styles.network}>{card.network}</span>}
 

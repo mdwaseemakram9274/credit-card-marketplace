@@ -4,7 +4,7 @@ import {
   generateOpenGraphTags,
   generateTwitterCardTags,
   type SchemaGeneratorOptions,
-} from './schemaGenerator';
+} from '../utils/schemaGenerator';
 
 interface MetaTagsProps {
   title: string;

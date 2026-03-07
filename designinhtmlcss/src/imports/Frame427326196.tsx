@@ -321,7 +321,7 @@ function Frame31() {
 function Frame38() {
   return (
     <div className="content-stretch flex flex-[1_0_0] items-center min-h-px min-w-px relative">
-      <ol className="block flex-[1_0_0] font-['Inter:Regular',sans-serif] font-normal leading-[0] min-h-px min-w-px not-italic relative text-[#111928] text-[16px] whitespace-pre-wrap" start="1">
+      <ol className="block flex-[1_0_0] font-['Inter:Regular',sans-serif] font-normal leading-[0] min-h-px min-w-px not-italic relative text-[#111928] text-[16px] whitespace-pre-wrap" start={1}>
         <li className="mb-0 ms-[24px]">
           <span className="leading-[1.5]">{`You can redeem reward points for air tickets and AirMiles (1 RP = 0.50 Air Mile) on select airlines. `}</span>
         </li>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styles from './HomepageSectionsManager.module.css';
-import { useHomepageSections, type HomepageSection } from '../../../lib/hooks/useHomepageSections';
+import { useHomepageSections, type HomepageSection } from '../../../../lib/hooks/useHomepageSections';
 
 type Props = {
   adminToken: string;

@@ -263,7 +263,7 @@ function Frame54() {
     <div className="content-stretch flex flex-col gap-[7px] items-start relative shrink-0 w-full">
       <div className="h-[134px] relative shrink-0 w-[210px]" data-name="BOBCARD Premier">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <img alt="" className="absolute h-[114.24%] left-[-5.37%] max-w-none top-[-7.82%] w-[111.74%]" src={imgBobcardPremier} />
+          <img alt="" className="absolute h-[114.24%] left-[-5.37%] max-w-none top-[-7.82%] w-[111.74%]" src={typeof imgBobcardPremier === 'string' ? imgBobcardPremier : imgBobcardPremier.src} />
         </div>
       </div>
       <Frame55 />
@@ -990,7 +990,7 @@ function Frame65() {
     <div className="content-stretch flex flex-col gap-[7px] items-start relative shrink-0 w-full">
       <div className="h-[134px] relative shrink-0 w-[210px]" data-name="BOBCARD Premier">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <img alt="" className="absolute h-[114.24%] left-[-5.37%] max-w-none top-[-7.82%] w-[111.74%]" src={imgBobcardPremier} />
+          <img alt="" className="absolute h-[114.24%] left-[-5.37%] max-w-none top-[-7.82%] w-[111.74%]" src={typeof imgBobcardPremier === 'string' ? imgBobcardPremier : imgBobcardPremier.src} />
         </div>
       </div>
       <Frame66 />
@@ -1717,7 +1717,7 @@ function Frame75() {
     <div className="content-stretch flex flex-col gap-[7px] items-start relative shrink-0 w-full">
       <div className="h-[134px] relative shrink-0 w-[210px]" data-name="BOBCARD Premier">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <img alt="" className="absolute h-[114.24%] left-[-5.37%] max-w-none top-[-7.82%] w-[111.74%]" src={imgBobcardPremier} />
+          <img alt="" className="absolute h-[114.24%] left-[-5.37%] max-w-none top-[-7.82%] w-[111.74%]" src={typeof imgBobcardPremier === 'string' ? imgBobcardPremier : imgBobcardPremier.src} />
         </div>
       </div>
       <Frame76 />

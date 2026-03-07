@@ -268,8 +268,8 @@ export function generateMetaTags(options: {
   canonical?: string;
   author?: string;
   keywords?: string[];
-  openGraph?: Parameters<typeof generateOpenGraphTags>[0];
-  twitter?: Parameters<typeof generateTwitterCardTags>[0];
+  openGraph?: false | Parameters<typeof generateOpenGraphTags>[0];
+  twitter?: false | Parameters<typeof generateTwitterCardTags>[0];
   schema?: any[];
 }) {
   const metaTags: { [key: string]: string }[] = [];

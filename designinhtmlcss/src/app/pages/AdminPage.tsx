@@ -441,7 +441,7 @@ export default function AdminPage() {
                 setActiveTab('dashboard');
               }}
             />
-          )}}
+          )}
         </main>
       </div>
     </div>

@@ -23,6 +23,9 @@ type ApiResponse = {
   data?: FAQ | FAQ[];
   message?: string;
   error?: string;
+  total?: number;
+  limit?: number;
+  offset?: number;
 };
 
 type AdminPayload = {
