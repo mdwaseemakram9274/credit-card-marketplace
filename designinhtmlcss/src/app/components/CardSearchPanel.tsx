@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearch, fetchFilterOptions } from '../../lib/hooks/useSearch';
+import { PaginationControls } from './PaginationControls';
 import styles from './CardSearchPanel.module.css';
 import {
   Search,
@@ -23,7 +24,7 @@ interface FilterOptions {
 }
 
 export const CardSearchPanel: React.FC = () => {
-  const { results, total, loading, error, filters, updateFilters, search, resetFilters } =
+  const { results, total, loading, error, filters, pagination, updateFilters, search, goToPage, resetFilters } =
     useSearch();
   const [showFilters, setShowFilters] = useState(false);
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
@@ -464,13 +465,16 @@ export const CardSearchPanel: React.FC = () => {
                 ))}
               </div>
 
-              {/* Limited results notice */}
-              {results.length < total && (
-                <div className={styles.loadMore}>
-                  <p>
-                    Showing {results.length} of {total} results
-                  </p>
-                </div>
+              {/* Pagination Controls */}
+              {pagination.totalPages > 1 && (
+                <PaginationControls
+                  currentPage={pagination.currentPage}
+                  totalPages={pagination.totalPages}
+                  pageSize={pagination.pageSize}
+                  totalItems={pagination.totalItems}
+                  onPageChange={goToPage}
+                  showSummary={true}
+                />
               )}
             </>
           )}

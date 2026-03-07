@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { SearchFilters, SearchResponse, SearchResult } from '../../../pages/api/cards/search';
+import { normalizePaginationParams, calculatePaginationMeta, type PaginationMeta } from '../utils/pagination';
 
 interface UseSearch {
   results: SearchResult[];
@@ -7,8 +8,10 @@ interface UseSearch {
   loading: boolean;
   error: string | null;
   filters: SearchFilters;
+  pagination: PaginationMeta;
   updateFilters: (filters: Partial<SearchFilters>) => void;
   search: (newFilters?: Partial<SearchFilters>) => Promise<void>;
+  goToPage: (page: number) => Promise<void>;
   resetFilters: () => void;
 }
 
@@ -26,6 +29,17 @@ const DEFAULT_FILTERS: SearchFilters = {
   status: 'enabled',
 };
 
+const DEFAULT_PAGINATION: PaginationMeta = {
+  currentPage: 1,
+  pageSize: 20,
+  totalItems: 0,
+  totalPages: 0,
+  hasNextPage: false,
+  hasPreviousPage: false,
+  startIndex: 0,
+  endIndex: 0,
+};
+
 /**
  * useSearch Hook
  * Manages card search state and performs API calls with advanced filtering
@@ -36,6 +50,7 @@ export function useSearch(): UseSearch {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<SearchFilters>(DEFAULT_FILTERS);
+  const [pagination, setPagination] = useState<PaginationMeta>(DEFAULT_PAGINATION);
 
   /**
    * Perform search with current filters
@@ -94,6 +109,22 @@ export function useSearch(): UseSearch {
         setResults(data.data);
         setTotal(data.total);
         setFilters(mergedFilters);
+
+        // Calculate pagination metadata
+        const pageSize = mergedFilters.limit || 20;
+        const offset = mergedFilters.offset || 0;
+        const paginationParams = normalizePaginationParams({
+          offset,
+          limit: pageSize,
+        });
+
+        const paginationMeta = calculatePaginationMeta({
+          page: paginationParams.page,
+          pageSize,
+          total: data.total,
+        });
+
+        setPagination(paginationMeta);
       } catch (err: any) {
         console.error('Search error:', err);
         setError(err.message || 'Failed to search cards');
@@ -116,12 +147,25 @@ export function useSearch(): UseSearch {
   );
 
   /**
+   * Navigate to a specific page
+   */
+  const goToPage = useCallback(
+    async (page: number) => {
+      const pageSize = filters.limit || 20;
+      const offset = (page - 1) * pageSize;
+      await search({ ...filters, offset });
+    },
+    [filters, search]
+  );
+
+  /**
    * Reset all filters to defaults
    */
   const resetFilters = useCallback(() => {
     setFilters(DEFAULT_FILTERS);
     setResults([]);
     setTotal(0);
+    setPagination(DEFAULT_PAGINATION);
   }, []);
 
   // Auto-trigger search when filters change
@@ -137,8 +181,10 @@ export function useSearch(): UseSearch {
     loading,
     error,
     filters,
+    pagination,
     updateFilters,
     search,
+    goToPage,
     resetFilters,
   };
 }

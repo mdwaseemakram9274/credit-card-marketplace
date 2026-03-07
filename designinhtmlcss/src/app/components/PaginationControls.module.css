@@ -1,0 +1,161 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  padding: 24px 16px;
+  background: white;
+  border-top: 1px solid #e9ecef;
+  margin-top: 32px;
+}
+
+.summary {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.navButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  color: #667eea;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.navButton:hover:not(:disabled) {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+  transform: translateY(-1px);
+}
+
+.navButton:disabled {
+  color: #ccc;
+  border-color: #e9ecef;
+  cursor: not-allowed;
+  background: #f8f9fa;
+}
+
+.navButton svg {
+  width: 18px;
+  height: 18px;
+}
+
+.pageNumbers {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.pageNumber {
+  min-width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  color: #666;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pageNumber:hover {
+  background: #f8f9fa;
+  border-color: #667eea;
+  color: #667eea;
+}
+
+.pageNumber.current {
+  background: #667eea;
+  border-color: #667eea;
+  color: white;
+  font-weight: 600;
+}
+
+.ellipsis {
+  color: #999;
+  padding: 0 4px;
+  font-size: 13px;
+}
+
+.info {
+  font-size: 13px;
+  color: #999;
+}
+
+.pageInfo {
+  display: inline-block;
+  padding: 4px 8px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  color: #666;
+  font-weight: 500;
+}
+
+/* Mobile Responsive */
+@media (max-width: 640px) {
+  .container {
+    padding: 16px 12px;
+    gap: 12px;
+  }
+
+  .pagination {
+    gap: 4px;
+  }
+
+  .navButton {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .navButton span {
+    display: none;
+  }
+
+  .navButton svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .pageNumber {
+    min-width: 28px;
+    height: 28px;
+    font-size: 12px;
+    padding: 3px 6px;
+  }
+
+  .pageNumbers {
+    gap: 2px;
+  }
+
+  .summary {
+    font-size: 12px;
+  }
+
+  .info {
+    font-size: 12px;
+  }
+}
