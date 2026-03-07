@@ -2,7 +2,7 @@
 
 SEO-focused credit card marketplace with a dynamic static HTML flow:
 
-**Latest Deployment:** 2025-03-07 - TypeScript compilation fixes applied
+**Latest Deployment:** 2025-03-07 - Build fix complete, import.meta safely handled
 
 - Home: `index.html` / `/`
 - Bank list page: `/bank.html?bank=hdfc`
