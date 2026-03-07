@@ -34,6 +34,17 @@ const legacyRedirects = [
 ]
 
 module.exports = {
+	async rewrites() {
+		return {
+			beforeFiles: [
+				// SEO-friendly rewrites: serve clean URLs but keep hash routing internally
+				// This allows Google to crawl /cards/slug and /lenders/slug without showing the hash
+				{ source: '/cards/:slug', destination: '/designinhtmlcss/index.html#/card/:slug' },
+				{ source: '/lenders/:slug', destination: '/designinhtmlcss/index.html#/lender/:slug' },
+				{ source: '/admin', destination: '/designinhtmlcss/index.html#/admin' },
+			],
+		};
+	},
 	async redirects() {
 		return legacyRedirects.map((entry) => ({
 			...entry,
@@ -42,6 +53,14 @@ module.exports = {
 	},
 	async headers() {
 		return [
+			{
+				source: '/:path*',
+				headers: [
+					{ key: 'X-Content-Type-Options', value: 'nosniff' },
+					{ key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+					{ key: 'X-XSS-Protection', value: '1; mode=block' },
+				],
+			},
 			{
 				source: '/designinhtmlcss/index.html',
 				headers: [

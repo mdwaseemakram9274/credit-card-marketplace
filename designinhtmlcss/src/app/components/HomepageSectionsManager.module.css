@@ -1,0 +1,268 @@
+.container {
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 8px;
+}
+
+.container h2 {
+  margin: 0 0 20px 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #111;
+}
+
+.error {
+  background: #fee;
+  color: #c11;
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 20px;
+  height: 600px;
+}
+
+.sectionList {
+  display: flex;
+  flex-direction: column;
+  background: #f5f5f5;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+}
+
+.sectionList h3 {
+  margin: 0;
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.listContent {
+  overflow-y: auto;
+  flex: 1;
+  padding: 8px;
+}
+
+.sectionItem {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 200ms;
+}
+
+.sectionItem:hover {
+  background: #fff8f0;
+  border-color: #ff9800;
+}
+
+.sectionItem.active {
+  background: #fff3e0;
+  border: 2px solid #ff9800;
+}
+
+.sectionItemName {
+  font-weight: 500;
+  font-size: 14px;
+  color: #111;
+  margin-bottom: 6px;
+}
+
+.sectionItemMeta {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.type {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+
+.status {
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-weight: 500;
+}
+
+.status.active {
+  background: #c8e6c9;
+  color: #2e7d32;
+}
+
+.status.inactive {
+  background: #ffcdd2;
+  color: #c62828;
+}
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.editorHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #fafafa;
+}
+
+.editorHeader h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111;
+}
+
+.key {
+  margin: 4px 0 0 0;
+  font-size: 12px;
+  color: #666;
+  font-family: 'Monaco', monospace;
+}
+
+.controls {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #666;
+}
+
+.checkbox input {
+  cursor: pointer;
+}
+
+.editorContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  overflow: hidden;
+}
+
+.editorContent label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.editorContent textarea {
+  flex: 1;
+  padding: 10px;
+  font-family: 'Monaco', 'Courier New', monospace;
+  font-size: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  resize: none;
+  line-height: 1.5;
+  color: #111;
+}
+
+.editorContent textarea:disabled {
+  background: #f5f5f5;
+  color: #999;
+}
+
+.editorFooter {
+  display: flex;
+  gap: 8px;
+  padding: 16px;
+  border-top: 1px solid #e0e0e0;
+  background: #fafafa;
+}
+
+.saveBtn {
+  flex: 1;
+  padding: 10px 16px;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 200ms;
+}
+
+.saveBtn:hover:not(:disabled) {
+  background: #45a049;
+}
+
+.saveBtn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.deleteBtn {
+  padding: 10px 16px;
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 200ms;
+}
+
+.deleteBtn:hover:not(:disabled) {
+  background: #da190b;
+}
+
+.deleteBtn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.emptyState {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+}
+
+.emptyState p {
+  margin: 0;
+  font-size: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .layout {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .sectionList {
+    max-height: 250px;
+  }
+}

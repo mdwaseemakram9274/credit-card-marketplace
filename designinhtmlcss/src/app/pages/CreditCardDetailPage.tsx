@@ -88,11 +88,11 @@ export default function CreditCardDetailPage() {
       ? [card.network.trim()]
       : [];
 
-  const categoryLabels = Array.from(
+  const categoryLabels: string[] = Array.from(
     new Set(
       (Array.isArray(card.categories) ? card.categories : [])
         .map((item: string) => (typeof item === 'string' ? item.trim() : ''))
-        .filter(Boolean)
+        .filter((item): item is string => Boolean(item))
     )
   );
 

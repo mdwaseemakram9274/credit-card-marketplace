@@ -20,9 +20,10 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router';
 import { CreditCard as CreditCardPreview } from '../components/CreditCardSection';
+import { HomepageSectionsManager } from '../components/HomepageSectionsManager';
 import { api, ApiCard, ApiMetaItem, mapApiCardToUi } from '../lib/api';
 
-type TabType = 'dashboard' | 'add-card' | 'banks';
+type TabType = 'dashboard' | 'add-card' | 'banks' | 'homepage';
 
 type AdminCardRow = {
   id: string;
@@ -277,6 +278,17 @@ export default function AdminPage() {
             <Building2 className="w-4 h-4" />
             Banks
           </button>
+          <button
+            onClick={() => setActiveTab('homepage')}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-button transition-colors ${
+              activeTab === 'homepage'
+                ? 'bg-blue-700 text-white'
+                : 'text-blue-100 hover:bg-blue-700 hover:text-white'
+            }`}
+          >
+            <Home className="w-4 h-4" />
+            Homepage
+          </button>
           
           {/* Back to Website Link */}
           <Link
@@ -386,6 +398,14 @@ export default function AdminPage() {
               cardNetworkOptions={cardNetworkOptions}
               refreshMeta={loadMeta}
             />
+          ) : activeTab === 'homepage' ? (
+            isAuthenticated && api.getToken() ? (
+              <HomepageSectionsManager adminToken={api.getToken()!} />
+            ) : (
+              <div className="p-6 text-center text-gray-600">
+                Please login to manage homepage sections.
+              </div>
+            )
           ) : (
             <AddCardContent 
               editingCard={editingCard} 
@@ -400,7 +420,7 @@ export default function AdminPage() {
                 setActiveTab('dashboard');
               }}
             />
-          )}
+          )}}
         </main>
       </div>
     </div>
@@ -811,7 +831,7 @@ function AddCardContent({
     const networkName = cardNetworkOptions.find((item) => item.id === card.network_id)?.name || '';
     const bankName = banks.find((item) => item.id === card.bank_id)?.name || fallback.bank || '';
 
-    const normalizedStatus = card.status === 'enabled' ? 'Enabled' : card.status === 'disabled' ? 'Disabled' : 'Draft';
+    const normalizedStatus: 'Draft' | 'Enabled' | 'Disabled' = card.status === 'enabled' ? 'Enabled' : card.status === 'disabled' ? 'Disabled' : 'Draft';
     const productDescription = toString(card.product_description);
     const normalizedOrientation = card.card_orientation === 'vertical' ? 'vertical' : (fallback.cardOrientation || 'horizontal');
 
@@ -836,9 +856,15 @@ function AddCardContent({
       cardType: cardTypeName,
       cardOrientation: normalizedOrientation,
       network: networkName,
-      status: normalizedStatus,
+      status: normalizedStatus as 'Draft' | 'Enabled' | 'Disabled',
       feeWaiverConditions: toString((customFees.fee_waiver_conditions as string) || ''),
       customFees: extraFees,
+      latePaymentCharges: Array.isArray(card.late_payment_charges)
+        ? (card.late_payment_charges as Array<Record<string, unknown>>).map((item) => ({
+            balanceRange: toString(item.balance_range || ''),
+            charge: toString(item.charge || ''),
+          }))
+        : [],
       rewardProgramName: toString(card.reward_program_name),
       welcomeBonus: toString(card.welcome_bonus),
       rewardsRate: toString(rewardsDetails.rewards_rate),
@@ -1124,7 +1150,7 @@ function AddCardContent({
               joiningFee: '',
               renewalFee: '',
               interestRate: '',
-              latePaymentFee: '',
+              latePaymentCharges: [],
               overlimitFee: '',
               cashAdvanceFee: '',
               foreignTransactionFee: '',

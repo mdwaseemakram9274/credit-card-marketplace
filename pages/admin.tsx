@@ -1,40 +1,32 @@
-import type { GetServerSideProps } from 'next';
+import type { NextPage } from 'next';
+import Head from 'next/head';
+import dynamic from 'next/dynamic';
 
-// Legacy admin implementation is fully commented in: archive/admin.old.commented.txt
+// Dynamically import AdminPage (client-side only, not needed for SEO)
+const AdminPage = dynamic(() => import('@/designinhtmlcss/src/app/pages/AdminPage'), {
+  ssr: false,
+  loading: () => (
+    <div style={{
+      minHeight: '100vh',
+      display: 'grid',
+      placeItems: 'center',
+      fontFamily: 'system-ui',
+    }}>
+      <p>Loading Admin Panel...</p>
+    </div>
+  ),
+});
 
-type AdminRedirectPageProps = {
-  destination: string;
-};
-
-export default function AdminRedirectPage({ destination }: AdminRedirectPageProps) {
+const Admin: NextPage = () => {
   return (
-    <main
-      style={{
-        minHeight: '100vh',
-        display: 'grid',
-        placeItems: 'center',
-        fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
-        background: '#f8fafc',
-        color: '#111827',
-        padding: '24px',
-        textAlign: 'center',
-      }}
-    >
-      <div>
-        <h1 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700 }}>Redirecting to Admin Panel...</h1>
-        <p style={{ marginTop: 12 }}>
-          If you are not redirected automatically, open <a href={destination}>{destination}</a>.
-        </p>
-      </div>
-    </main>
+    <>
+      <Head>
+        <title>Admin Panel | Fintech</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Head>
+      <AdminPage />
+    </>
   );
-}
-
-export const getServerSideProps: GetServerSideProps = async () => {
-  return {
-    redirect: {
-      destination: '/designinhtmlcss/index.html#/admin',
-      permanent: false,
-    },
-  };
 };
+
+export default Admin;
