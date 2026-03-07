@@ -2,6 +2,8 @@
 
 SEO-focused credit card marketplace with a dynamic static HTML flow:
 
+**Latest Deployment:** 2025-03-07 - TypeScript compilation fixes applied
+
 - Home: `index.html` / `/`
 - Bank list page: `/bank.html?bank=hdfc`
 - Card detail page: `/card.html?bank=hdfc&card=millennia-credit-card`
