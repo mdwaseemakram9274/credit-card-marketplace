@@ -55,11 +55,18 @@ function asObject(value: unknown): Record<string, unknown> | null {
   return value as Record<string, unknown>;
 }
 
+// Safely get API base URL - import.meta only available at browser runtime
+let viteApiUrl: string | undefined = undefined;
+try {
+  // This will only work in browser context where Vite is available
+  viteApiUrl = (import.meta.env as Record<string, any>)?.VITE_API_BASE_URL as string | undefined;
+} catch (e) {
+  // import.meta not available during server build, skip
+}
+
 const API_BASE_URL =
   ((globalThis as any).__API_BASE_URL__ as string | undefined) ||
-  (typeof import !== 'undefined' && typeof import.meta !== 'undefined'
-    ? (import.meta.env?.VITE_API_BASE_URL as string | undefined)
-    : undefined) ||
+  viteApiUrl ||
   (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:4000' : '');
 const TOKEN_KEY = 'admin_token';
 const PERSIST_KEY = 'admin_token_persist';
