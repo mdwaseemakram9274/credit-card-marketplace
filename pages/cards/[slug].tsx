@@ -2,6 +2,12 @@ import type { NextPage, GetStaticProps, GetStaticPaths } from 'next';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
 import { getSupabaseServerClient } from '@/lib/supabase-server';
+import {
+  generateProductSchema,
+  generateBreadcrumbSchema,
+  generateOpenGraphTags,
+  generateTwitterCardTags,
+} from '@/lib/utils/schemaGenerator';
 
 // Dynamically import card detail page
 const CreditCardDetailPage = dynamic(
@@ -18,15 +24,70 @@ interface CardPageProps {
     slug?: string;
     card_image_url?: string;
     banks?: { name: string; slug: string };
+    annual_fee?: string;
+    joining_fee?: string;
+    welcome_bonus?: string;
+    benefits?: string[];
   };
 }
 
 const CardDetailPage: NextPage<CardPageProps> = ({ cardId, card }) => {
-  const title = card 
-    ? `${card.card_name} | Review, Fees & Benefits 2026 | Fintech`
-    : 'Credit Card Details | Fintech';
-  
-  const description = card?.description || 'View detailed information about this credit card including benefits, fees, eligibility and more.';
+  const baseUrl = 'https://creditcardmarketplace.com';
+  const title = card
+    ? `${card.card_name} | Review, Fees & Benefits 2025`
+    : 'Credit Card Details';
+
+  const description =
+    card?.description ||
+    'View detailed information about this credit card including benefits, fees, eligibility and more.';
+
+  const pageUrl = `${baseUrl}/cards/${cardId}`;
+
+  // Generate structured data
+  const productSchema = card
+    ? generateProductSchema({
+        title: card.card_name,
+        description: description,
+        url: pageUrl,
+        image: card.card_image_url,
+        imageAlt: card.card_name,
+        datePublished: new Date().toISOString(),
+        additionalProperties: {
+          'Annual Fee': card.annual_fee || 'Contact Bank',
+          'Joining Fee': card.joining_fee || 'Contact Bank',
+          'Welcome Bonus': card.welcome_bonus || 'No Bonus',
+          Bank: card.banks?.name || 'Unknown Bank',
+          Network: 'Visa/Mastercard',
+        },
+      })
+    : null;
+
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { position: 1, name: 'Home', item: baseUrl },
+    { position: 2, name: 'Cards', item: `${baseUrl}/cards` },
+    {
+      position: 3,
+      name: card?.banks?.name || 'Bank',
+      item: `${baseUrl}/lenders/${card?.banks?.slug}`,
+    },
+    { position: 4, name: card?.card_name || 'Card' },
+  ]);
+
+  const ogTags = generateOpenGraphTags({
+    title,
+    description,
+    url: pageUrl,
+    image: card?.card_image_url,
+    imageAlt: card?.card_name,
+    type: 'product',
+  });
+
+  const twitterTags = generateTwitterCardTags({
+    title,
+    description,
+    image: card?.card_image_url,
+    card: 'summary_large_image',
+  });
 
   return (
     <>
@@ -34,28 +95,41 @@ const CardDetailPage: NextPage<CardPageProps> = ({ cardId, card }) => {
         <title>{title}</title>
         <meta name="description" content={description} />
         <meta name="robots" content="index, follow" />
-        <meta property="og:title" content={title} />
-        <meta property="og:description" content={description} />
-        {card?.card_image_url && <meta property="og:image" content={card.card_image_url} />}
-        <meta property="og:type" content="product" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="canonical" href={`https://fintech.com/cards/${cardId}`} />
-        
-        {/* JSON-LD Schema for Product */}
+        <meta name="charset" content="utf-8" />
+
+        {/* Open Graph Tags */}
+        {Object.entries(ogTags).map(([key, value]) => (
+          <meta key={`og-${key}`} property={key} content={String(value)} />
+        ))}
+
+        {/* Twitter Card Tags */}
+        {Object.entries(twitterTags).map(([key, value]) => (
+          <meta key={`twitter-${key}`} name={key} content={String(value)} />
+        ))}
+
+        {/* Canonical URL */}
+        <link rel="canonical" href={pageUrl} />
+
+        {/* JSON-LD Schemas */}
+        {productSchema && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(productSchema),
+            }}
+          />
+        )}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org/',
-              '@type': 'Product',
-              name: card?.card_name,
-              description: description,
-              image: card?.card_image_url,
-              brand: card?.banks?.name,
-              url: `https://fintech.com/cards/${cardId}`,
-            }),
+            __html: JSON.stringify(breadcrumbSchema),
           }}
         />
+
+        {/* Preconnect to CDN */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
       </Head>
       <CreditCardDetailPage />
     </>
