@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import jwt from 'jsonwebtoken';
-import { getSupabaseServerClient, hasSupabaseConfig } from '../../../../lib/supabase-server';
+import { getSupabaseServerClient, hasSupabaseConfig } from '../../../lib/supabase-server';
 
 type ApiResponse = {
   success: boolean;

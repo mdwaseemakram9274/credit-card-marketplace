@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { generatePageNumbers } from '../../lib/utils/pagination';
+import { generatePageNumbers } from '../../../../lib/utils/pagination';
 import styles from './PaginationControls.module.css';
 
 interface PaginationControlsProps {

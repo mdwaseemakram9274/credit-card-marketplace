@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearch, fetchFilterOptions } from '../../lib/hooks/useSearch';
+import { useSearch, fetchFilterOptions } from '../../../../lib/hooks/useSearch';
 import { PaginationControls } from './PaginationControls';
 import styles from './CardSearchPanel.module.css';
 import {

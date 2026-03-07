@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus, Minus, MessageCircle } from 'lucide-react';
-import { useFAQs, type FAQ } from '../../lib/hooks/useFAQs';
+import { useFAQs, type FAQ } from '../../../../lib/hooks/useFAQs';
 
 interface FAQItem {
   question: string;

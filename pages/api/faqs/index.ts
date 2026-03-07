@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import jwt from 'jsonwebtoken';
-import { getSupabaseServerClient, hasSupabaseConfig } from '../../../../lib/supabase-server';
+import { getSupabaseServerClient, hasSupabaseConfig } from '../../../lib/supabase-server';
 
 type FAQ = {
   id: string;
@@ -71,7 +71,7 @@ export default async function handler(
 
       let query = supabase
         .from('faqs')
-        .select('*')
+        .select('*', { count: 'exact' })
         .eq('is_active', true);
 
       if (category && typeof category === 'string') {
@@ -99,6 +99,9 @@ export default async function handler(
       return res.status(200).json({
         success: true,
         data: data || [],
+        total: count || 0,
+        limit: parseInt(limit as string),
+        offset: parseInt(offset as string),
         message: `Found ${data?.length || 0} FAQs`,
       });
     }
